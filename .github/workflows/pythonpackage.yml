@@ -44,7 +44,7 @@ on:
                       - name: Make Wheel
                         run: |
                           python setup.py bdist_wheel
-                                
+                      
                       - name: Publish Wheel
                         uses: actions/upload-artifact@master
                           with:
