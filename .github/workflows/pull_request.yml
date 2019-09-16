@@ -22,7 +22,7 @@ jobs:
                 python setup.py pytest --addopts --junitxml=${{ matrix.python-version }}.results.xml
                 
             - name: Upload Test results
-                uses: actions/upload-artifact@master
-                with:
-                    name: Results - ${{ matrix.python-version }}
-                    path: ${{ matrix.python-version }}.results.xml
+              uses: actions/upload-artifact@master
+              with:
+                 name: Results - ${{ matrix.python-version }}
+                 path: ${{ matrix.python-version }}.results.xml
