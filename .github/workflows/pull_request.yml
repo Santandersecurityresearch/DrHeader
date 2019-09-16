@@ -11,7 +11,7 @@ jobs:
             - name: Checkout Code
               uses: actions/checkout@v1
                 
-            - name: Set up Python ${{ matrix.python-version }} 
+            - name: Set up Python
               uses: actions/setup-python@v1
               with:
                  python-version: ${{ matrix.python-version }}
