@@ -24,7 +24,7 @@ on:
         branches:
             - 'releases/*'
             build:
-                    runs-on: ubuntu-latest
+                runs-on: ubuntu-latest
                     strategy:
                         max-parallel: 4
                         matrix:
@@ -45,8 +45,8 @@ on:
                             run: |
                                 python setup.py bdist_wheel
                                 
-                       -    uses: actions/upload-artifact@master
-                       -    name: Publish Wheel
+                        -   name: Publish Wheel
+                            uses: actions/upload-artifact@master
                             with:
                                 name: DrHeader Wheel
                                 path: dist/*.whl
