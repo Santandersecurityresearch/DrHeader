@@ -1,9 +1,10 @@
 name: Dr Header Release Builds
-on:
+on: 
     push:
-        branches: 
-              - 'releases/*'
-        build:
+        branches:
+            - 'releases/*'
+jobs:
+    build:
           runs-on: ubuntu-latest
           strategy:
               max-parallel: 4
