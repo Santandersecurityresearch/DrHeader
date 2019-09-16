@@ -2,7 +2,8 @@ import json
 
 import requests
 import validators
-
+import urllib3
+urllib3.disable_warnings()
 from drheader.utils import load_rules
 
 
