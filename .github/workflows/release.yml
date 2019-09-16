@@ -1,8 +1,8 @@
 name: Dr Header Release Builds
 on: 
-  push:
-    branches:
-      - 'release/*'
+  release:
+    - created
+    
 jobs:
   build:
     runs-on: ubuntu-latest
