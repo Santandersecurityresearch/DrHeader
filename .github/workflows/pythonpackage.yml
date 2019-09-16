@@ -1,5 +1,5 @@
 name: Drheader Workflow
-on: [push]
+on: [pull-request]
 jobs:
     build:
         runs-on: ubuntu-latest
