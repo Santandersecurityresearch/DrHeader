@@ -8,7 +8,7 @@ jobs:
             matrix:
                 python-version: [3.5, 3.6, 3.7]
         steps:
-            - name: Set up Python
+            - name: Checkout Code
               uses: actions/checkout@v1
                 
             - name: Set up Python ${{ matrix.python-version }} 
@@ -19,4 +19,10 @@ jobs:
             - name: Test with pytest
               run: |
                 pip install --upgrade setuptools
-                python setup.py test
+                python setup.py pytest --addopts --junitxml=${{ matrix.python-version }}.results.xml
+                
+            - name: Upload Test results
+                uses: actions/upload-artifact@master
+                with:
+                    name: Results - ${{ matrix.python-version }}
+                    path: ${{ matrix.python-version }}.results.xml
