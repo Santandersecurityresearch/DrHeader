@@ -2,55 +2,73 @@
 
 # Welcome to drHEADer
 
-<!--[![Updates](https://pyup.io/repos/github/santandersecurityresearch/drheader/shield.svg)](https://pyup.io/repos/github/santandersecurityresearch/drheader/) -->
+There are a number of HTTP headers which enhance the security of a website when used. Often ignored, or unknown, these HTTP security headers help prevent common web application vulnerabilities when used. 
 
-drHEADer is a module and command line tool to audit security headers received in response to a single request or a list of requests.
+DrHEADer helps with the audit of security headers received in response to a single request or a list of requests. 
 
-# Installation
+When combined with the OWASP [Application Security Verification Standard](https://github.com/OWASP/ASVS/blob/master/4.0/en/0x22-V14-Config.md) (ASVS) 4.0, it is a useful tool to include as part of an automated CI/CD pipeline which checks for missing HTTP headers. 
 
-## Stable release
+# How Do I Install It?
 
-To install drHEADer core, run this command in your terminal:
+Easiest way to install drHEADer is to clone this repository and via a terminal window, run the following command:
 
-``` console
-$ pip install drheader
-```
-
-This is the preferred method to install drHEADer, as it will always
-install the most recent stable release.
-
-If you don't have [pip](https://pip.pypa.io) installed, this [Python
-installation
-guide](http://docs.python-guide.org/en/latest/starting/installation/)
-can guide you through the process.
-
-## From sources
-
-The sources for drHEADer core can be downloaded from the [Github
-repo](https://github.com/santandersecurityresearch/drheader).
-
-You can either clone the public repository:
-
-``` console
-$ git clone git://github.com/<GROUPNAME>/drheader
-```
-
-Or download the
-[tarball](https://github.com/santandersecurityresearch/drheader/tarball/master):
-
-``` console
-$ curl  -OL https://github.com/<GROUPNAME>/drheader/tarball/master
-```
-
-Once you have a copy of the source, you can install it with:
 
 ``` console
 $ python setup.py install
+```
+This will install all the pre-requisites and you'll end up with a drheader executable.
+
+
+# How Do I Use It?
+
+There are two ways you could use drHEADer, depending on what you want to achieve. The easiest way is using the CLI.
+
+## CLI
+
+drHEADer can perform a single scan against a target and report back which headers are present, like so:
+
+``` console
+$ drheader scan single https://santander.co.uk
+```
+![singlescan](assets/img/drheaderscansingle.png)
+
+If you wish to scan multiple sites, you'll need the targets in a JSON format, or a txt file, like so:
+
 ``` 
+          [
+            {
+              "url": "https://example.com",
+              "params": {
+                  "example_parameter_key": "example_parameter_value"
+              }
+            },
+            ...
+          ]
+```
 
-# Example Usage
+For txt files, use the following command:
 
-To use drHEADer in a project:
+``` console
+$ drheader scan bulk -ff targets.txt
+```
+
+There are a number of parameters you can specify during bulk scans, these are:
+
+  -p, --post                     Use a post request to obtain headers
+  --json                         Output report as json
+  --debug                        Show error messages
+  --rules FILENAME               Use custom rule set
+  --help                         Show this message and exit.
+
+To save scan results, you can use the --json parameter, like so:
+
+``` console
+$ drheader scan single https://santander.co.uk --json
+```
+
+## In a Project
+
+It is also possible to call drHEADer from within an existing project, and this is achieved like so:
     
     from drheader import Drheader
     
@@ -60,79 +78,14 @@ To use drHEADer in a project:
     report = drheader_instance.analyze()
     print(report)
 
+As we continue development on drHEADer, we will further enhance this functionality. 
 
-To use the drHEADer cli:
+# Who Is Behind It?
 
-    $ drheader --help
-    
-    Usage: drheader [OPTIONS] COMMAND [ARGS]...
-    
-      Console script for drheader.
-    
-    Options:
-      --help  Show this message and exit.
-    
-    Commands:
-      compare  Compare your headers through drheader.
-      scan     Scan endpoints with drheader.
+DrHEADer was developed by the Santander UK Security Engineering team, who are:
 
-# API
+* David Albone
+* [Javier Domínguez Ruiz](https://github.com/javixeneize)
+* Fernando Cabrerizo
+* [James Morris](https://github.com/actuallyjamez)
 
-## Submodules
-
-## drheader.cli module
-
-Console script for drheader.
-
-## drheader.core module
-
-**class drheader.core.Drheader(url=None, headers=None,
-status\_code=None, post=False, params=None)**
-
-> Bases: `object`
-> 
-> Something about the core should probably go here
-> 
-> **\_\_init\_\_(url=None, headers=None, status\_code=None, post=False,
-> params=None)**
-> 
-> > NOTE: at least one param required.
-> > 
-> >   - Parameters
-> >     
-> >       - **url** (*str*) – \[optional\] URL of target
-> >       - **headers** (*dict*) – \[optional\] Override headers
-> >       - **status\_code** (*int*) – \[optional\] Override status code
-> >       - **post** (*bool*) – \[optional\] Use post for request
-> >       - **params** (*dict*) – \[optional\] Request params
-> 
-> **analyze(rules=None)**
-> 
-> > Analyze the currently loaded headers against provided rules.
-> > 
-> >   - Parameters  
-> >     **rules** (*dict*) – override rules to compare headers against
-> > 
-> >   - Returns  
-> >     audit report
-> > 
-> >   - Return type  
-> >     list
-> 
-> `error_types = {1: 'Header not incl ... id directive included'}`
-
-## drheader.utils module
-
-Utils for drheader.
-
-**drheader.utils.load\_rules(rule\_file=None)**
-
-> Loads drheader ruleset. Will load local defaults unless overridden.
-> :param rule\_file: file object of rules. :type rule\_file: file
-> :return: drheader rules :rtype: dict
-
-## Module contents
-
-Top-level package for drHEADer core.
-
-add info about builds 
