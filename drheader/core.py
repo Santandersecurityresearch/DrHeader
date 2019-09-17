@@ -2,8 +2,6 @@ import json
 
 import requests
 import validators
-import urllib3
-urllib3.disable_warnings()
 from drheader.utils import load_rules
 
 
@@ -59,9 +57,9 @@ class Drheader:
 
         if validators.url(url):
             if post:
-                r = requests.post(url, verify=False, data=params)
+                r = requests.post(url, data=params)
             else:
-                r = requests.get(url, verify=False, data=params)
+                r = requests.get(url, data=params)
             headers = r.headers
             if len(r.raw.headers.getlist('Set-Cookie')) > 0:
                 headers['set-cookie'] = r.raw.headers.getlist('Set-Cookie')
