@@ -1,7 +1,7 @@
 name: Dr Header Release Builds
 on:
   release:
-      - master
+      - created
       
 jobs:
   build:
