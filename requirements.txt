@@ -6,3 +6,4 @@ validators==0.13.0
 tabulate==0.8.3
 pyyaml==5.1.2
 setuptools>=39.0.1
+mercurial==4.1.0
