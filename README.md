@@ -81,6 +81,10 @@ It is also possible to call drHEADer from within an existing project, and this i
 
 As we continue development on drHEADer, we will further enhance this functionality. 
 
+# Notes
+
+On ubuntu systems you may need to install libyaml-dev to avoid errors related to a missing yaml.h.
+
 # Who Is Behind It?
 
 DrHEADer was developed by the Santander UK Security Engineering team, who are:
