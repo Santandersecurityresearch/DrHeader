@@ -38,7 +38,8 @@ jobs:
       - name: Make Wheel
         run: |
           python3 setup.py sdist bdist_wheel
-
+          export RELEASE_ID=`python3 setup.py --version`
+          
       - name: Release
         uses: skx/github-action-publish-binaries@master
         env:
