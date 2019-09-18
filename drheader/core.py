@@ -7,7 +7,7 @@ from drheader.utils import load_rules
 
 class Drheader:
     """
-    Something about the core should probably go here
+    Core functionality for DrHeader. This is where the magic happens
     """
     error_types = {1: 'Header not included in response', 2: 'Header should not be returned',
                    3: 'Value does not match security policy',
