@@ -1,5 +1,7 @@
 name: Dr Header Release Builds
-on: release
+on:
+  pull_request:
+      types: [published]
       
 jobs:
   build:
