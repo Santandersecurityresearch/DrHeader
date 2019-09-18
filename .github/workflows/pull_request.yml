@@ -15,9 +15,6 @@ jobs:
               uses: actions/setup-python@v1
               with:
                  python-version: ${{ matrix.python-version }}
-
-            - name: Install APT Dependencies
-              run: apt install libyaml-dev
               
             - name: Install PIP Dependencies
               run: pip install -r requirements_dev.txt
