@@ -1,8 +1,5 @@
 name: Dr Header Release Builds
-on:
-  push:
-    branches:
-      - master
+on: release
       
 jobs:
   build:
@@ -38,10 +35,12 @@ jobs:
       - name: Make Wheel
         run: |
           python3 setup.py sdist bdist_wheel
-
+          export RELEASE_ID=`python3 setup.py --version`
+          
       - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: dist/*.whl
+        uses: skx/github-action-publish-binaries@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: 'dist/*.whl'
+
