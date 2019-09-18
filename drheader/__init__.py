@@ -4,4 +4,4 @@
 
 __version__ = '0.1.1'
 
-from drheader.core import Drheader
+from drheader.core import Drheader  # noqa

@@ -45,7 +45,7 @@ def compare(file, json_output, debug, rule_file):
                 "url": "https://test.com",
                 "headers": {
                     "X-XSS-Protection": "1; mode=block",
-                    "Content-Security-Policy": "default-src 'none'; script-src 'self' unsafe-inline; object-src 'self';",
+                    "Content-Security-Policy": "default-src 'none'; script-src 'self' unsafe-inline; object-src 'self';"
                     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
                     "X-Frame-Options": "SAMEORIGIN",
                     "X-Content-Type-Options": "nosniff",

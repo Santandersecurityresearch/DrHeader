@@ -1,7 +1,6 @@
 bumpversion==0.5.3
 wheel==0.32.1
 watchdog==0.9.0
-flake8==3.5.0
 tox==3.5.2
 coverage==4.5.1
 Sphinx==1.8.1
@@ -9,3 +8,6 @@ twine==1.12.1
 pytest==3.8.2
 pytest-runner==4.2
 setuptools>=39.0.1
+bandit == 1.6.2
+flake8 == 3.6.0
+safety == 1.8.4
