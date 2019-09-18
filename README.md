@@ -81,6 +81,14 @@ It is also possible to call drHEADer from within an existing project, and this i
 
 As we continue development on drHEADer, we will further enhance this functionality. 
 
+## Roadmap
+
+We have a lot of ideas for drHEADer, and will push often as a result. Some of the things you'll see shortly are:
+
+* Building on the Python library to make it easier to embed in your own projects. 
+* Releasing the API, which is seperate from the core library - the API allows you to hit URLs or endpoints at scale
+* Better integration into MiTM proxies. 
+
 # Who Is Behind It?
 
 DrHEADer was developed by the Santander UK Security Engineering team, who are:
