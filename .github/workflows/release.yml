@@ -1,7 +1,6 @@
 name: Dr Header Release Builds
 on:
-  pull_request:
-    branches:
+  release:
       - master
       
 jobs:
