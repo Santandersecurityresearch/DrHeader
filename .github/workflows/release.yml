@@ -1,6 +1,6 @@
 name: Dr Header Release Builds
 on:
-  push:
+  pull_request:
     branches:
       - master
       
@@ -40,8 +40,9 @@ jobs:
           python3 setup.py sdist bdist_wheel
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: actions/upload-artifact@master
         with:
-          files: dist/*.whl
+          name: Wheel
+          path: dist/*.whl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
