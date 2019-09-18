@@ -10,7 +10,8 @@ When combined with the OWASP [Application Security Verification Standard](https:
 
 # How Do I Install It?
 
-Easiest way to install drHEADer is to clone this repository and via a terminal window, run the following command:
+This project was developed with Python 3.7.4.  
+Whilst it works with Python 2.x, End of Life (EOL) is coming so if possible, use 3.x. The easiest way to install drHEADer is to clone this repository and via a terminal window, run the following command:
 
 
 ``` console
