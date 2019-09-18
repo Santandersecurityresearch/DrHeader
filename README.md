@@ -60,11 +60,12 @@ There are a number of parameters you can specify during bulk scans, these are:
   --rules FILENAME               Use custom rule set
   --help                         Show this message and exit.
 
-To save scan results, you can use the --json parameter, like so:
+To save scan results, you can use the --json parameter and pipe it to [jq](https://stedolan.github.io/jq/), which is a lightweight and flexible command-line JSON processor,like so:
 
 ``` console
-$ drheader scan single https://santander.co.uk --json
+$ drheader scan single https://santander.co.uk --json | jq '.'
 ```
+![singlescan](assets/img/drheaderscansinglejson.png)
 
 ## In a Project
 
