@@ -9,3 +9,6 @@ twine==1.12.1
 pytest==3.8.2
 pytest-runner==4.2
 setuptools>=39.0.1
+bandit == 1.6.2
+flake8 == 3.6.0
+safety == 1.8.4
