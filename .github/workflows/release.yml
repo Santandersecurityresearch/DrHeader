@@ -1,0 +1,50 @@
+name: Dr Header Release Task
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+      
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install -r requirements_dev.txt
+
+      - name: Test with pytest
+        run: python setup.py test
+
+      - name: Flake8 styles
+        run: python -m flake8 drheader
+
+      - name: Bandit security scan
+        run: python -m bandit -r ./drheader
+
+      - name: Safety dependency scan
+        run: python -m safety check
+
+      - name: Make Wheel
+        run: |
+          python3 setup.py sdist bdist_wheel
+          
+      - name: Dump build info for release
+        run: |
+           git log --pretty=oneline > changelog
+           python3 setup.py --version > version     
+           
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: changelog
+          name: DR Header Wheel
+          files: dist/*.whl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
