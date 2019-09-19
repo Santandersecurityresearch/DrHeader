@@ -25,8 +25,8 @@ test_requirements = ['pytest']
 
 setup(
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Developers',
+        'Development Status :: 3 - Release Candidate',
+        'Intended Audience :: Developers/Penetration Testers',
         'Natural Language :: English',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
@@ -34,7 +34,7 @@ setup(
         'Environment :: Console',
         'Topic :: Security'
     ],
-    description="scan request headers against a set of rules",
+    description="DrHEADer helps with the audit of security headers received in response to a single request or a list of requests.",
     entry_points={
         'console_scripts': [
             'drheader=drheader.cli:main',
@@ -44,6 +44,7 @@ setup(
     long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords='drheader',
+    author='Santander UK Security Engineering',
     name='drheader',
     packages=['drheader'],
     setup_requires=setup_requirements,
