@@ -40,6 +40,12 @@ Headers:
     Must-Contain:
     - HttpOnly
     - Secure
+  Cache-Control:
+    Required: True
+    Enforce: True
+    Delimiter: ','
+    Value:
+    - no-cache, no-store, must-revalidate
 ```
 
 # File Structure
@@ -59,6 +65,7 @@ The yaml file structure for drHEADwe is as follows:
     * Value:
         * It must be empty if 'Enforce' is set to False, otherwise
         * It must be set to a list of values that would be accepted for that header. The validation will be successful if there is a full match (value in header matches with value in policy) with one of the values defined
+    * Delimiter: To be used when a header is enforced and the value specified contains multiple values that would be valid in any order (see example for Cache-Control). Default delimiter is ';'.  
     * Must-Contain: To be used when 'Required' is set to True or Optional and 'Enforce' is set to False.  
         * It can be set to a list of values that should be part of the header value. The validation will be successful if all values specified are found in the value set for that header (ie: for set-cookie the policy specifies that httponly AND secure should be part of the header value)
     * Must-Contain-One: To be used when 'Required' is set to True or Optional and 'Enforce' is set to False.  
