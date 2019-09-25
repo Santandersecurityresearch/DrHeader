@@ -2,7 +2,7 @@
 
 This document describes the format of the `rules.yml` file. This file defines the policy drHEADer relies on to audit security headers. It also documents how to make changes to it so that you can configure your custom policy based on your particular requirements. 
 
-# File format
+# File Format
 
 drHEADer policy is a yaml file, which is a human-readable format commonly used for configuration files. See a yaml sample drHEADer policy below:
 
@@ -42,7 +42,7 @@ Headers:
     - Secure
 ```
 
-# File structure
+# File Structure
 
 The yaml file structure for drHEADwe is as follows:
 

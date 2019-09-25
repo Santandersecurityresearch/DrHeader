@@ -82,7 +82,7 @@ It is also possible to call drHEADer from within an existing project, and this i
 
 As we continue development on drHEADer, we will further enhance this functionality. 
 
-# How Do I customise drHEADer rules?
+# How Do I Customise drHEADer Rules?
 
 DrHEADer relies on a yaml file that defines the policy it will use when auditing security headers. The file is located at `./drheader/rules.yml`, and you can customise it to fit your particular needs. Please follow this [link](RULES.md) if you want to know more.  
 
