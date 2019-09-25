@@ -1,4 +1,4 @@
-# Background
+# Introduction
 
 This document describes the format of the `rules.yml` file. This file defines the policy drHEADer relies on to audit security headers. It also documents how to make changes to it so that you can configure your custom policy based on your particular requirements. 
 
