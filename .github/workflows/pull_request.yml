@@ -19,8 +19,8 @@ jobs:
             - name: Install PIP Dependencies
               run: pip install -r requirements_dev.txt
 
-            - name: Test with pytest
-              run: python setup.py pytest --addopts --junitxml=${{ matrix.python-version }}.results.xml
+            - name: Test with Nosetests
+              run: python -m nose --with-xunit --xunit-file=${{ matrix.python-version }}.results.xml
 
             - name: Upload Test results
               uses: actions/upload-artifact@master
