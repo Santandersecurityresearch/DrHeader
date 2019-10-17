@@ -9,16 +9,30 @@ class Drheader:
     """
     Core functionality for DrHeader. This is where the magic happens
     """
-    error_types = {1: 'Header not included in response', 2: 'Header should not be returned',
-                   3: 'Value does not match security policy',
-                   4: 'Must-Contain directive missed', 5: 'Must-Avoid directive included'}
+    error_types = {
+        1: 'Header not included in response',
+        2: 'Header should not be returned',
+        3: 'Value does not match security policy',
+        4: 'Must-Contain directive missed',
+        5: 'Must-Avoid directive included'
+    }
 
-    def __init__(self, url=None, headers=None, status_code=None, post=False, params=None):
+    def __init__(
+            self,
+            url=None,
+            method="GET",
+            headers=None,
+            status_code=None,
+            params=None,
+            request_headers={}
+    ):
         """
         NOTE: at least one param required.
 
         :param url: (optional) URL of target
         :type url: str
+        :param method: (optional) Method to use when doing the request
+        :type method: str
         :param headers: (optional) Override headers
         :type headers: dict
         :param status_code: Override status code
@@ -27,6 +41,8 @@ class Drheader:
         :type post: bool
         :param params: Request params
         :type params: dict
+        :param request_headers: Request headers
+        :type request_headers: dict
         """
 
         self.status_code = status_code
@@ -39,27 +55,34 @@ class Drheader:
             self.headers = json.loads(headers)
 
         if self.url and not self.headers:
-            self.headers, self.status_code = self._get_headers(url, post, params)
+            self.headers, self.status_code = self._get_headers(
+                url, method, params, request_headers
+            )
 
         # self.headers_lower = dict((k.lower(), v.lower()) for k, v in self.headers.items())
         self.report = []
 
     @staticmethod
-    def _get_headers(url, post, params):
+    def _get_headers(url, method, params, request_headers):
         """
         Get headers for specified url.
 
         :param url: URL of target
         :type url: str
+        :param method: (optional) Method to use when doing the request
+        :type method: str
+        :param params: Request params
+        :type params: dict
+        :param request_headers: Request headers
+        :type request_headers: dict
         :return: headers, status_code
-        :rtype: package
+        :rtype: dict, int
         """
 
         if validators.url(url):
-            if post:
-                r = requests.post(url, data=params)
-            else:
-                r = requests.get(url, data=params)
+            req_obj = getattr(requests, method.lower())
+            r = req_obj(url, data=params, headers=request_headers)
+
             headers = r.headers
             if len(r.raw.headers.getlist('Set-Cookie')) > 0:
                 headers['set-cookie'] = r.raw.headers.getlist('Set-Cookie')
@@ -100,7 +123,9 @@ class Drheader:
             rule_list = [item.strip(' ') for item in self.headers[rule].split(self.delimiter)]
             if not all(elem in expected_value_list for elem in rule_list):
                 # if not expected_value_list in rule_list:
-                self.__add_report_item('high', rule, 3, expected_value_list, self.headers[rule])
+                self.__add_report_item(
+                    'high', rule, 3, expected_value_list, self.headers[rule]
+                )
 
     def __validate_not_exists(self, rule):
         """
@@ -133,7 +158,9 @@ class Drheader:
         try:
             for avoid in config['Must-Avoid']:
                 if avoid in self.headers[rule] and rule not in self.anomalies:
-                    self.__add_report_item('medium', rule, 5, config['Must-Avoid'], avoid)
+                    self.__add_report_item(
+                        'medium', rule, 5, config['Must-Avoid'], avoid
+                    )
         except KeyError:
             pass
 
@@ -169,7 +196,9 @@ class Drheader:
             else:
                 for contain in config['Must-Contain']:
                     if contain not in self.headers[rule] and rule not in self.anomalies:
-                        self.__add_report_item('medium', rule, 4, config['Must-Contain'], contain)
+                        self.__add_report_item(
+                            'medium', rule, 4, config['Must-Contain'], contain
+                        )
         except KeyError:
             pass
 
@@ -186,7 +215,8 @@ class Drheader:
                 self.delimiter = config['Delimiter']
         except KeyError:
             self.delimiter = ';'
-        if config['Required'] or config['Required'] == 'Optional' and rule in self.headers:
+        if config['Required'] or config['Required'] == 'Optional' \
+                and rule in self.headers:
             if config['Enforce']:
                 self.__validate_rule_and_value(rule, config['Value'])
             else:
@@ -196,7 +226,15 @@ class Drheader:
         else:
             self.__validate_not_exists(rule)
 
-    def __add_report_item(self, severity, rule, error_type, expected=None, value='', cookie=''):
+    def __add_report_item(
+            self,
+            severity,
+            rule,
+            error_type,
+            expected=None,
+            value='',
+            cookie=''
+    ):
         """
         Add a entry to report.
 
