@@ -15,7 +15,7 @@ Whilst it works with Python 2.x, End of Life (EOL) is coming so if possible, use
 
 
 ``` console
-$ python setup.py install
+$ python3 setup.py install --user
 ```
 This will install all the pre-requisites and you'll end up with a drheader executable.
 
