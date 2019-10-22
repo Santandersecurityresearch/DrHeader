@@ -194,7 +194,22 @@ class DrheaderRules(unittest2.TestCase):
         }
         
         self._process_test(headers=headers)
-        self.assertIn(no_referrer_response, self.instance.report, msg="No Referrer Policy Rule was triggered")
+        self.assertNotIn(no_referrer_response, self.instance.report, msg="No Referrer Policy Rule was triggered")
+
+    def test_referrer_policy_invalid_values(self):
+        headers = {'Referrer-Policy': 'no-referrerr'}
+
+        # this need updating as there is no referrer-policy rule in the output
+        no_referrer_response = {
+            'severity': 'high',
+            'rule': 'Referrer-Policy',
+            'message': 'Value does not match security policy',
+            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
+            'value': 'no-referrerr'
+        }
+
+        self._process_test(headers=headers)
+        self.assertNotIn(no_referrer_response, self.instance.report, msg="No Referrer Policy Rule was triggered")
 
     def test_referrer_policy_strict_origin(self):
         headers={'Referrer-Policy': 'strict-origin'}
@@ -210,7 +225,7 @@ class DrheaderRules(unittest2.TestCase):
         } 
         
         self._process_test(headers=headers)
-        self.assertIn(no_referrer_response, self.instance.report, msg="Referrer SO Policy Rule was triggered")
+        self.assertNotIn(no_referrer_response, self.instance.report, msg="Referrer SO Policy Rule was triggered")
 
     def test_referrer_policy_strict_cross_origin(self):    
         headers={'Referrer-Policy': 'strict-origin-when-cross-origin'}
@@ -226,7 +241,7 @@ class DrheaderRules(unittest2.TestCase):
         }
 
         self._process_test(headers=headers)
-        self.assertIn(referrer_strict_orgin_response, self.instance.report, msg="Refered SOWCO Policy Rule was triggred")
+        self.assertNotIn(referrer_strict_orgin_response, self.instance.report, msg="Refered SOWCO Policy Rule was triggred")
 
     def test_csp_invalid_default_directive(self):
         headers={'Content-Security-Policy': "default-src 'random';"}
@@ -246,7 +261,24 @@ class DrheaderRules(unittest2.TestCase):
         self.assertIn(csp_invalid_default_response, self.instance.report, msg="CSP directive Policy Rule was triggered")
 
     def test_csp_valid_default_directive_none(self):
-        headers={'Content-Security-Policy': "default-src 'none';"}
+        headers = {'Content-Security-Policy': "default-src 'none';"}
+
+        # this needs updating because there is no Content-Security-Warining in output
+        csp_response_none = {
+            'severity': 'high',
+            'rule': 'Content-Security-Policy',
+            'message': 'Must-Contain directive missed',
+            'expected': ["default-src 'none'", "default-src 'self'"],
+            'delimiter': ';',
+            'value': "default-src 'none';",
+            'anomaly': ["default-src 'none'", "default-src 'self'"]
+        }
+
+        self._process_test(headers=headers, status_code=200)
+        self.assertNotIn(csp_response_none, self.instance.report, msg="CSP directive policy none was caught")
+
+    def test_csp_invalid_default_directive_none(self):
+        headers={'Content-Security-Policy': "default-src 'non';"}
 
         # this needs updating because there is no Content-Security-Warining in output 
         csp_response_none = {
@@ -255,7 +287,7 @@ class DrheaderRules(unittest2.TestCase):
             'message': 'Must-Contain directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
-            'value': "default-src 'none';",
+            'value': "default-src 'non';",
             'anomaly': ["default-src 'none'", "default-src 'self'"]
         }
         
@@ -271,6 +303,21 @@ class DrheaderRules(unittest2.TestCase):
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'self';",
+            'anomaly': ["default-src 'none'", "default-src 'self'"]
+        }
+
+        self._process_test(headers=headers, status_code=200)
+        self.assertNotIn(csp_response_self, self.instance.report, msg="CSP directive policy self was caught")
+
+    def test_csp_invalid_default_directive_self(self):
+        headers={'Content-Security-Policy': "default-src 'selfie';"}
+        csp_response_self = {
+            'severity': 'high',
+            'rule': 'Content-Security-Policy',
+            'message': 'Must-Contain directive missed',
+            'expected': ["default-src 'none'", "default-src 'self'"],
+            'delimiter': ';',
+            'value': "default-src 'selfie';",
             'anomaly': ["default-src 'none'", "default-src 'self'"]
         }
 
