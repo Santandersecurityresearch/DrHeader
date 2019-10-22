@@ -80,6 +80,21 @@ It is also possible to call drHEADer from within an existing project, and this i
     report = drheader_instance.analyze()
     print(report)
 
+### Customize HTTP method and headers
+
+By default, the tool uses **GET** method when making a request, but you can change that by supplying the ```method``` argument like this:
+
+    # create drheader instance
+    drheader_instance = Drheader(url="http://test.com", method="POST")
+
+Remember you can use any method supported by ```requests``` such as POST, PUT, GET and DELETE.
+
+At the same time, you can customize the headers sent by the request. For that, you just have to use the ```request_headers``` argument:
+
+    # create drheader instance
+    custom_headers = {"token": "1234aerhga"}
+    drheader_instance = Drheader(url="http://test.com", request_headers=custom_headers)
+
 As we continue development on drHEADer, we will further enhance this functionality. 
 
 # How Do I Customise drHEADer Rules?
