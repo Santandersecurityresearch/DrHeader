@@ -3,20 +3,22 @@
 
 """Tests for `drheader` package."""
 import json
-import os
 import logging
-from operator import itemgetter
+import os
+
+import unittest2
+
+from drheader import Drheader
+
 
 # import pytest
 
-import unittest2
-from drheader import Drheader
 
 class DrheaderRules(unittest2.TestCase):
     def setUp(self):
         # this is run each time before each test_ method is invoked
         self.logger = logging.Logger
-        self.instance = '' 
+        self.instance = ''
         self.report = list
 
         # configuration 
@@ -40,36 +42,43 @@ class DrheaderRules(unittest2.TestCase):
         self._process_test(headers=file, status_code=200)
         self.assertEqual(len(self.instance.report), 0, msg="No issues reported in Rules tests")
 
+    def test_compare_rules_ok_with_case_insensitive(self):
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok_test_case.json'), 'r') as f:
+            file = json.loads(f.read())
+
+        self._process_test(headers=file, status_code=200)
+        self.assertEqual(len(self.instance.report), 0, msg="No issues reported in Rules tests")
+
     def test_compare_rules_enforce_ko(self):
-        headers={
-             'X-XSS-Protection': '1; mode=bloc',
-             'Content-Security-Policy': "default-src 'none'; script-src 'self'; object-src 'self';"
+        headers = {
+            'X-XSS-Protection': '1; mode=bloc',
+            'Content-Security-Policy': "default-src 'none'; script-src 'self'; object-src 'self';"
         }
         expected_response = {
-            'severity': 'high', 
-            'rule': 'X-XSS-Protection', 
+            'severity': 'high',
+            'rule': 'X-XSS-Protection',
             'message': 'Value does not match security policy',
-            'expected': ['1', 'mode=block'], 
-            'delimiter': ';', 
+            'expected': ['1', 'mode=block'],
+            'delimiter': ';',
             'value': '1; mode=bloc'
         }
-        
+
         self._process_test(headers=headers, status_code=200)
         self.assertIn(expected_response, self.instance.report, msg="X-XSS")
 
     def test_compare_rules_required_ko(self):
-         headers = {
-             'X-XSS-Protection': '1; mode=block'
-         }
-         # this expected response has been changed to fit output now delivered, 
-         # plz to review if test still makes sense in PR
-         expected_response = {
-             'severity': 'high',
-             'rule': 'Content-Security-Policy',
-             'message': 'Header not included in response'
-         }
-         self._process_test(headers=headers, status_code=200)
-         self.assertIn(expected_response, self.instance.report, msg="Generated Rules")
+        headers = {
+            'X-XSS-Protection': '1; mode=block'
+        }
+        # this expected response has been changed to fit output now delivered,
+        # plz to review if test still makes sense in PR
+        expected_response = {
+            'severity': 'high',
+            'rule': 'Content-Security-Policy',
+            'message': 'Header not included in response'
+        }
+        self._process_test(headers=headers, status_code=200)
+        self.assertIn(expected_response, self.instance.report, msg="Generated Rules")
 
     def test_compare_rules_not_required_ko(self):
         headers = {
@@ -112,13 +121,13 @@ class DrheaderRules(unittest2.TestCase):
         self.assertIn(csp_contain_reponse, self.instance.report, msg="CSP Contain Rule was triggered")
 
     def test_compare_must_avoid_ko(self):
-        headers={
+        headers = {
             'X-XSS-Protection': '1; mode=block',
             'Content-Security-Policy': "default-src 'none'; script-src 'self'; object-src 'self'; "
-                                            "unsafe-inline 'self;"
+                                       "unsafe-inline 'self;"
         }
         csp_avoid_response = {
-            'severity': 'medium', 
+            'severity': 'medium',
             'rule': 'Content-Security-Policy',
             'message': 'Must-Avoid directive included',
             'expected': ['unsafe-inline', 'unsafe-eval'], 'delimiter': ';',
@@ -129,52 +138,52 @@ class DrheaderRules(unittest2.TestCase):
         self.assertIn(csp_avoid_response, self.instance.report, msg="CSP Avoid Rule was triggered")
 
     def test_compare_optional(self):
-        headers={
+        headers = {
             'X-XSS-Protection': '1; mode=block',
             'Set-Cookie': ['Test']
         }
         medium_contain_response = {
-            'severity': 'medium', 
+            'severity': 'medium',
             'rule': 'Set-Cookie',
             'message': 'Must-Contain directive missed',
-            'expected': ['HttpOnly', 'Secure'], 
-            'value': 'Test',
+            'expected': ['httponly', 'secure'],
+            'value': 'test',
             'delimiter': ';',
-            'anomaly': 'HttpOnly'
+            'anomaly': 'httponly'
         }
         high_contain_response = {
-            'severity': 'high', 
+            'severity': 'high',
             'rule': 'Set-Cookie',
-            'message': 'Must-Contain directive missed', 
-            'expected': ['HttpOnly', 'Secure'], 
+            'message': 'Must-Contain directive missed',
+            'expected': ['httponly', 'secure'],
             'delimiter': ';',
-            'value': 'Test',
-            'anomaly': 'Secure'
+            'value': 'test',
+            'anomaly': 'secure'
         }
         self._process_test(headers=headers, status_code=200)
         self.assertIn(medium_contain_response, self.instance.report, msg="Medium Rule was triggered")
         self.assertIn(high_contain_response, self.instance.report, msg="High Rule was triggered")
 
     def test_compare_optional_not_exist(self):
-        headers={
+        headers = {
             'X-XSS-Protection': '1; mode=block'
         }
-        header_not_included_response =  {
+        header_not_included_response = {
             'rule': 'Set-Cookie',
-            'severity': 'high', 
+            'severity': 'high',
             'message': 'Header not included in response',
         }
 
         self._process_test(headers=headers, status_code=200)
         self.assertIn(header_not_included_response, self.instance.report, msg="Httponly Rule was triggered")
-        
+
     def test_referrer_policy_invalid_values(self):
-        headers={'Referrer-Policy': 'origin'}
+        headers = {'Referrer-Policy': 'origin'}
         referrer_response = {
-            'severity': 'high', 
-            'rule': 'Referrer-Policy', 
+            'severity': 'high',
+            'rule': 'Referrer-Policy',
             'message': 'Value does not match security policy',
-            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'], 
+            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
             'delimiter': ',',
             'value': 'origin'
         }
@@ -182,17 +191,17 @@ class DrheaderRules(unittest2.TestCase):
         self.assertIn(referrer_response, self.instance.report, msg="Referrer Policy Rule was triggered")
 
     def test_referrer_policy_valid_values(self):
-        headers={'Referrer-Policy': 'no-referrer'}
-        
+        headers = {'Referrer-Policy': 'no-referrer'}
+
         # this need updating as there is no referrer-policy rule in the output
-        no_referrer_response =  {
-            'severity': 'high', 
-            'rule': 'Referrer-Policy', 
+        no_referrer_response = {
+            'severity': 'high',
+            'rule': 'Referrer-Policy',
             'message': 'Value does not match security policy',
             'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
             'value': 'no-referrer'
         }
-        
+
         self._process_test(headers=headers)
         self.assertNotIn(no_referrer_response, self.instance.report, msg="No Referrer Policy Rule was triggered")
 
@@ -212,43 +221,44 @@ class DrheaderRules(unittest2.TestCase):
         self.assertNotIn(no_referrer_response, self.instance.report, msg="No Referrer Policy Rule was triggered")
 
     def test_referrer_policy_strict_origin(self):
-        headers={'Referrer-Policy': 'strict-origin'}
+        headers = {'Referrer-Policy': 'strict-origin'}
 
         # this needs updating because there is no refferer policy in output 
         no_referrer_response = {
-            'severity': 'high', 
-            'rule': 'Referrer-Policy', 
+            'severity': 'high',
+            'rule': 'Referrer-Policy',
             'message': 'value does not match security policy',
-            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'], 
+            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
             'delimiter': ',',
             'value': 'strict-origin'
-        } 
-        
-        self._process_test(headers=headers)
-        self.assertNotIn(no_referrer_response, self.instance.report, msg="Referrer SO Policy Rule was triggered")
-
-    def test_referrer_policy_strict_cross_origin(self):    
-        headers={'Referrer-Policy': 'strict-origin-when-cross-origin'}
-        
-        # this needs updating because there is no refferer policy in output 
-        referrer_strict_orgin_response = {
-            'severity': 'high', 
-            'rule': 'Referrer-Policy', 
-            'message': 'Value does not match security policy',
-            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'], 
-            'delimiter': ';', 'value':
-            'strict-origin-when-cross-origin'
         }
 
         self._process_test(headers=headers)
-        self.assertNotIn(referrer_strict_orgin_response, self.instance.report, msg="Refered SOWCO Policy Rule was triggred")
+        self.assertNotIn(no_referrer_response, self.instance.report, msg="Referrer SO Policy Rule was triggered")
+
+    def test_referrer_policy_strict_cross_origin(self):
+        headers = {'Referrer-Policy': 'strict-origin-when-cross-origin'}
+
+        # this needs updating because there is no refferer policy in output 
+        referrer_strict_orgin_response = {
+            'severity': 'high',
+            'rule': 'Referrer-Policy',
+            'message': 'Value does not match security policy',
+            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
+            'delimiter': ';', 'value':
+                'strict-origin-when-cross-origin'
+        }
+
+        self._process_test(headers=headers)
+        self.assertNotIn(referrer_strict_orgin_response, self.instance.report,
+                         msg="Refered SOWCO Policy Rule was triggred")
 
     def test_csp_invalid_default_directive(self):
-        headers={'Content-Security-Policy': "default-src 'random';"}
-        
+        headers = {'Content-Security-Policy': "default-src 'random';"}
+
         # this needs updating because there is no Content-Security-Warining in output 
         csp_invalid_default_response = {
-            'severity': 'high', 
+            'severity': 'high',
             'rule': 'Content-Security-Policy',
             'message': 'Must-Contain directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
@@ -278,11 +288,11 @@ class DrheaderRules(unittest2.TestCase):
         self.assertNotIn(csp_response_none, self.instance.report, msg="CSP directive policy none was caught")
 
     def test_csp_invalid_default_directive_none(self):
-        headers={'Content-Security-Policy': "default-src 'non';"}
+        headers = {'Content-Security-Policy': "default-src 'non';"}
 
         # this needs updating because there is no Content-Security-Warining in output 
         csp_response_none = {
-            'severity': 'high', 
+            'severity': 'high',
             'rule': 'Content-Security-Policy',
             'message': 'Must-Contain directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
@@ -290,14 +300,14 @@ class DrheaderRules(unittest2.TestCase):
             'value': "default-src 'non';",
             'anomaly': ["default-src 'none'", "default-src 'self'"]
         }
-        
+
         self._process_test(headers=headers, status_code=200)
         self.assertIn(csp_response_none, self.instance.report, msg="CSP directive policy none was caught")
 
     def test_csp_valid_default_directive_self(self):
-        headers={'Content-Security-Policy': "default-src 'self';"}
+        headers = {'Content-Security-Policy': "default-src 'self';"}
         csp_response_self = {
-            'severity': 'high', 
+            'severity': 'high',
             'rule': 'Content-Security-Policy',
             'message': 'Must-Contain directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
@@ -310,7 +320,7 @@ class DrheaderRules(unittest2.TestCase):
         self.assertNotIn(csp_response_self, self.instance.report, msg="CSP directive policy self was caught")
 
     def test_csp_invalid_default_directive_self(self):
-        headers={'Content-Security-Policy': "default-src 'selfie';"}
+        headers = {'Content-Security-Policy': "default-src 'selfie';"}
         csp_response_self = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
@@ -325,94 +335,93 @@ class DrheaderRules(unittest2.TestCase):
         self.assertIn(csp_response_self, self.instance.report, msg="CSP directive policy self was caught")
 
     def test_compare_rules_full_output(self):
-        headers={
-            'Server': 'Apache', 
+        headers = {
+            'Server': 'Apache',
             'X-Generator': 'Drupal 7 (http://drupal.org)',
             'X-XSS-Protection': '1; mode=bloc',
             'Content-Security-Policy': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;"
         }
-        
-        expected_report=[
+
+        expected_report = [
             {'severity': 'high',
-            'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
-            'expected': ["default-src 'none'", "default-src 'self'"],
-            'delimiter': ';',
-            'value': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;",
-            'anomaly': ["default-src 'none'", "default-src 'self'"]
-            },
+             'rule': 'Content-Security-Policy',
+             'message': 'Must-Contain directive missed',
+             'expected': ["default-src 'none'", "default-src 'self'"],
+             'delimiter': ';',
+             'value': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;",
+             'anomaly': ["default-src 'none'", "default-src 'self'"]
+             },
             {'severity': 'medium',
-            'rule': 'Content-Security-Policy',
-            'message': 'Must-Avoid directive included',
-            'expected': ['unsafe-inline', 'unsafe-eval'],
-            'delimiter': ';',
-            'value': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;",
-            'anomaly': 'unsafe-inline'
-            },
+             'rule': 'Content-Security-Policy',
+             'message': 'Must-Avoid directive included',
+             'expected': ['unsafe-inline', 'unsafe-eval'],
+             'delimiter': ';',
+             'value': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;",
+             'anomaly': 'unsafe-inline'
+             },
             {'severity': 'high', 'rule': 'X-XSS-Protection',
-            'message': 'Value does not match security policy',
-            'expected': ['1', 'mode=block'],
-            'delimiter': ';',
-            'value': '1; mode=bloc'
-            },
+             'message': 'Value does not match security policy',
+             'expected': ['1', 'mode=block'],
+             'delimiter': ';',
+             'value': '1; mode=bloc'
+             },
             {'severity': 'high',
-            'rule': 'Server',
-            'message': 'Header should not be returned'
-            },
+             'rule': 'Server',
+             'message': 'Header should not be returned'
+             },
             {'severity': 'high',
-            'rule': 'Strict-Transport-Security',
-            'message': 'Header not included in response',
-            'expected': ['max-age=31536000', 'includeSubDomains'],
-            'delimiter': ';'
-            },
+             'rule': 'Strict-Transport-Security',
+             'message': 'Header not included in response',
+             'expected': ['max-age=31536000', 'includesubdomains'],
+             'delimiter': ';'
+             },
             {'severity': 'high',
 
-            'rule': 'X-Frame-Options',
-            'message': 'Header not included in response',
-            'expected': ['SAMEORIGIN', 'DENY'],
-            'delimiter': ';'
-            },
+             'rule': 'X-Frame-Options',
+             'message': 'Header not included in response',
+             'expected': ['sameorigin', 'deny'],
+             'delimiter': ';'
+             },
             {'severity': 'high',
-            'rule': 'X-Content-Type-Options',
-            'message': 'Header not included in response',
-            'expected': ['nosniff'],
-            'delimiter': ';'
-            },
+             'rule': 'X-Content-Type-Options',
+             'message': 'Header not included in response',
+             'expected': ['nosniff'],
+             'delimiter': ';'
+             },
 
             {'message': 'Header not included in response',
-            'rule': 'Set-Cookie',
-            'severity': 'high',
-            },
+             'rule': 'Set-Cookie',
+             'severity': 'high',
+             },
 
             {'severity': 'high',
-            'rule': 'Referrer-Policy',
-            'message': 'Header not included in response',
-            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
-            'delimiter': ','
-            },
+             'rule': 'Referrer-Policy',
+             'message': 'Header not included in response',
+             'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
+             'delimiter': ','
+             },
             {'severity': 'high',
-            'rule': 'Cache-Control',
-            'message': 'Header not included in response',
-            # modified this to account for list value rather then string
-            'expected': ['no-cache', 'no-store', 'must-revalidate'],
-            'delimiter': ','
-            },
+             'rule': 'Cache-Control',
+             'message': 'Header not included in response',
+             # modified this to account for list value rather then string
+             'expected': ['no-cache', 'no-store', 'must-revalidate'],
+             'delimiter': ','
+             },
             {'severity': 'high',
-            'rule': 'Pragma',
-            'message': 'Header not included in response',
-            'expected': ['no-cache'],
-            'delimiter': ';'},
+             'rule': 'Pragma',
+             'message': 'Header not included in response',
+             'expected': ['no-cache'],
+             'delimiter': ';'},
             {'severity': 'high',
-            'rule': 'X-Generator',
-            'message': 'Header should not be returned'
-            }]
-
+             'rule': 'X-Generator',
+             'message': 'Header should not be returned'
+             }]
 
         self._process_test(headers=headers, status_code=200)
         self.assertEqual(self.instance.report, expected_report, msg="Full report results matched")
 
-        #report, expected=[sorted(l, key=itemgetter('rule')) for l in (drheader_instance.report, expected)]
-        #assert not any(x != y for x, y in zip(report, expected))
+        # report, expected=[sorted(l, key=itemgetter('rule')) for l in (drheader_instance.report, expected)]
+        # assert not any(x != y for x, y in zip(report, expected))
 
     # def test_command_line_interface():
     #     """Test the CLI."""

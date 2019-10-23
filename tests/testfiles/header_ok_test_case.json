@@ -1,0 +1,13 @@
+{
+    "X-XSS-Protection": "1; mode=BloCk",
+    "Content-Security-Policy": "defaUlt-src 'None'; scrIpt-src 'sElf'; obJect-src 'self';",
+    "Strict-Transport-Security": "maX-age=31536000; includesubdomains",
+    "X-Frame-Options": "deny",
+    "X-Content-Type-Options": "noSniff",
+    "Referrer-Policy": "Strict-origin",
+    "Cache-Control": "No-store, no-cache, must-revalidate",
+    "Pragma": "No-cache",
+    "Set-Cookie": [
+        "httpOnly; secure"
+    ]
+}

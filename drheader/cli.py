@@ -4,10 +4,10 @@
 
 import json
 import logging
-import sys
 
 import click
 import jsonschema
+import sys
 import validators
 from tabulate import tabulate
 
