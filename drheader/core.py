@@ -2,6 +2,7 @@ import json
 
 import requests
 import validators
+
 from drheader.utils import load_rules
 
 
@@ -18,13 +19,13 @@ class Drheader:
     }
 
     def __init__(
-            self,
-            url=None,
-            method="GET",
-            headers=None,
-            status_code=None,
-            params=None,
-            request_headers={}
+        self,
+        url=None,
+        method="GET",
+        headers=None,
+        status_code=None,
+        params=None,
+        request_headers={}
     ):
         """
         NOTE: at least one param required.
@@ -98,9 +99,15 @@ class Drheader:
         :rtype: list
         """
 
+        for header, value in self.headers.items():
+            if type(value) == str:
+                self.headers[header] = value.lower()
+            if type(value) == list:
+                value = [item.lower() for item in value]
+                self.headers[header] = value
+
         if not rules:
             rules = load_rules()
-
         for rule, config in rules.items():
             self.__validate_rules(rule, config)
         return self.report
@@ -113,6 +120,7 @@ class Drheader:
         :param expected_value: Expected value of header.
         :return:
         """
+        expected_value = [item.lower() for item in expected_value]
         expected_value_list = expected_value
         if len(expected_value) == 1:
             expected_value_list = [item.strip(' ') for item in expected_value[0].split(self.delimiter)]
@@ -156,6 +164,7 @@ class Drheader:
         """
 
         try:
+            config['Must-Avoid'] = [item.lower() for item in config['Must-Avoid']]
             for avoid in config['Must-Avoid']:
                 if avoid in self.headers[rule] and rule not in self.anomalies:
                     self.__add_report_item(
@@ -174,14 +183,16 @@ class Drheader:
 
         try:
             if rule == 'Set-Cookie':
+                config['Must-Contain'] = [item.lower() for item in config['Must-Contain']]
                 for cookie in self.headers[rule]:
                     for contain in config['Must-Contain']:
                         if contain not in cookie:
-                            if contain == 'Secure':
+                            if contain == 'secure':
                                 self.__add_report_item('high', rule, 4, config['Must-Contain'], contain, cookie)
                             else:
                                 self.__add_report_item('medium', rule, 4, config['Must-Contain'], contain, cookie)
             elif rule == 'Content-Security-Policy':
+                config['Must-Contain-One'] = [item.lower() for item in config['Must-Contain-One']]
                 contain = False
                 if rule in self.headers:
                     policy = self.headers[rule]
@@ -194,6 +205,7 @@ class Drheader:
                 if not contain:
                     self.__add_report_item('high', rule, 4, config['Must-Contain-One'], config['Must-Contain-One'])
             else:
+                config['Must-Contain'] = [item.lower() for item in config['Must-Contain']]
                 for contain in config['Must-Contain']:
                     if contain not in self.headers[rule] and rule not in self.anomalies:
                         self.__add_report_item(
@@ -215,8 +227,7 @@ class Drheader:
                 self.delimiter = config['Delimiter']
         except KeyError:
             self.delimiter = ';'
-        if config['Required'] or config['Required'] == 'Optional' \
-                and rule in self.headers:
+        if config['Required'] or config['Required'] == 'Optional' and rule in self.headers:
             if config['Enforce']:
                 self.__validate_rule_and_value(rule, config['Value'])
             else:
@@ -227,13 +238,13 @@ class Drheader:
             self.__validate_not_exists(rule)
 
     def __add_report_item(
-            self,
-            severity,
-            rule,
-            error_type,
-            expected=None,
-            value='',
-            cookie=''
+        self,
+        severity,
+        rule,
+        error_type,
+        expected=None,
+        value='',
+        cookie=''
     ):
         """
         Add a entry to report.
