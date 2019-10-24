@@ -25,7 +25,8 @@ class Drheader:
         headers=None,
         status_code=None,
         params=None,
-        request_headers={}
+        request_headers={},
+        verify=True
     ):
         """
         NOTE: at least one param required.
@@ -44,6 +45,8 @@ class Drheader:
         :type params: dict
         :param request_headers: Request headers
         :type request_headers: dict
+        :param verify: Verify the server's TLS certificate
+        :type verify: bool or str
         """
 
         self.status_code = status_code
@@ -57,14 +60,14 @@ class Drheader:
 
         if self.url and not self.headers:
             self.headers, self.status_code = self._get_headers(
-                url, method, params, request_headers
+                url, method, params, request_headers, verify
             )
 
         # self.headers_lower = dict((k.lower(), v.lower()) for k, v in self.headers.items())
         self.report = []
 
     @staticmethod
-    def _get_headers(url, method, params, request_headers):
+    def _get_headers(url, method, params, request_headers, verify):
         """
         Get headers for specified url.
 
@@ -76,13 +79,15 @@ class Drheader:
         :type params: dict
         :param request_headers: Request headers
         :type request_headers: dict
+        :param verify: Verify the server's TLS certificate
+        :type verify: bool or str
         :return: headers, status_code
         :rtype: dict, int
         """
 
         if validators.url(url):
             req_obj = getattr(requests, method.lower())
-            r = req_obj(url, data=params, headers=request_headers)
+            r = req_obj(url, data=params, headers=request_headers, verify=verify)
 
             headers = r.headers
             if len(r.raw.headers.getlist('Set-Cookie')) > 0:
