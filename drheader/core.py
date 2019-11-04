@@ -156,7 +156,6 @@ class Drheader:
 
         :param rule: Name of header to validate.
         """
-
         if rule not in self.headers:
             self.__add_report_item('high', rule, 1)
 
@@ -196,12 +195,12 @@ class Drheader:
                                 self.__add_report_item('high', rule, 4, config['Must-Contain'], contain, cookie)
                             else:
                                 self.__add_report_item('medium', rule, 4, config['Must-Contain'], contain, cookie)
-            elif rule == 'Content-Security-Policy':
+            elif 'Must-Contain-One' in config:
                 config['Must-Contain-One'] = [item.lower() for item in config['Must-Contain-One']]
                 contain = False
                 if rule in self.headers:
                     policy = self.headers[rule]
-                    directives = policy.split(';')
+                    directives = policy.split(self.delimiter)
                     for directive in directives:
                         directive = directive.lstrip()
                         if directive in config['Must-Contain-One']:
@@ -209,13 +208,11 @@ class Drheader:
                             break
                 if not contain:
                     self.__add_report_item('high', rule, 4, config['Must-Contain-One'], config['Must-Contain-One'])
-            else:
+            elif 'Must-Contain' in config:
                 config['Must-Contain'] = [item.lower() for item in config['Must-Contain']]
                 for contain in config['Must-Contain']:
                     if contain not in self.headers[rule] and rule not in self.anomalies:
-                        self.__add_report_item(
-                            'medium', rule, 4, config['Must-Contain'], contain
-                        )
+                        self.__add_report_item('medium', rule, 4, config['Must-Contain'], contain)
         except KeyError:
             pass
 
