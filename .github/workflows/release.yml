@@ -4,6 +4,7 @@ on: push
 
 jobs:
   build:
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     strategy:
         max-parallel: 4
@@ -44,7 +45,6 @@ jobs:
            
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           body_path: changelog
           name: DR Header Wheel
