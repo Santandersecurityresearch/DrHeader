@@ -43,9 +43,10 @@ Headers:
         - Secure
     Referrer-Policy:
         Required: True
-        Enforce: True
+        Enforce: False
         Delimiter: ','
         Value:
+        Must-Contain-One:
         - strict-origin
         - strict-origin-when-cross-origin
         - no-referrer
