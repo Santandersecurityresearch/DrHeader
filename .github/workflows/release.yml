@@ -10,6 +10,9 @@ jobs:
         matrix:
           python-version: [3.6, 3.7]
     steps:
+      - name: Detect a release
+        if: startsWith(github.ref, 'refs/tags/')
+        
       - name: Checkout Code
         uses: actions/checkout@v1
       
@@ -42,12 +45,34 @@ jobs:
            git log --pretty=oneline > changelog
            python3 setup.py --version > version     
            
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          body_path: changelog
-          name: DR Header Wheel
-          files: dist/*.whl
+      - name: Create Release
+        uses: actions/create-release@v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+        
+      - name: Upload Wheel
+        id: upload_wheel
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: ./dist/*.whl
+          asset_name: DrHeader Wheel
+          asset_content_type: application/x-python-wheel
+      
+      - name: Upload Changelog
+        id: upload_changelog
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: changelog
+          asset_name: DrHeader changelog
+          asset_content_type: text/plain
