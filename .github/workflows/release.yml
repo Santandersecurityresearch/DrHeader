@@ -10,11 +10,9 @@ jobs:
         matrix:
           python-version: [3.6, 3.7]
     steps:
-      - name: Detect a release
-        if: startsWith(github.ref, 'refs/tags/')
-        
       - name: Checkout Code
         uses: actions/checkout@v1
+        if: startsWith(github.ref, 'refs/tags/')
       
       - name: Set up Python
         uses: actions/setup-python@v1
