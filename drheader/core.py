@@ -24,6 +24,7 @@ class Drheader:
         method="GET",
         headers=None,
         status_code=None,
+        post=None,
         params=None,
         request_headers={},
         verify=True
