@@ -110,7 +110,7 @@ class DrheaderRules(unittest2.TestCase):
         csp_contain_reponse = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'random'; script-src 'self'",
@@ -182,7 +182,7 @@ class DrheaderRules(unittest2.TestCase):
         referrer_response = {
             'severity': 'high',
             'rule': 'Referrer-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
             'delimiter': ',',
             'value': 'origin',
@@ -198,9 +198,11 @@ class DrheaderRules(unittest2.TestCase):
         no_referrer_response = {
             'severity': 'high',
             'rule': 'Referrer-Policy',
-            'message': 'Value does not match security policy',
+            'message': 'Must-Contain-One directive missed',
             'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
-            'value': 'no-referrer'
+            'delimiter': ',',
+            'value': 'no-referrer',
+            'anomaly': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer']
         }
 
         self._process_test(headers=headers)
@@ -261,7 +263,7 @@ class DrheaderRules(unittest2.TestCase):
         csp_invalid_default_response = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'random';",
@@ -295,7 +297,7 @@ class DrheaderRules(unittest2.TestCase):
         csp_response_none = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'non';",
@@ -310,7 +312,7 @@ class DrheaderRules(unittest2.TestCase):
         csp_response_self = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'self';",
@@ -325,7 +327,7 @@ class DrheaderRules(unittest2.TestCase):
         csp_response_self = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'selfie';",
@@ -346,7 +348,7 @@ class DrheaderRules(unittest2.TestCase):
         expected_report = [
             {'severity': 'high',
              'rule': 'Content-Security-Policy',
-             'message': 'Must-Contain directive missed',
+             'message': 'Must-Contain-One directive missed',
              'expected': ["default-src 'none'", "default-src 'self'"],
              'delimiter': ';',
              'value': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;",
