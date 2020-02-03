@@ -21,7 +21,7 @@ class DrheaderRules(unittest2.TestCase):
         self.instance = ''
         self.report = list
 
-        # configuration 
+        # configuration
 
     def _process_test(self, url=None, headers=None, status_code=None):
         # all tests use this method to run the test and analyze the results.
@@ -110,7 +110,7 @@ class DrheaderRules(unittest2.TestCase):
         csp_contain_reponse = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'random'; script-src 'self'",
@@ -182,10 +182,11 @@ class DrheaderRules(unittest2.TestCase):
         referrer_response = {
             'severity': 'high',
             'rule': 'Referrer-Policy',
-            'message': 'Value does not match security policy',
+            'message': 'Must-Contain-One directive missed',
             'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
             'delimiter': ',',
-            'value': 'origin'
+            'value': 'origin',
+            'anomaly': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer']
         }
         self._process_test(headers=headers)
         self.assertIn(referrer_response, self.instance.report, msg="Referrer Policy Rule was triggered")
@@ -197,15 +198,17 @@ class DrheaderRules(unittest2.TestCase):
         no_referrer_response = {
             'severity': 'high',
             'rule': 'Referrer-Policy',
-            'message': 'Value does not match security policy',
+            'message': 'Must-Contain-One directive missed',
             'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
-            'value': 'no-referrer'
+            'delimiter': ',',
+            'value': 'no-referrer',
+            'anomaly': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer']
         }
 
         self._process_test(headers=headers)
         self.assertNotIn(no_referrer_response, self.instance.report, msg="No Referrer Policy Rule was triggered")
 
-    def test_referrer_policy_invalid_values(self):
+    def test_referrer_policy_invalid_values_typo(self):
         headers = {'Referrer-Policy': 'no-referrerr'}
 
         # this need updating as there is no referrer-policy rule in the output
@@ -223,7 +226,7 @@ class DrheaderRules(unittest2.TestCase):
     def test_referrer_policy_strict_origin(self):
         headers = {'Referrer-Policy': 'strict-origin'}
 
-        # this needs updating because there is no refferer policy in output 
+        # this needs updating because there is no refferer policy in output
         no_referrer_response = {
             'severity': 'high',
             'rule': 'Referrer-Policy',
@@ -239,7 +242,7 @@ class DrheaderRules(unittest2.TestCase):
     def test_referrer_policy_strict_cross_origin(self):
         headers = {'Referrer-Policy': 'strict-origin-when-cross-origin'}
 
-        # this needs updating because there is no refferer policy in output 
+        # this needs updating because there is no refferer policy in output
         referrer_strict_orgin_response = {
             'severity': 'high',
             'rule': 'Referrer-Policy',
@@ -256,11 +259,11 @@ class DrheaderRules(unittest2.TestCase):
     def test_csp_invalid_default_directive(self):
         headers = {'Content-Security-Policy': "default-src 'random';"}
 
-        # this needs updating because there is no Content-Security-Warining in output 
+        # this needs updating because there is no Content-Security-Warining in output
         csp_invalid_default_response = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'random';",
@@ -290,11 +293,11 @@ class DrheaderRules(unittest2.TestCase):
     def test_csp_invalid_default_directive_none(self):
         headers = {'Content-Security-Policy': "default-src 'non';"}
 
-        # this needs updating because there is no Content-Security-Warining in output 
+        # this needs updating because there is no Content-Security-Warining in output
         csp_response_none = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'non';",
@@ -309,7 +312,7 @@ class DrheaderRules(unittest2.TestCase):
         csp_response_self = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'self';",
@@ -324,7 +327,7 @@ class DrheaderRules(unittest2.TestCase):
         csp_response_self = {
             'severity': 'high',
             'rule': 'Content-Security-Policy',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain-One directive missed',
             'expected': ["default-src 'none'", "default-src 'self'"],
             'delimiter': ';',
             'value': "default-src 'selfie';",
@@ -345,7 +348,7 @@ class DrheaderRules(unittest2.TestCase):
         expected_report = [
             {'severity': 'high',
              'rule': 'Content-Security-Policy',
-             'message': 'Must-Contain directive missed',
+             'message': 'Must-Contain-One directive missed',
              'expected': ["default-src 'none'", "default-src 'self'"],
              'delimiter': ';',
              'value': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;",
@@ -396,9 +399,7 @@ class DrheaderRules(unittest2.TestCase):
 
             {'severity': 'high',
              'rule': 'Referrer-Policy',
-             'message': 'Header not included in response',
-             'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
-             'delimiter': ','
+             'message': 'Header not included in response'
              },
             {'severity': 'high',
              'rule': 'Cache-Control',

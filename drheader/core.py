@@ -15,7 +15,8 @@ class Drheader:
         2: 'Header should not be returned',
         3: 'Value does not match security policy',
         4: 'Must-Contain directive missed',
-        5: 'Must-Avoid directive included'
+        5: 'Must-Avoid directive included',
+        6: 'Must-Contain-One directive missed'
     }
 
     def __init__(
@@ -157,7 +158,6 @@ class Drheader:
 
         :param rule: Name of header to validate.
         """
-
         if rule not in self.headers:
             self.__add_report_item('high', rule, 1)
 
@@ -188,35 +188,33 @@ class Drheader:
         """
 
         try:
-            if rule == 'Set-Cookie':
-                config['Must-Contain'] = [item.lower() for item in config['Must-Contain']]
-                for cookie in self.headers[rule]:
-                    for contain in config['Must-Contain']:
-                        if contain not in cookie:
-                            if contain == 'secure':
-                                self.__add_report_item('high', rule, 4, config['Must-Contain'], contain, cookie)
-                            else:
-                                self.__add_report_item('medium', rule, 4, config['Must-Contain'], contain, cookie)
-            elif rule == 'Content-Security-Policy':
+            if 'Must-Contain-One' in config:
                 config['Must-Contain-One'] = [item.lower() for item in config['Must-Contain-One']]
                 contain = False
                 if rule in self.headers:
                     policy = self.headers[rule]
-                    directives = policy.split(';')
+                    directives = policy.split(self.delimiter)
                     for directive in directives:
                         directive = directive.lstrip()
                         if directive in config['Must-Contain-One']:
                             contain = True
                             break
                 if not contain:
-                    self.__add_report_item('high', rule, 4, config['Must-Contain-One'], config['Must-Contain-One'])
-            else:
+                    self.__add_report_item('high', rule, 6, config['Must-Contain-One'], config['Must-Contain-One'])
+            elif 'Must-Contain' in config:
                 config['Must-Contain'] = [item.lower() for item in config['Must-Contain']]
-                for contain in config['Must-Contain']:
-                    if contain not in self.headers[rule] and rule not in self.anomalies:
-                        self.__add_report_item(
-                            'medium', rule, 4, config['Must-Contain'], contain
-                        )
+                if rule == 'Set-Cookie':
+                    for cookie in self.headers[rule]:
+                        for contain in config['Must-Contain']:
+                            if contain not in cookie:
+                                if contain == 'secure':
+                                    self.__add_report_item('high', rule, 4, config['Must-Contain'], contain, cookie)
+                                else:
+                                    self.__add_report_item('medium', rule, 4, config['Must-Contain'], contain, cookie)
+                else:
+                    for contain in config['Must-Contain']:
+                        if contain not in self.headers[rule] and rule not in self.anomalies:
+                            self.__add_report_item('medium', rule, 4, config['Must-Contain'], contain)
         except KeyError:
             pass
 
@@ -275,7 +273,7 @@ class Drheader:
         if error_type == 3:
             error['value'] = value
 
-        if error_type in (4, 5):
+        if error_type in (4, 5, 6):
             if rule == 'Set-Cookie':
                 error['value'] = cookie
             else:
