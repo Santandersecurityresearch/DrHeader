@@ -231,7 +231,7 @@ class Drheader:
                 self.delimiter = config['Delimiter']
         except KeyError:
             self.delimiter = ';'
-        if config['Required'] == True or (config['Required'] == 'Optional' and rule in self.headers):
+        if config['Required'] is True or (config['Required'] == 'Optional' and rule in self.headers):
             if config['Enforce']:
                 self.__validate_rule_and_value(rule, config['Value'])
             else:
