@@ -175,7 +175,7 @@ class DrheaderRules(unittest2.TestCase):
         }
 
         self._process_test(headers=headers, status_code=200)
-        self.assertIn(header_not_included_response, self.instance.report, msg="Httponly Rule was triggered")
+        self.assertNotIn(header_not_included_response, self.instance.report, msg="Httponly Rule was triggered")
 
     def test_referrer_policy_invalid_values(self):
         headers = {'Referrer-Policy': 'origin'}
@@ -390,11 +390,6 @@ class DrheaderRules(unittest2.TestCase):
              'message': 'Header not included in response',
              'expected': ['nosniff'],
              'delimiter': ';'
-             },
-
-            {'message': 'Header not included in response',
-             'rule': 'Set-Cookie',
-             'severity': 'high',
              },
 
             {'severity': 'high',
