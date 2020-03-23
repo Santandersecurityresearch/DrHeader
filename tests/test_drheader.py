@@ -130,7 +130,7 @@ class DrheaderRules(unittest2.TestCase):
             'severity': 'medium',
             'rule': 'Content-Security-Policy',
             'message': 'Must-Avoid directive included',
-            'expected': ['unsafe-inline', 'unsafe-eval'], 'delimiter': ';',
+            'avoid': ['unsafe-inline', 'unsafe-eval'], 'delimiter': ';',
             'value': "default-src 'none'; script-src 'self'; object-src 'self'; unsafe-inline 'self;",
             'anomaly': 'unsafe-inline'
         }
@@ -357,7 +357,7 @@ class DrheaderRules(unittest2.TestCase):
             {'severity': 'medium',
              'rule': 'Content-Security-Policy',
              'message': 'Must-Avoid directive included',
-             'expected': ['unsafe-inline', 'unsafe-eval'],
+             'avoid': ['unsafe-inline', 'unsafe-eval'],
              'delimiter': ';',
              'value': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;",
              'anomaly': 'unsafe-inline'
