@@ -12,7 +12,7 @@ import validators
 from tabulate import tabulate
 
 from drheader import Drheader
-from drheader.cli_utils import echo_bulk_report, file_junit_report
+from drheader.cli_utils import echo_bulk_report
 from drheader.utils import load_rules
 
 
@@ -155,7 +155,6 @@ def single(target_url, json_output, debug, rule_file, merge):
                     values.append([k, v])
                 click.echo('----')
                 click.echo(tabulate(values, tablefmt="presto"))
-            file_junit_report(rules, drheader_instance.report)
     return 0
 
 
