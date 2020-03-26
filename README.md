@@ -67,6 +67,7 @@ There are a number of parameters you can specify during bulk scans, these are:
   --json                         Output report as json
   --debug                        Show error messages
   --rules FILENAME               Use custom rule set
+  --merge                        Merge custom rule set on top of default set
   --help                         Show this message and exit.
 
 To save scan results, you can use the --json parameter and pipe it to [jq](https://stedolan.github.io/jq/), which is a lightweight and flexible command-line JSON processor,like so:

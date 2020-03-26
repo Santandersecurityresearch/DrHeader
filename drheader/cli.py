@@ -31,7 +31,8 @@ def scan():
 @click.option('--json', 'json_output', help='Output report as json', is_flag=True)
 @click.option('--debug', help='Show error messages', is_flag=True)
 @click.option('--rules', 'rule_file', help='Use custom rule set', type=click.File())
-def compare(file, json_output, debug, rule_file):
+@click.option('--merge', help='Merge custom file rules, on top of default rules', is_flag=True)
+def compare(file, json_output, debug, rule_file, merge):
     """
     If you have headers you would like to test with drheader, you can "compare" them with your ruleset this command.
 
@@ -89,7 +90,7 @@ def compare(file, json_output, debug, rule_file):
     except Exception as e:
         raise click.ClickException(e)
 
-    rules = load_rules(rule_file)
+    rules = load_rules(rule_file, merge)
 
     for i in data:
         logging.debug('Analysing : {}'.format(i['url']))
@@ -105,7 +106,8 @@ def compare(file, json_output, debug, rule_file):
 @click.option('--json', 'json_output', help='Output report as json', is_flag=True)
 @click.option('--debug', help='Show error messages', is_flag=True)
 @click.option('--rules', 'rule_file', help='Use custom rule set', type=click.File())
-def single(target_url, json_output, debug, rule_file):
+@click.option('--merge', help='Merge custom file rules, on top of default rules', is_flag=True)
+def single(target_url, json_output, debug, rule_file, merge):
     """
     Scan a single http(s) endpoint with drheader.
 
@@ -119,7 +121,7 @@ def single(target_url, json_output, debug, rule_file):
     if not validators.url(target_url):
         raise click.ClickException(message='"{}" is not a valid URL.'.format(target_url))
 
-    rules = load_rules(rule_file)
+    rules = load_rules(rule_file, merge)
 
     try:
         logging.debug('Querying headers...')
@@ -164,7 +166,8 @@ def single(target_url, json_output, debug, rule_file):
 @click.option('--json', 'json_output', help='Output report as json', is_flag=True)
 @click.option('--debug', help='Show error messages', is_flag=True)
 @click.option('--rules', 'rule_file', help='Use custom rule set', type=click.File())
-def bulk(file, json_output, post, input_format, debug, rule_file):
+@click.option('--merge', help='Merge custom file rules, on top of default rules', is_flag=True)
+def bulk(file, json_output, post, input_format, debug, rule_file, merge):
     """
     Scan multiple http(s) endpoints with drheader.
 
@@ -229,7 +232,7 @@ def bulk(file, json_output, post, input_format, debug, rule_file):
 
     logging.debug('Found {} URLs'.format(len(urls)))
 
-    rules = load_rules(rule_file)
+    rules = load_rules(rule_file, merge)
 
     for i, v in enumerate(urls):
         logging.debug('Querying: {}...'.format(v))
