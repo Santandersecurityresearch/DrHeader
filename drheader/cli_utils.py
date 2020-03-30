@@ -10,6 +10,7 @@ import os
 
 from junit_xml import TestSuite, TestCase
 
+
 def echo_bulk_report(audit, json_output=False):
     """
     Output bulk report.
