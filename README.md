@@ -70,6 +70,8 @@ There are a number of parameters you can specify during bulk scans, these are:
   --merge                        Merge custom rule set on top of default set
   --help                         Show this message and exit.
 
+From version 1.3.0, the single scan will also produce a Junit report in `./reports/junit.xml`, relative to the basepath where the script is running.
+
 To save scan results, you can use the --json parameter and pipe it to [jq](https://stedolan.github.io/jq/), which is a lightweight and flexible command-line JSON processor,like so:
 
 ``` console
