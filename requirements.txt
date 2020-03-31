@@ -5,3 +5,4 @@ Click>=7.0
 validators==0.14.0
 tabulate==0.8.3
 pyyaml==5.1.2
+junit-xml==1.9
