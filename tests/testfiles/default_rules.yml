@@ -1,0 +1,89 @@
+Headers:
+    Content-Security-Policy:
+        Required: True
+        Enforce: False
+        Value:
+        Must-Contain-One:
+        - default-src 'none'
+        - default-src 'self'
+        Must-Avoid:
+        - unsafe-inline
+        - unsafe-eval
+    X-XSS-Protection:
+        Required: True
+        Enforce: True
+        Value:
+        - 1; mode=block
+    Server:
+        Required: False
+        Enforce: False
+        Value:
+    Strict-Transport-Security:
+        Required: True
+        Enforce: True
+        Value:
+        - max-age=31536000; includeSubDomains
+    X-Frame-Options:
+        Required: True
+        Enforce: True
+        Value:
+        - SAMEORIGIN
+        - DENY
+    X-Content-Type-Options:
+        Required: True
+        Enforce: True
+        Value:
+        - nosniff
+    Set-Cookie:
+        Required: Optional
+        Enforce: False
+        Value:
+        Must-Contain:
+        - HttpOnly
+        - Secure
+    Referrer-Policy:
+        Required: True
+        Enforce: False
+        Delimiter: ','
+        Value:
+        Must-Contain-One:
+        - strict-origin
+        - strict-origin-when-cross-origin
+        - no-referrer
+    Cache-Control:
+        Required: True
+        Enforce: True
+        Delimiter: ','
+        Value:
+        - no-cache, no-store, must-revalidate
+    Pragma:
+        Required: True
+        Enforce: True
+        Value:
+        - no-cache
+    X-powered-by:
+        Required: False
+        Enforce: False
+        Value:
+    X-AspNet-Version:
+        Required: False
+        Enforce: False
+        Value:
+    X-Generator:
+        Required: False
+        Enforce: False
+        Value:
+    User-Agent:
+        Required: False
+        Enforce: False
+        Value:
+    X-Forwarded-For:
+        Required: False
+        Enforce: False
+        Value:
+    X-Client-IP:
+        Required: False
+        Enforce: False
+        Value:
+
+    # TODO - Add ruleset and severity

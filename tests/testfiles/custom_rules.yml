@@ -1,0 +1,13 @@
+Headers:
+    Content-Security-Policy:
+        Required: True
+        Enforce: False
+        Value:
+    X-powered-by:
+        Required: True
+        Enforce: False
+        Value:
+    New-Invented-Header:
+        Required: True
+        Enforce: True
+        Value:
