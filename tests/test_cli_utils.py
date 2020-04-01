@@ -24,7 +24,7 @@ class TestCliUtilsFunctions(unittest2.TestCase, xmlunittest.XmlTestMixin):
 
         file_junit_report(self.rules, self.report)
 
-        with open(os.path.join(os.path.dirname(__file__), 'reports/junit.xml'), 'r') as f:
+        with open('reports/junit.xml', 'r') as f:
             self.xml = f.read()
             f.close()
 
