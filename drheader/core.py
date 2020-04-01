@@ -133,13 +133,22 @@ class Drheader:
             expected_value_list = [item.strip(' ') for item in expected_value[0].split(self.delimiter)]
 
         if rule not in self.headers:
-            self.__add_report_item('high', rule, 1, expected_value_list)
+            self.__add_report_item(
+                severity='high',
+                rule=rule,
+                error_type=1,
+                expected=expected_value_list
+            )
         else:
             rule_list = [item.strip(' ') for item in self.headers[rule].split(self.delimiter)]
             if not all(elem in expected_value_list for elem in rule_list):
                 # if not expected_value_list in rule_list:
                 self.__add_report_item(
-                    'high', rule, 3, expected_value_list, self.headers[rule]
+                    severity='high',
+                    rule=rule,
+                    error_type=3,
+                    expected=expected_value_list,
+                    value=self.headers[rule]
                 )
 
     def __validate_not_exists(self, rule):
@@ -150,7 +159,11 @@ class Drheader:
         """
 
         if rule in self.headers:
-            self.__add_report_item('high', rule, 2)
+            self.__add_report_item(
+                severity='high',
+                rule=rule,
+                error_type=2
+            )
 
     def __validate_exists(self, rule):
         """
@@ -159,7 +172,11 @@ class Drheader:
         :param rule: Name of header to validate.
         """
         if rule not in self.headers:
-            self.__add_report_item('high', rule, 1)
+            self.__add_report_item(
+                severity='high',
+                rule=rule,
+                error_type=1
+            )
 
     def __validate_must_avoid(self, rule, config):
         """
@@ -174,7 +191,11 @@ class Drheader:
             for avoid in config['Must-Avoid']:
                 if avoid in self.headers[rule] and rule not in self.anomalies:
                     self.__add_report_item(
-                        'medium', rule, 5, config['Must-Avoid'], avoid
+                        severity='medium',
+                        rule=rule,
+                        error_type=5,
+                        avoid=config['Must-Avoid'],
+                        value=avoid
                     )
         except KeyError:
             pass
@@ -200,7 +221,13 @@ class Drheader:
                             contain = True
                             break
                 if not contain:
-                    self.__add_report_item('high', rule, 6, config['Must-Contain-One'], config['Must-Contain-One'])
+                    self.__add_report_item(
+                        severity='high',
+                        rule=rule,
+                        error_type=6,
+                        expected=config['Must-Contain-One'],
+                        value=config['Must-Contain-One']
+                    )
             elif 'Must-Contain' in config:
                 config['Must-Contain'] = [item.lower() for item in config['Must-Contain']]
                 if rule == 'Set-Cookie':
@@ -208,13 +235,33 @@ class Drheader:
                         for contain in config['Must-Contain']:
                             if contain not in cookie:
                                 if contain == 'secure':
-                                    self.__add_report_item('high', rule, 4, config['Must-Contain'], contain, cookie)
+                                    self.__add_report_item(
+                                        severity='high',
+                                        rule=rule,
+                                        error_type=4,
+                                        expected=config['Must-Contain'],
+                                        value=contain,
+                                        cookie=cookie
+                                    )
                                 else:
-                                    self.__add_report_item('medium', rule, 4, config['Must-Contain'], contain, cookie)
+                                    self.__add_report_item(
+                                        severity='medium',
+                                        rule=rule,
+                                        error_type=4,
+                                        expected=config['Must-Contain'],
+                                        value=contain,
+                                        cookie=cookie
+                                    )
                 else:
                     for contain in config['Must-Contain']:
                         if contain not in self.headers[rule] and rule not in self.anomalies:
-                            self.__add_report_item('medium', rule, 4, config['Must-Contain'], contain)
+                            self.__add_report_item(
+                                severity='medium',
+                                rule=rule,
+                                error_type=4,
+                                expected=config['Must-Contain'],
+                                value=contain
+                            )
         except KeyError:
             pass
 
@@ -247,6 +294,7 @@ class Drheader:
         rule,
         error_type,
         expected=None,
+        avoid=None,
         value='',
         cookie=''
     ):
@@ -257,9 +305,10 @@ class Drheader:
         :type severity: str
         :param rule: Name of header/rule
         :type rule: str
-        :param error_type: [1...5] related to error_types
+        :param error_type: [1...6] related to error_types
         :type error_type: int
         :param expected: Expected value of header
+        :param avoid: Avoid value of header
         :param value: Current value of header
         :param cookie: Value of cookie (if applicable)
         """
@@ -269,6 +318,9 @@ class Drheader:
 
         if expected:
             error['expected'] = expected
+            error['delimiter'] = self.delimiter
+        if avoid:
+            error['avoid'] = avoid
             error['delimiter'] = self.delimiter
         if error_type == 3:
             error['value'] = value
