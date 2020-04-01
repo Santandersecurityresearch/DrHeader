@@ -17,7 +17,8 @@ requirements = ['Click>=6.0',
                 'jsonschema[format]',
                 'validators==0.13.0',
                 'tabulate==0.8.3',
-                'pyyaml==5.1.2']
+                'pyyaml==5.3.1',
+                'junit-xml==1.9']
 
 setup_requirements = ['pytest-runner', ]
 
@@ -51,6 +52,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/santandersecurityresearch/drheader',
-    version='1.2.0',
+    version='1.1.0',
     zip_safe=False,
 )

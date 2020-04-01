@@ -103,3 +103,6 @@ ENV/
 
 # jetbrains
 .idea/
+
+# junit reports folder
+reports

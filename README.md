@@ -62,13 +62,15 @@ $ drheader scan bulk -ff targets.txt
 ```
 
 There are a number of parameters you can specify during bulk scans, these are:
-
-  -p, --post                     Use a post request to obtain headers
-  --json                         Output report as json
-  --debug                        Show error messages
-  --rules FILENAME               Use custom rule set
-  --merge                        Merge custom rule set on top of default set
-  --help                         Show this message and exit.
+| Option            | Description                                            |
+| :---------------- | :----------------------------------------------------- |
+| -p, --post        | Use a post request to obtain headers                   |
+| --json            | Output report as json                                  |
+| --debug           | Show error messages                                    |
+| --rules FILENAME  | Use custom rule set                                    |
+| --merge           | Merge custom rule set on top of default set            |
+| --help            | Show this message and exit                             |
+| --junit           | Creates a junit report in `./reports/junit.xml` folder |
 
 To save scan results, you can use the --json parameter and pipe it to [jq](https://stedolan.github.io/jq/), which is a lightweight and flexible command-line JSON processor,like so:
 

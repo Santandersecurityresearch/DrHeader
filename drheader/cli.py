@@ -12,7 +12,7 @@ import validators
 from tabulate import tabulate
 
 from drheader import Drheader
-from drheader.cli_utils import echo_bulk_report
+from drheader.cli_utils import echo_bulk_report, file_junit_report
 from drheader.utils import load_rules
 
 
@@ -107,7 +107,8 @@ def compare(file, json_output, debug, rule_file, merge):
 @click.option('--debug', help='Show error messages', is_flag=True)
 @click.option('--rules', 'rule_file', help='Use custom rule set', type=click.File())
 @click.option('--merge', help='Merge custom file rules, on top of default rules', is_flag=True)
-def single(target_url, json_output, debug, rule_file, merge):
+@click.option('--junit', help='Produces a junit report with the result of the scan', is_flag=True)
+def single(target_url, json_output, debug, rule_file, merge, junit):
     """
     Scan a single http(s) endpoint with drheader.
 
@@ -155,6 +156,8 @@ def single(target_url, json_output, debug, rule_file, merge):
                     values.append([k, v])
                 click.echo('----')
                 click.echo(tabulate(values, tablefmt="presto"))
+    if junit:
+        file_junit_report(rules, drheader_instance.report)
     return 0
 
 
