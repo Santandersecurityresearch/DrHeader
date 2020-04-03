@@ -6,8 +6,9 @@
 import os
 import yaml
 import unittest2
+import responses
 
-from drheader.utils import load_rules
+from drheader.utils import load_rules, get_rules_from_uri
 
 
 class TestUtilsFunctions(unittest2.TestCase):
@@ -44,6 +45,19 @@ class TestUtilsFunctions(unittest2.TestCase):
     def test_load_rules_bad_parameter(self):
         with self.assertRaises(AttributeError):
             load_rules(2)
+
+    @responses.activate
+    def test_get_rules_from_uri_wrong_URI(self):
+        responses.add(responses.GET, 'http://mydomain.com/custom.yml', status=404)
+        with self.assertRaises(Exception):
+            get_rules_from_uri("http://mydomain.com/custom.yml")
+
+    @responses.activate
+    def test_get_rules_from_uri_good_URI(self):
+        responses.add(responses.GET, 'http://localhost:8080/custom.yml', json=self.custom_rules, status=200)
+        file = get_rules_from_uri("http://localhost:8080/custom.yml")
+        content = yaml.safe_load(file.read())
+        self.assertEqual(content, self.custom_rules)
 
 
 # start unittest2 to run these tests

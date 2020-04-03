@@ -13,7 +13,7 @@ from tabulate import tabulate
 
 from drheader import Drheader
 from drheader.cli_utils import echo_bulk_report, file_junit_report
-from drheader.utils import load_rules
+from drheader.utils import load_rules, get_rules_from_uri
 
 
 @click.group()
@@ -31,8 +31,9 @@ def scan():
 @click.option('--json', 'json_output', help='Output report as json', is_flag=True)
 @click.option('--debug', help='Show error messages', is_flag=True)
 @click.option('--rules', 'rule_file', help='Use custom rule set', type=click.File())
+@click.option('--rules-uri', 'rule_uri', help='Use custom rule set, downloaded from URI')
 @click.option('--merge', help='Merge custom file rules, on top of default rules', is_flag=True)
-def compare(file, json_output, debug, rule_file, merge):
+def compare(file, json_output, debug, rule_file, rule_uri, merge):
     """
     If you have headers you would like to test with drheader, you can "compare" them with your ruleset this command.
 
@@ -90,6 +91,17 @@ def compare(file, json_output, debug, rule_file, merge):
     except Exception as e:
         raise click.ClickException(e)
 
+    if rule_uri and not rule_file:
+        if not validators.url(rule_uri):
+            raise click.ClickException(message='"{}" is not a valid URL.'.format(rule_uri))
+        try:
+            rule_file = get_rules_from_uri(rule_uri)
+        except Exception as e:
+            if debug:
+                raise click.ClickException(e)
+            else:
+                raise click.ClickException('No content retrieved from rules-uri.')
+
     rules = load_rules(rule_file, merge)
 
     for i in data:
@@ -106,9 +118,10 @@ def compare(file, json_output, debug, rule_file, merge):
 @click.option('--json', 'json_output', help='Output report as json', is_flag=True)
 @click.option('--debug', help='Show error messages', is_flag=True)
 @click.option('--rules', 'rule_file', help='Use custom rule set', type=click.File())
+@click.option('--rules-uri', 'rule_uri', help='Use custom rule set, downloaded from URI')
 @click.option('--merge', help='Merge custom file rules, on top of default rules', is_flag=True)
 @click.option('--junit', help='Produces a junit report with the result of the scan', is_flag=True)
-def single(target_url, json_output, debug, rule_file, merge, junit):
+def single(target_url, json_output, debug, rule_file, rule_uri, merge, junit):
     """
     Scan a single http(s) endpoint with drheader.
 
@@ -121,6 +134,17 @@ def single(target_url, json_output, debug, rule_file, merge, junit):
     logging.debug('Validating: {}'.format(target_url))
     if not validators.url(target_url):
         raise click.ClickException(message='"{}" is not a valid URL.'.format(target_url))
+
+    if rule_uri and not rule_file:
+        if not validators.url(rule_uri):
+            raise click.ClickException(message='"{}" is not a valid URL.'.format(rule_uri))
+        try:
+            rule_file = get_rules_from_uri(rule_uri)
+        except Exception as e:
+            if debug:
+                raise click.ClickException(e)
+            else:
+                raise click.ClickException('No content retrieved from rules-uri.')
 
     rules = load_rules(rule_file, merge)
 
@@ -169,8 +193,9 @@ def single(target_url, json_output, debug, rule_file, merge, junit):
 @click.option('--json', 'json_output', help='Output report as json', is_flag=True)
 @click.option('--debug', help='Show error messages', is_flag=True)
 @click.option('--rules', 'rule_file', help='Use custom rule set', type=click.File())
+@click.option('--rules-uri', 'rule_uri', help='Use custom rule set, downloaded from URI')
 @click.option('--merge', help='Merge custom file rules, on top of default rules', is_flag=True)
-def bulk(file, json_output, post, input_format, debug, rule_file, merge):
+def bulk(file, json_output, post, input_format, debug, rule_file, rule_uri, merge):
     """
     Scan multiple http(s) endpoints with drheader.
 
@@ -234,6 +259,17 @@ def bulk(file, json_output, post, input_format, debug, rule_file, merge):
             raise click.ClickException(e)
 
     logging.debug('Found {} URLs'.format(len(urls)))
+
+    if rule_uri and not rule_file:
+        if not validators.url(rule_uri):
+            raise click.ClickException(message='"{}" is not a valid URL.'.format(rule_uri))
+        try:
+            rule_file = get_rules_from_uri(rule_uri)
+        except Exception as e:
+            if debug:
+                raise click.ClickException(e)
+            else:
+                raise click.ClickException('No content retrieved from rules-uri.')
 
     rules = load_rules(rule_file, merge)
 
