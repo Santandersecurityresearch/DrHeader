@@ -68,6 +68,7 @@ There are a number of parameters you can specify during bulk scans, these are:
 | --json            | Output report as json                                  |
 | --debug           | Show error messages                                    |
 | --rules FILENAME  | Use custom rule set                                    |
+| --rules-uri URL   | Use custom rule set, to download from a remote server  |
 | --merge           | Merge custom rule set on top of default set            |
 | --help            | Show this message and exit                             |
 | --junit           | Creates a junit report in `./reports/junit.xml` folder |
