@@ -44,7 +44,7 @@ jobs:
            python3 setup.py --version > version     
            
       - name: Create Release
-        uses: actions/create-release@v1.0.0
+        uses: actions/create-release@v1.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -55,7 +55,7 @@ jobs:
         
       - name: Upload Wheel
         id: upload_wheel
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -66,7 +66,7 @@ jobs:
       
       - name: Upload Changelog
         id: upload_changelog
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -74,3 +74,12 @@ jobs:
           asset_path: changelog
           asset_name: DrHeader changelog
           asset_content_type: text/plain
+          
+      - name: Publish
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          twine upload dist/*
+
+
