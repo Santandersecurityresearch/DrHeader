@@ -47,14 +47,14 @@ jobs:
       - name: Get bumpversion
         run: echo ::set-env name=VERSION::$(grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = ')  
 
-      - name: Create Release
+      - name: Create Release 
         id: create_release
         uses: actions/create-release@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ env.VERSION}}
-          release_name: Release ${{ env.VERSION }}
+          release_name: Release v${{ env.VERSION }}
           draft: false
           prerelease: false
         
