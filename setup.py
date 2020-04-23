@@ -33,8 +33,6 @@ setup(
         'Environment :: Console',
         'Topic :: Security'
     ],
-    Description-Content-Type=text/plain; charset=UTF-8,
-    description='DrHEADer helps with the audit of security headers received in response to a single request or a list of requests.',
     entry_points={
         'console_scripts': [
             'drheader=drheader.cli:main',
