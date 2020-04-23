@@ -44,7 +44,7 @@ jobs:
            git log --pretty=oneline > changelog
            python3 setup.py --version > version     
            
-      - name: Get bumpversion 
+      - name: Get bumpversion
         run: echo ::set-env name=VERSION::$(grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = ')  
 
       - name: Create Release
@@ -53,7 +53,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.VERSION}}
+          tag_name: v${{ env.VERSION}}
           release_name: Release ${{ env.VERSION }}
           draft: false
           prerelease: false

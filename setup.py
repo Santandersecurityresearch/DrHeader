@@ -26,11 +26,9 @@ test_requirements = ['pytest']
 
 setup(
     classifiers=[
-        'Development Status :: 3 - Release Candidate',
-        'Intended Audience :: Developers/Penetration Testers',
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Environment :: Console',
         'Topic :: Security'
