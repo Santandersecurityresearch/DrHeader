@@ -48,7 +48,7 @@ setup(
     packages=['drheader'],
     setup_requires=setup_requirements,
     test_suite='tests',
-    tests_require=test_requirements,
+    tests_require=test_requirements, 
     url='https://github.com/santandersecurityresearch/drheader',
     version='1.1.1',
     zip_safe=False,
