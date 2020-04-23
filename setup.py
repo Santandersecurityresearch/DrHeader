@@ -39,6 +39,7 @@ setup(
         ],
     },
     install_requires=requirements,
+    description="Security headers scanner",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords='drheader',
