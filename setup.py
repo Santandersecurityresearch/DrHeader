@@ -26,23 +26,20 @@ test_requirements = ['pytest']
 
 setup(
     classifiers=[
-        'Development Status :: 3 - Release Candidate',
-        'Intended Audience :: Developers/Penetration Testers',
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Environment :: Console',
         'Topic :: Security'
     ],
-    description="DrHEADer helps with the audit of security headers received in response to a single request or a list of requests.",
     entry_points={
         'console_scripts': [
             'drheader=drheader.cli:main',
         ],
     },
     install_requires=requirements,
-    long_description=readme + '\n\n' + history,
+    description="DrHEADer helps with the audit of security headers received in response to a single request or a list of requests.",
     include_package_data=True,
     keywords='drheader',
     author='Santander UK Security Engineering',
@@ -50,7 +47,7 @@ setup(
     packages=['drheader'],
     setup_requires=setup_requirements,
     test_suite='tests',
-    tests_require=test_requirements,
+    tests_require=test_requirements, 
     url='https://github.com/santandersecurityresearch/drheader',
     version='1.1.1',
     zip_safe=False,
