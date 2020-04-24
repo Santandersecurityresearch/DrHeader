@@ -10,7 +10,7 @@ import os
 base_dir = os.path.dirname(__file__)
 
 
-with open(os.path.join(base_dir, "README.md")) as f:
+with open(os.path.join(base_dir, "Pypi_description.md")) as f:
     long_description = f.read()
 
 with open('HISTORY.md') as history_file:
@@ -46,6 +46,7 @@ setup(
     install_requires=requirements,
 
     description="DrHEADer helps with the audit of security headers received in response to a single request or a list of requests.",
+    long_description_content_type='text/markdown',
     long_description=long_description,
     include_package_data=True,
     keywords='drheader',
