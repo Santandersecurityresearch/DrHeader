@@ -120,6 +120,7 @@ def compare(file, json_output, debug, rule_file, rule_uri, merge):
     echo_bulk_report(audit, json_output)
     sys.exit(exit_code)
 
+
 @scan.command()
 @click.argument('target_url', required=True)
 @click.option('--json', 'json_output', help='Output report as json', is_flag=True)
