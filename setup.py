@@ -5,8 +5,13 @@
 
 from setuptools import setup
 
-with open('README.md') as readme_file:
-    readme = readme_file.read()
+import os
+
+base_dir = os.path.dirname(__file__)
+
+
+with open(os.path.join(base_dir, "README.md")) as f:
+    long_description = f.read()
 
 with open('HISTORY.md') as history_file:
     history = history_file.read()
@@ -39,7 +44,9 @@ setup(
         ],
     },
     install_requires=requirements,
+
     description="DrHEADer helps with the audit of security headers received in response to a single request or a list of requests.",
+    long_description=long_description,
     include_package_data=True,
     keywords='drheader',
     author='Santander UK Security Engineering',
@@ -49,6 +56,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements, 
     url='https://github.com/santandersecurityresearch/drheader',
-    version='1.2.0',
+    version='1.2.1',
     zip_safe=False,
 )
