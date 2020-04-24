@@ -8,12 +8,17 @@ import logging
 import click
 import jsonschema
 import sys
+import os
 import validators
 from tabulate import tabulate
 
 from drheader import Drheader
 from drheader.cli_utils import echo_bulk_report, file_junit_report
 from drheader.utils import load_rules, get_rules_from_uri
+
+
+EXIT_CODE_NO_ERROR = os.EX_OK
+EXIT_CODE_FAILURE = os.EX_SOFTWARE
 
 
 @click.group()
@@ -61,7 +66,7 @@ def compare(file, json_output, debug, rule_file, rule_uri, merge):
             ...
         ]
     """
-
+    exit_code = EXIT_CODE_NO_ERROR
     audit = []
     schema = {
         "type": "array",
@@ -109,8 +114,11 @@ def compare(file, json_output, debug, rule_file, rule_uri, merge):
         drheader_instance = Drheader(url=i['url'], headers=i['headers'])
         drheader_instance.analyze(rules)
         audit.append({'url': i['url'], 'report': drheader_instance.report})
+        if drheader_instance.report:
+            exit_code = EXIT_CODE_FAILURE
 
     echo_bulk_report(audit, json_output)
+    sys.exit(exit_code)
 
 
 @scan.command()
@@ -127,7 +135,7 @@ def single(target_url, json_output, debug, rule_file, rule_uri, merge, junit):
 
     NOTE: URL parameters are currently only supported on bulk scans.
     """
-
+    exit_code = EXIT_CODE_NO_ERROR
     if debug:
         logging.basicConfig(level=logging.DEBUG)
 
@@ -166,6 +174,9 @@ def single(target_url, json_output, debug, rule_file, rule_uri, merge, junit):
         else:
             raise click.ClickException('Failed to analyze headers.')
 
+    if drheader_instance.report:
+        exit_code = EXIT_CODE_FAILURE
+
     if json_output:
         click.echo(json.dumps(drheader_instance.report))
     else:
@@ -182,7 +193,7 @@ def single(target_url, json_output, debug, rule_file, rule_uri, merge, junit):
                 click.echo(tabulate(values, tablefmt="presto"))
     if junit:
         file_junit_report(rules, drheader_instance.report)
-    return 0
+    sys.exit(exit_code)
 
 
 @scan.command()
@@ -220,7 +231,7 @@ def bulk(file, json_output, post, input_format, debug, rule_file, rule_uri, merg
 
     NOTE: URL parameters are currently only supported on bulk scans.
     """
-
+    exit_code = EXIT_CODE_NO_ERROR
     audit = []
     urls = []
     schema = {
@@ -279,9 +290,11 @@ def bulk(file, json_output, post, input_format, debug, rule_file, rule_uri, merg
         logging.debug('Analysing: {}...'.format(v))
         drheader_instance.analyze(rules)
         audit.append({'url': v['url'], 'report': drheader_instance.report})
+        if drheader_instance.report:
+            exit_code = EXIT_CODE_FAILURE
 
     echo_bulk_report(audit, json_output)
-    return 0
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":
