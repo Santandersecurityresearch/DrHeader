@@ -4,7 +4,8 @@
 
 import logging
 import os
-
+import io
+import requests
 import yaml
 
 
@@ -61,3 +62,18 @@ def merge_rules(default_rules, custom_rules):
         default_rules['Headers'][rule] = custom_rules['Headers'][rule]
 
     return default_rules
+
+
+def get_rules_from_uri(URI):
+    """
+    Retrieves custom rule set from URL
+    :param URI: URL to your custom rules file
+    :type URI: uri
+    :return: rules file
+    :rtype: file
+    """
+    download = requests.get(URI)
+    if not download.content:
+        raise Exception('No content retrieved from {}'.format(URI))
+    file = io.BytesIO(download.content)
+    return file
