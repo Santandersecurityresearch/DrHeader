@@ -1,5 +1,5 @@
 [![GitHub release](https://img.shields.io/github/release/Santandersecurityresearch/DrHeader.svg)](https://GitHub.com/Santandersecurityresearch/DrHeader/releases/)
-[![GitHub commits](https://img.shields.io/github/commits-since/Santandersecurityresearch/DrHeader/v1.2.0.svg)](https://GitHub.com/Santandersecurityresearch/DrHeader/commit/)
+[![GitHub commits](https://img.shields.io/github/commits-since/Santandersecurityresearch/DrHeader/v1.2.1.svg)](https://GitHub.com/Santandersecurityresearch/DrHeader/commit/)
 [![Github all releases](https://img.shields.io/github/downloads/Santandersecurityresearch/DrHeader/total.svg)](https://GitHub.com/Santandersecurityresearch/DrHeader/releases/)
 [![HitCount](http://hits.dwyl.io/Santandersecurityresearch/DrHeader.svg)](http://hits.dwyl.io/Santandersecurityresearch/DrHeader)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/Santandersecurityresearch/DrHeader.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Santandersecurityresearch/DrHeader/alerts/)
