@@ -46,8 +46,7 @@ jobs:
            
       - name: Get bumpversion
         run: |
-          echo ::set-env name=VERSION::$(grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = ')  
-          grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = '
+          echo ::set-env name=VERSION::$(grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = ')
 
       - name: Create Release
         id: create_release
