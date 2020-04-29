@@ -1,38 +1,60 @@
-name: Dr Header Pull Request Handler
+name: Dr Header Pull Request handler
 on: pull_request
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        strategy:
-            max-parallel: 4
-            matrix:
-                python-version: [3.6, 3.7]
-        steps:
-            - name: Checkout Code
-              uses: actions/checkout@v1
-                
-            - name: Set up Python
-              uses: actions/setup-python@v1
-              with:
-                 python-version: ${{ matrix.python-version }}
-              
-            - name: Install PIP Dependencies
-              run: pip install -r requirements_dev.txt
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+          python-version: [3.7]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-            - name: Test with Nosetests
-              run: python -m nose --with-xunit --xunit-file=${{ matrix.python-version }}.results.xml
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+           python-version: ${{ matrix.python-version }}
 
-            - name: Upload Test results
-              uses: actions/upload-artifact@master
-              with:
-                 name: Results - ${{ matrix.python-version }}
-                 path: ${{ matrix.python-version }}.results.xml
+      - name: Install PIP Dependencies
+        run: pip install -r requirements_dev.txt
 
-            - name: Flake8 styles
-              run: python -m flake8 drheader
+      - name: Test with Nosetests
+        run: python -m nose --with-xunit --xunit-file=${{ matrix.python-version }}.results.xml
 
-            - name: Bandit security scan
-              run: python -m bandit -r ./drheader
+      - name: Upload Test results
+        uses: actions/upload-artifact@master
+        with:
+           name: Results - ${{ matrix.python-version }}
+           path: ${{ matrix.python-version }}.results.xml
 
-            - name: Safety dependency scan
-              run: python -m safety check
+      - name: Flake8 styles
+        run: python -m flake8 drheader
+
+      - name: Bandit security scan
+        run: python -m bandit -r ./drheader
+
+      - name: Safety dependency scan
+        run: python -m safety check
+        
+      - name: Checkout origin branch if PR 'to-branch' is master
+        if: github.base_ref == 'master'
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: BumpVersion if PR 'to-branch' is master
+        if: github.base_ref == 'master'
+        run: |
+          grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = '
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          bumpversion minor
+          grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = '
+
+      - name: Push changes if PR 'to-branch' is master
+        if: github.base_ref == 'master'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
