@@ -40,6 +40,11 @@ jobs:
       - name: Safety dependency scan
         run: python -m safety check
         
+      - name: Checkout origin branch
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: BumpVersion
         run: |
           grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = '
@@ -47,12 +52,7 @@ jobs:
           git config --local user.name "GitHub Action"
           bumpversion minor
           grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = '
-      
-      - name: Checkout origin branch
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
-      
+
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
