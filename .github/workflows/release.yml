@@ -45,44 +45,46 @@ jobs:
            python3 setup.py --version > version     
            
       - name: Get bumpversion
-        run: echo ::set-env name=VERSION::$(grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = ')  
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.VERSION}}
-          release_name: Release v${{ env.VERSION }}
-          draft: false
-          prerelease: false
-        
-      - name: Upload Wheel
-        id: upload_wheel
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./dist/drheader-${{ env.VERSION }}-py2.py3-none-any.whl
-          asset_name: DrHeader Wheel
-          asset_content_type: application/x-python-wheel
-      
-      - name: Upload Changelog
-        id: upload_changelog
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: changelog
-          asset_name: DrHeader changelog
-          asset_content_type: text/plain
-
-      - name: Publish
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          twine upload dist/*
+          echo ::set-env name=VERSION::$(grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = ')  
+          grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = '
+
+#      - name: Create Release
+#         id: create_release
+#         uses: actions/create-release@v1.0.1
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         with:
+#           tag_name: v${{ env.VERSION}}
+#           release_name: Release v${{ env.VERSION }}
+#           draft: false
+#           prerelease: false
+        
+#       - name: Upload Wheel
+#         id: upload_wheel
+#         uses: actions/upload-release-asset@v1.0.1
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         with:
+#           upload_url: ${{ steps.create_release.outputs.upload_url }} 
+#           asset_path: ./dist/drheader-${{ env.VERSION }}-py2.py3-none-any.whl
+#           asset_name: DrHeader Wheel
+#           asset_content_type: application/x-python-wheel
+      
+#       - name: Upload Changelog
+#         id: upload_changelog
+#         uses: actions/upload-release-asset@v1.0.1
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         with:
+#           upload_url: ${{ steps.create_release.outputs.upload_url }} 
+#           asset_path: changelog
+#           asset_name: DrHeader changelog
+#           asset_content_type: text/plain
+
+#       - name: Publish
+#         env:
+#           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+#           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+#         run: |
+#           twine upload dist/*
