@@ -10,10 +10,6 @@ import re
 
 base_dir = os.path.dirname(__file__)
 
-
-# with open(os.path.join(base_dir, "Pypi_description.md")) as f:
-#     long_description = f.read()
-
 long_description = ''
 
 with open(os.path.join(base_dir, "README.md")) as readme:
