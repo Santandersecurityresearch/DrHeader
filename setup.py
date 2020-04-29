@@ -6,12 +6,21 @@
 from setuptools import setup
 
 import os
+import re
 
 base_dir = os.path.dirname(__file__)
 
 
-with open(os.path.join(base_dir, "Pypi_description.md")) as f:
-    long_description = f.read()
+# with open(os.path.join(base_dir, "Pypi_description.md")) as f:
+#     long_description = f.read()
+
+long_description = ''
+
+with open(os.path.join(base_dir, "README.md")) as readme:
+    readme_lines = readme.readlines()
+    for line in readme_lines:
+        if not re.search(r'\(assets\/img\b',line):
+            long_description = long_description + line
 
 with open('HISTORY.md') as history_file:
     history = history_file.read()
