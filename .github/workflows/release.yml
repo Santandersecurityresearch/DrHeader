@@ -13,7 +13,7 @@ jobs:
           python-version: [3.7]
     steps:
       - name: Checkout Code 
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       
       - name: Set up Python
         uses: actions/setup-python@v1
@@ -45,7 +45,7 @@ jobs:
            python3 setup.py --version > version     
            
       - name: Get bumpversion
-        run: echo ::set-env name=VERSION::$(grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = ')  
+        run: echo ::set-env name=VERSION::$(grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = ')
 
       - name: Create Release
         id: create_release
