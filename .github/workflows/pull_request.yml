@@ -46,11 +46,11 @@ jobs:
       - name: BumpVersion if PR 'to-branch' is master
         if: github.base_ref == 'master'
         run: |
-          grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = '
+          grep -i 'current_version = ' setup.cfg | head -1 | tr -d 'current_version = '
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          bumpversion minor
-          grep -i 'current_version = ' setup.cfg |  tr -d 'current_version = '
+          bump2version minor
+          grep -i 'current_version = ' setup.cfg | head -1 | tr -d 'current_version = '
 
       - name: Push changes if PR 'to-branch' is master
         if: github.base_ref == 'master'
