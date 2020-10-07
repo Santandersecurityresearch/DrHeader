@@ -13,6 +13,7 @@ import validators
 from tabulate import tabulate
 
 from drheader import Drheader
+from drheader import __version__
 from drheader.cli_utils import echo_bulk_report, file_junit_report
 from drheader.utils import load_rules, get_rules_from_uri
 
@@ -21,7 +22,15 @@ EXIT_CODE_NO_ERROR = os.EX_OK
 EXIT_CODE_FAILURE = os.EX_SOFTWARE
 
 
+def print_version(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(__version__)
+    ctx.exit()
+
+
 @click.group()
+@click.option('--version', '-v', is_flag=True, callback=print_version, expose_value=False, is_eager=True)
 def main():
     """Console script for drheader."""
 
