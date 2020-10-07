@@ -36,8 +36,17 @@ def main():
 
 
 @main.group()
-def scan():
+@click.option('--verify', '--verify-enable', help='Bool indicating SSL verification')
+@click.option('--certs', '--certificates', help='Path to certificate bundle')
+@click.pass_context
+def scan(ctx, verify, certs):
     """Scan endpoints with drheader."""
+    ctx.ensure_object(dict)
+    if certs:
+        verify = certs
+    else:
+        verify = click.BOOL(verify)
+    ctx.obj['verify'] = verify
 
 
 @main.command()
@@ -138,7 +147,8 @@ def compare(file, json_output, debug, rule_file, rule_uri, merge):
 @click.option('--rules-uri', 'rule_uri', help='Use custom rule set, downloaded from URI')
 @click.option('--merge', help='Merge custom file rules, on top of default rules', is_flag=True)
 @click.option('--junit', help='Produces a junit report with the result of the scan', is_flag=True)
-def single(target_url, json_output, debug, rule_file, rule_uri, merge, junit):
+@click.pass_context
+def single(ctx, target_url, json_output, debug, rule_file, rule_uri, merge, junit):
     """
     Scan a single http(s) endpoint with drheader.
 
@@ -167,7 +177,7 @@ def single(target_url, json_output, debug, rule_file, rule_uri, merge, junit):
 
     try:
         logging.debug('Querying headers...')
-        drheader_instance = Drheader(url=target_url)
+        drheader_instance = Drheader(url=target_url, verify=ctx.obj['verify'])
     except Exception as e:
         if debug:
             raise click.ClickException(e)
@@ -215,7 +225,8 @@ def single(target_url, json_output, debug, rule_file, rule_uri, merge, junit):
 @click.option('--rules', 'rule_file', help='Use custom rule set', type=click.File())
 @click.option('--rules-uri', 'rule_uri', help='Use custom rule set, downloaded from URI')
 @click.option('--merge', help='Merge custom file rules, on top of default rules', is_flag=True)
-def bulk(file, json_output, post, input_format, debug, rule_file, rule_uri, merge):
+@click.pass_context
+def bulk(ctx, file, json_output, post, input_format, debug, rule_file, rule_uri, merge):
     """
     Scan multiple http(s) endpoints with drheader.
 
@@ -295,7 +306,8 @@ def bulk(file, json_output, post, input_format, debug, rule_file, rule_uri, merg
 
     for i, v in enumerate(urls):
         logging.debug('Querying: {}...'.format(v))
-        drheader_instance = Drheader(url=v['url'], post=post, params=v.get('params', None))
+        drheader_instance = Drheader(
+            url=v['url'], post=post, params=v.get('params', None), verify=ctx.obj['verify'])
         logging.debug('Analysing: {}...'.format(v))
         drheader_instance.analyze(rules)
         audit.append({'url': v['url'], 'report': drheader_instance.report})
