@@ -36,7 +36,7 @@ def main():
 
 
 @main.group()
-@click.option('--verify', '--verify-enable', default='true', help='Bool indicating SSL verification')
+@click.option('--verify', '--verify-enable', default=True, help='Bool indicating SSL verification')
 @click.option('--certs', '--certificates', help='Path to certificate bundle')
 @click.pass_context
 def scan(ctx, verify, certs):
