@@ -2,6 +2,6 @@
 
 """Top-level package for drHEADer core."""
 
-__version__ = '1.3.1'
+__version__ = '1.4.0'
 
 from drheader.core import Drheader  # noqa
