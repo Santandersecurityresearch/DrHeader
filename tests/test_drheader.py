@@ -31,7 +31,7 @@ class DrheaderRules(unittest2.TestCase):
         # test can then make assertions against the contents of self.instance.report to determine success of failure.
 
     def test_get_headers_ok(self):
-        url = 'https://example.com'
+        url = 'https://google.com'
         self._process_test(url=url)
         self.assertNotEqual(self.report, None, msg="A Report was generated")
 

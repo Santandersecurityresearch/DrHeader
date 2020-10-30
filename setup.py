@@ -21,14 +21,8 @@ with open(os.path.join(base_dir, "README.md")) as readme:
 with open('HISTORY.md') as history_file:
     history = history_file.read()
 
-requirements = ['Click>=7.0',
-                'requests>=2.22.0',
-                'jsonschema==3.0.2',
-                'jsonschema[format]',
-                'validators>=0.14.0',
-                'tabulate==0.8.3',
-                'pyyaml==5.3.1',
-                'junit-xml==1.9']
+with open('requirements.txt') as f:
+    requirements = f.read()
 
 setup_requirements = ['pytest-runner', ]
 
@@ -62,6 +56,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements, 
     url='https://github.com/santandersecurityresearch/drheader',
-    version='1.3.1',
+    version='1.5.0',
     zip_safe=False,
 )
