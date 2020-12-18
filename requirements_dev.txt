@@ -17,4 +17,4 @@ validators>=0.14.0
 unittest2==1.1.0
 xmlunittest==0.5.0
 junit-xml==1.9
-responses==0.10.12
+responses==0.12.1
