@@ -26,7 +26,8 @@ class DrheaderRules(unittest2.TestCase):
         # configuration
 
     def tearDown(self):
-        with open('testfiles/test_rules.yml', 'w') as f_test, open('testfiles/default_rules.yml') as f_default:
+        with open('tests/testfiles/test_rules.yml', 'w') as f_test,\
+             open('tests/testfiles/default_rules.yml') as f_default:
             default_rules = yaml.safe_load(f_default.read())
             yaml.dump(default_rules, f_test, sort_keys=False)
 
@@ -440,7 +441,8 @@ class DrheaderRules(unittest2.TestCase):
         # assert not any(x != y for x, y in zip(report, expected))
 
     def test_csp_required_directive_not_present(self):
-        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers, open('testfiles/test_rules.yml', 'r') as f_rules:
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers,\
+             open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f_rules:
             headers = json.loads(f_headers.read())
             rules = yaml.safe_load(f_rules.read())
 
@@ -460,7 +462,7 @@ class DrheaderRules(unittest2.TestCase):
         self.assertIn(expected_report, self.instance.report)
 
     def test_csp_directive_invalid_value(self):
-        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers, open('testfiles/test_rules.yml', 'r') as f_rules:
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers, open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f_rules:
             headers = json.loads(f_headers.read())
             rules = yaml.safe_load(f_rules.read())
 
@@ -483,7 +485,8 @@ class DrheaderRules(unittest2.TestCase):
         self.assertIn(expected_report, self.instance.report)
 
     def test_csp_directive_must_avoid_value_included(self):
-        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers, open('testfiles/test_rules.yml', 'r') as f_rules:
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers,\
+             open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f_rules:
             headers = json.loads(f_headers.read())
             rules = yaml.safe_load(f_rules.read())
 
@@ -507,7 +510,8 @@ class DrheaderRules(unittest2.TestCase):
         self.assertIn(expected_report, self.instance.report)
 
     def test_csp_directive_must_contain_value_not_included(self):
-        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers, open('testfiles/test_rules.yml', 'r') as f_rules:
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers,\
+             open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f_rules:
             headers = json.loads(f_headers.read())
             rules = yaml.safe_load(f_rules.read())
 
@@ -531,7 +535,8 @@ class DrheaderRules(unittest2.TestCase):
         self.assertIn(expected_report, self.instance.report)
 
     def test_csp_directive_must_contain_one_value_not_included(self):
-        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers, open('testfiles/test_rules.yml', 'r') as f_rules:
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers,\
+             open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f_rules:
             headers = json.loads(f_headers.read())
             rules = yaml.safe_load(f_rules.read())
 
@@ -556,7 +561,7 @@ class DrheaderRules(unittest2.TestCase):
 
     @staticmethod
     def modify_rules(rule, rule_value):
-        with open('testfiles/test_rules.yml', 'r+') as f:
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r+') as f:
             rules = yaml.safe_load(f.read())
             rules['Headers'][rule] = rule_value
             yaml.dump(rules, f)
