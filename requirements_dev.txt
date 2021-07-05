@@ -6,7 +6,7 @@ coverage==4.5.1
 Sphinx==3.2.0
 m2r2==0.2.5
 twine==3.1.1
-pytest==3.8.2
+pytest==6.2.4
 pytest-runner==4.2
 setuptools>=39.0.1
 bandit==1.6.2
