@@ -5,6 +5,8 @@
 import json
 import logging
 import os
+import re
+import yaml
 
 import unittest2
 
@@ -23,10 +25,19 @@ class DrheaderRules(unittest2.TestCase):
 
         # configuration
 
+    def tearDown(self):
+        with open('tests/testfiles/test_rules.yml', 'w') as f_test,\
+             open('tests/testfiles/default_rules.yml') as f_default:
+            default_rules = yaml.safe_load(f_default.read())
+            yaml.dump(default_rules, f_test, sort_keys=False)
+
     def _process_test(self, url=None, headers=None, status_code=None):
         # all tests use this method to run the test and analyze the results.
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f:
+            rules = yaml.safe_load(f.read())['Headers']
+
         self.instance = Drheader(url=url, headers=headers, status_code=status_code)
-        self.instance.analyze()
+        self.instance.analyze(rules=rules)
 
         # test can then make assertions against the contents of self.instance.report to determine success of failure.
 
@@ -49,6 +60,15 @@ class DrheaderRules(unittest2.TestCase):
         self._process_test(headers=file, status_code=200)
         self.assertEqual(len(self.instance.report), 0, msg="No issues reported in Rules tests")
 
+    def test_compare_keys_ok_with_case_insensitive(self):
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok_test_case.json'), 'r') as f:
+            file = json.loads(f.read())
+
+        file['x-xss-protection'] = file.pop('X-XSS-Protection')
+
+        self._process_test(headers=file, status_code=200)
+        self.assertEqual(len(self.instance.report), 0, msg="No issues reported in Rules tests")
+
     def test_compare_rules_enforce_ko(self):
         headers = {
             'X-XSS-Protection': '1; mode=bloc',
@@ -58,7 +78,7 @@ class DrheaderRules(unittest2.TestCase):
             'severity': 'high',
             'rule': 'X-XSS-Protection',
             'message': 'Value does not match security policy',
-            'expected': ['1', 'mode=block'],
+            'expected': ['0'],
             'delimiter': ';',
             'value': '1; mode=bloc'
         }
@@ -124,14 +144,14 @@ class DrheaderRules(unittest2.TestCase):
         headers = {
             'X-XSS-Protection': '1; mode=block',
             'Content-Security-Policy': "default-src 'none'; script-src 'self'; object-src 'self'; "
-                                       "unsafe-inline 'self;"
+                                       "connect-src 'unsafe-inline';"
         }
         csp_avoid_response = {
             'severity': 'medium',
-            'rule': 'Content-Security-Policy',
+            'rule': 'Content-Security-Policy - connect-src',
             'message': 'Must-Avoid directive included',
             'avoid': ['unsafe-inline', 'unsafe-eval'], 'delimiter': ';',
-            'value': "default-src 'none'; script-src 'self'; object-src 'self'; unsafe-inline 'self;",
+            'value': "unsafe-inline",
             'anomaly': 'unsafe-inline'
         }
         self._process_test(headers=headers, status_code=200)
@@ -139,7 +159,7 @@ class DrheaderRules(unittest2.TestCase):
 
     def test_compare_optional(self):
         headers = {
-            'X-XSS-Protection': '1; mode=block',
+            'X-XSS-Protection': '0',
             'Set-Cookie': ['Test']
         }
         medium_contain_response = {
@@ -342,7 +362,8 @@ class DrheaderRules(unittest2.TestCase):
             'Server': 'Apache',
             'X-Generator': 'Drupal 7 (http://drupal.org)',
             'X-XSS-Protection': '1; mode=bloc',
-            'Content-Security-Policy': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;"
+            'Content-Security-Policy': "default-src 'random'; script-src 'self'; object-src 'self'; "
+                                       "connect-src 'unsafe-inline';"
         }
 
         expected_report = [
@@ -351,20 +372,20 @@ class DrheaderRules(unittest2.TestCase):
              'message': 'Must-Contain-One directive missed',
              'expected': ["default-src 'none'", "default-src 'self'"],
              'delimiter': ';',
-             'value': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;",
+             'value': "default-src 'random'; script-src 'self'; object-src 'self'; connect-src 'unsafe-inline';",
              'anomaly': ["default-src 'none'", "default-src 'self'"]
              },
             {'severity': 'medium',
-             'rule': 'Content-Security-Policy',
+             'rule': 'Content-Security-Policy - connect-src',
              'message': 'Must-Avoid directive included',
              'avoid': ['unsafe-inline', 'unsafe-eval'],
              'delimiter': ';',
-             'value': "default-src 'random'; script-sr 'self'; object-src 'self'; unsafe-inline 'self;",
+             'value': "unsafe-inline",
              'anomaly': 'unsafe-inline'
              },
             {'severity': 'high', 'rule': 'X-XSS-Protection',
              'message': 'Value does not match security policy',
-             'expected': ['1', 'mode=block'],
+             'expected': ['0'],
              'delimiter': ';',
              'value': '1; mode=bloc'
              },
@@ -400,7 +421,7 @@ class DrheaderRules(unittest2.TestCase):
              'rule': 'Cache-Control',
              'message': 'Header not included in response',
              # modified this to account for list value rather then string
-             'expected': ['no-cache', 'no-store', 'must-revalidate'],
+             'expected': ['no-store', 'max-age=0'],
              'delimiter': ','
              },
             {'severity': 'high',
@@ -418,6 +439,132 @@ class DrheaderRules(unittest2.TestCase):
 
         # report, expected=[sorted(l, key=itemgetter('rule')) for l in (drheader_instance.report, expected)]
         # assert not any(x != y for x, y in zip(report, expected))
+
+    def test_csp_required_directive_not_present(self):
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers,\
+             open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f_rules:
+            headers = json.loads(f_headers.read())
+            rules = yaml.safe_load(f_rules.read())
+
+        rule_value = rules['Headers']['Content-Security-Policy']
+        rule_value['Directives'] = {'script-src': {'Required': True, 'Enforce': False}}
+        self.modify_rules('Content-Security-Policy', rule_value)
+
+        directive = re.search('script-src [^;]*(;)?', headers['Content-Security-Policy']).group()
+        headers['Content-Security-Policy'] = headers['Content-Security-Policy'].replace(directive, '')
+
+        expected_report = {
+            'severity': 'high',
+            'rule': 'Content-Security-Policy - script-src',
+            'message': 'Directive not included in response'
+        }
+        self._process_test(headers=headers, status_code=200)
+        self.assertIn(expected_report, self.instance.report)
+
+    def test_csp_directive_invalid_value(self):
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers, open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f_rules:
+            headers = json.loads(f_headers.read())
+            rules = yaml.safe_load(f_rules.read())
+
+        rule_value = rules['Headers']['Content-Security-Policy']
+        rule_value['Directives'] = {'script-src': {'Required': True, 'Enforce': True, 'Delimiter': ' ', 'Value': ['self']}}
+        self.modify_rules('Content-Security-Policy', rule_value)
+
+        directive = re.search('script-src [^;]*(;)?', headers['Content-Security-Policy']).group()
+        headers['Content-Security-Policy'] = headers['Content-Security-Policy'].replace(directive, 'script-src https://www.santander.co.uk https://www.google.com;')
+
+        expected_report = {
+            'severity': 'high',
+            'rule': 'Content-Security-Policy - script-src',
+            'message': 'Value does not match security policy',
+            'expected': ['self'],
+            'delimiter': ' ',
+            'value': 'https://www.santander.co.uk https://www.google.com'
+        }
+        self._process_test(headers=headers, status_code=200)
+        self.assertIn(expected_report, self.instance.report)
+
+    def test_csp_directive_must_avoid_value_included(self):
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers,\
+             open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f_rules:
+            headers = json.loads(f_headers.read())
+            rules = yaml.safe_load(f_rules.read())
+
+        rule_value = rules['Headers']['Content-Security-Policy']
+        rule_value['Directives'] = {'script-src': {'Required': True, 'Enforce': False, 'Delimiter': ' ', 'Value': '', 'Must-Avoid': ['https://www.santander.co.uk']}}
+        self.modify_rules('Content-Security-Policy', rule_value)
+
+        directive = re.search('script-src [^;]*(;)?', headers['Content-Security-Policy']).group()
+        headers['Content-Security-Policy'] = headers['Content-Security-Policy'].replace(directive, 'script-src https://www.santander.co.uk https://www.google.com;')
+
+        expected_report = {
+            'severity': 'medium',
+            'rule': 'Content-Security-Policy - script-src',
+            'message': 'Must-Avoid directive included',
+            'avoid': ['https://www.santander.co.uk'],
+            'delimiter': ' ',
+            'value': 'https://www.santander.co.uk https://www.google.com',
+            'anomaly': 'https://www.santander.co.uk'
+        }
+        self._process_test(headers=headers, status_code=200)
+        self.assertIn(expected_report, self.instance.report)
+
+    def test_csp_directive_must_contain_value_not_included(self):
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers,\
+             open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f_rules:
+            headers = json.loads(f_headers.read())
+            rules = yaml.safe_load(f_rules.read())
+
+        rule_value = rules['Headers']['Content-Security-Policy']
+        rule_value['Directives'] = {'script-src': {'Required': True, 'Enforce': False, 'Delimiter': ' ', 'Value': '', 'Must-Contain': ['https://www.santander.co.uk']}}
+        self.modify_rules('Content-Security-Policy', rule_value)
+
+        directive = re.search('script-src [^;]*(;)?', headers['Content-Security-Policy']).group()
+        headers['Content-Security-Policy'] = headers['Content-Security-Policy'].replace(directive, 'script-src \'self\';')
+
+        expected_report = {
+            'severity': 'medium',
+            'rule': 'Content-Security-Policy - script-src',
+            'message': 'Must-Contain directive missed',
+            'expected': ['https://www.santander.co.uk'],
+            'delimiter': ' ',
+            'value': 'self',
+            'anomaly': 'https://www.santander.co.uk'
+        }
+        self._process_test(headers=headers, status_code=200)
+        self.assertIn(expected_report, self.instance.report)
+
+    def test_csp_directive_must_contain_one_value_not_included(self):
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/header_ok.json'), 'r') as f_headers,\
+             open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r') as f_rules:
+            headers = json.loads(f_headers.read())
+            rules = yaml.safe_load(f_rules.read())
+
+        rule_value = rules['Headers']['Content-Security-Policy']
+        rule_value['Directives'] = {'script-src': {'Required': True, 'Enforce': False, 'Delimiter': ' ', 'Value': '', 'Must-Contain-One': ['https://www.santander.co.uk', 'https://www.google.com']}}
+        self.modify_rules('Content-Security-Policy', rule_value)
+
+        directive = re.search('script-src [^;]*(;)?', headers['Content-Security-Policy']).group()
+        headers['Content-Security-Policy'] = headers['Content-Security-Policy'].replace(directive, 'script-src \'self\';')
+
+        expected_report = {
+            'severity': 'high',
+            'rule': 'Content-Security-Policy - script-src',
+            'message': 'Must-Contain-One directive missed',
+            'expected': ['https://www.santander.co.uk', 'https://www.google.com'],
+            'delimiter': ' ',
+            'value': 'self',
+            'anomaly': ['https://www.santander.co.uk', 'https://www.google.com']
+        }
+        self._process_test(headers=headers, status_code=200)
+        self.assertIn(expected_report, self.instance.report)
+
+    @staticmethod
+    def modify_rules(rule, rule_value):
+        with open(os.path.join(os.path.dirname(__file__), 'testfiles/test_rules.yml'), 'r+') as f:
+            rules = yaml.safe_load(f.read())
+            rules['Headers'][rule] = rule_value
+            yaml.dump(rules, f)
 
     # def test_command_line_interface():
     #     """Test the CLI."""

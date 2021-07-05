@@ -4,11 +4,11 @@
 
 import json
 import logging
+import os
+import sys
 
 import click
 import jsonschema
-import sys
-import os
 import validators
 from tabulate import tabulate
 
@@ -16,7 +16,6 @@ from drheader import Drheader
 from drheader import __version__
 from drheader.cli_utils import echo_bulk_report, file_junit_report
 from drheader.utils import load_rules, get_rules_from_uri
-
 
 EXIT_CODE_NO_ERROR = os.EX_OK
 EXIT_CODE_FAILURE = os.EX_SOFTWARE

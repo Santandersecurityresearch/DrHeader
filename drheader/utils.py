@@ -2,11 +2,23 @@
 
 """Utils for drheader."""
 
+import io
 import logging
 import os
-import io
+
 import requests
 import yaml
+
+
+def _to_dict(string_to_convert, item_delimiter, key_value_delimiter):
+    result = {}
+    dict_values = list(filter(None, string_to_convert.strip().split(item_delimiter)))
+
+    for item in dict_values:
+        key_value = list(filter(None, item.strip().split(key_value_delimiter, 1)))
+        result[key_value[0].strip()] = key_value[1].strip('\'')
+
+    return result
 
 
 def _to_lower_dict(some_dict):
