@@ -28,9 +28,8 @@ class Drheader:
         method="GET",
         headers=None,
         status_code=None,
-        post=None,
         params=None,
-        request_headers={},
+        request_headers=None,
         verify=True
     ):
         """
@@ -44,8 +43,6 @@ class Drheader:
         :type headers: dict
         :param status_code: Override status code
         :type status_code: int
-        :param post: Use post for request
-        :type post: bool
         :param params: Request params
         :type params: dict
         :param request_headers: Request headers
@@ -53,7 +50,8 @@ class Drheader:
         :param verify: Verify the server's TLS certificate
         :type verify: bool or str
         """
-
+        if request_headers is None:
+            request_headers = {}
         if isinstance(headers, str):
             headers = json.loads(headers)
         elif url and not headers:
@@ -299,12 +297,11 @@ class Drheader:
         :param header: Name of header
         :param directive: Name of directive (optional)
         """
-
         try:
-            if config['Delimiter']:
-                self.delimiter = config['Delimiter']
+            self.delimiter = config['Delimiter']
         except KeyError:
             self.delimiter = ';'
+
         if config['Required'] is True or (config['Required'] == 'Optional' and header in self.headers):
             if config['Enforce']:
                 self.__validate_rule_and_value(config['Value'], header, directive)
@@ -315,7 +312,7 @@ class Drheader:
                         self.__validate_must_contain(config, header, directive)
                     if 'Must-Avoid' in config:
                         self.__validate_must_avoid(config, header, directive)
-        else:
+        elif config['Required'] is False:
             self.__validate_not_exists(header, directive)
 
     def __add_report_item(self, severity, error_type, header, directive=None, expected=None, avoid=None, value='',
@@ -332,7 +329,6 @@ class Drheader:
         :param value: Current value of header
         :param cookie: Value of cookie (if applicable)
         """
-
         if directive:
             error = {'rule': header + ' - ' + directive, 'severity': severity, 'message': self.error_types[error_type]}
         else:
@@ -344,16 +340,15 @@ class Drheader:
         if avoid:
             error['avoid'] = avoid
             error['delimiter'] = self.delimiter
+
         if error_type == 3:
             error['value'] = value
-
-        if error_type in (4, 5, 6):
+        elif error_type in (4, 5, 6):
             if header.lower() == 'set-cookie':
                 error['value'] = cookie
             else:
                 if directive:
-                    policy = _to_dict(self.headers[header], ';', ' ')
-                    error['value'] = policy[directive].strip('\'')
+                    error['value'] = _to_dict(self.headers[header], ';', ' ')[directive].strip('\'')
                 else:
                     error['value'] = self.headers[header]
             error['anomaly'] = value
