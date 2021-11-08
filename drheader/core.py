@@ -2,6 +2,7 @@ import json
 
 import requests
 import validators
+from requests.structures import CaseInsensitiveDict
 
 from drheader.utils import load_rules, _to_dict
 
@@ -53,21 +54,16 @@ class Drheader:
         :type verify: bool or str
         """
 
+        if isinstance(headers, str):
+            headers = json.loads(headers)
+        elif url and not headers:
+            headers, status_code = self._get_headers(url, method, params, request_headers, verify)
+
         self.status_code = status_code
-        self.headers = headers
+        self.headers = CaseInsensitiveDict(headers)
         self.anomalies = []
         self.url = url
         self.delimiter = ';'
-
-        if isinstance(headers, str):
-            self.headers = json.loads(headers)
-
-        if self.url and not self.headers:
-            self.headers, self.status_code = self._get_headers(
-                url, method, params, request_headers, verify
-            )
-
-        self.headers = dict((k.lower(), v) for k, v in self.headers.items())
         self.report = []
 
     @staticmethod
@@ -118,10 +114,10 @@ class Drheader:
         if not rules:
             rules = load_rules()
         for rule, config in rules.items():
-            self.__validate_rules(rule.lower(), config, header=rule)
-            if 'Directives' in config and rule.lower() in self.headers:
+            self.__validate_rules(rule, config, header=rule)
+            if 'Directives' in config and rule in self.headers:
                 for d_rule, d_config in config['Directives'].items():
-                    self.__validate_rules(d_rule.lower(), d_config, header=rule, directive=d_rule)
+                    self.__validate_rules(d_rule, d_config, header=rule, directive=d_rule)
         return self.report
 
     def __validate_rule_and_value(self, rule, expected_value, header, directive):
@@ -140,7 +136,7 @@ class Drheader:
 
         if directive:
             error_type = 7
-            rule_value = _to_dict(self.headers[header.lower()], ';', ' ')
+            rule_value = _to_dict(self.headers[header], ';', ' ')
         else:
             error_type = 1
             rule_value = self.headers
@@ -149,7 +145,7 @@ class Drheader:
             self.__add_report_item(severity='high', rule=rule, error_type=error_type, header=header,
                                    directive=directive, expected=expected_value_list)
         else:
-            rule_list = [item.strip(' ') for item in rule_value[rule.lower()].split(self.delimiter)]
+            rule_list = [item.strip(' ') for item in rule_value[rule].split(self.delimiter)]
             if not all(elem in expected_value_list for elem in rule_list):
                 self.__add_report_item(severity='high', rule=rule, error_type=3, header=header, directive=directive,
                                        expected=expected_value_list, value=rule_value[rule])
@@ -164,7 +160,7 @@ class Drheader:
         """
         if directive:
             error_type = 8
-            headers = _to_dict(self.headers[header.lower()], ';', ' ')
+            headers = _to_dict(self.headers[header], ';', ' ')
         else:
             error_type = 2
             headers = self.headers
@@ -183,7 +179,7 @@ class Drheader:
         """
         if directive:
             error_type = 7
-            headers = _to_dict(self.headers[header.lower()], ';', ' ')
+            headers = _to_dict(self.headers[header], ';', ' ')
         else:
             error_type = 1
             headers = self.headers
@@ -206,13 +202,13 @@ class Drheader:
             config['Must-Avoid'] = [item.lower() for item in config['Must-Avoid']]
             for avoid in config['Must-Avoid']:
                 if directive:
-                    rule_value = _to_dict(self.headers[header.lower()], ';', ' ')[rule]
+                    rule_value = _to_dict(self.headers[header], ';', ' ')[rule]
                 else:
                     rule_value = self.headers[rule]
 
                 if avoid in rule_value and rule not in self.anomalies:
-                    if rule == 'content-security-policy':
-                        policy = _to_dict(self.headers[header.lower()], ';', ' ')
+                    if rule.lower() == 'content-security-policy':
+                        policy = _to_dict(self.headers[header], ';', ' ')
                         directive = list(policy.keys())[list(policy.values()).index(avoid)]
                     self.__add_report_item(severity='medium', rule=rule, error_type=5, header=header,
                                            directive=directive, avoid=config['Must-Avoid'], value=avoid)
@@ -234,7 +230,7 @@ class Drheader:
                 config['Must-Contain-One'] = [item.lower() for item in config['Must-Contain-One']]
                 contain = False
                 if directive:
-                    policy = _to_dict(self.headers[header.lower()], ';', ' ')
+                    policy = _to_dict(self.headers[header], ';', ' ')
                     values = policy[rule].split(' ')
                 else:
                     policy = self.headers[rule]
@@ -251,7 +247,7 @@ class Drheader:
 
             elif 'Must-Contain' in config:
                 config['Must-Contain'] = [item.lower() for item in config['Must-Contain']]
-                if rule == 'set-cookie':
+                if rule.lower() == 'set-cookie':
                     for cookie in self.headers[rule]:
                         for contain in config['Must-Contain']:
                             if contain not in cookie:
@@ -264,7 +260,7 @@ class Drheader:
                                     expected=config['Must-Contain'], value=contain, cookie=cookie)
                 else:
                     if directive:
-                        rule_value = _to_dict(self.headers[header.lower()], ';', ' ')[rule]
+                        rule_value = _to_dict(self.headers[header], ';', ' ')[rule]
                     else:
                         rule_value = self.headers[rule]
                     for contain in config['Must-Contain']:
@@ -341,12 +337,12 @@ class Drheader:
             error['value'] = value
 
         if error_type in (4, 5, 6):
-            if rule == 'set-cookie':
+            if rule.lower() == 'set-cookie':
                 error['value'] = cookie
             else:
                 if directive:
-                    policy = _to_dict(self.headers[header.lower()], ';', ' ')
-                    error['value'] = policy[directive.lower()].strip('\'')
+                    policy = _to_dict(self.headers[header], ';', ' ')
+                    error['value'] = policy[directive].strip('\'')
                 else:
                     error['value'] = self.headers[rule]
             error['anomaly'] = value
