@@ -114,17 +114,16 @@ class Drheader:
         if not rules:
             rules = load_rules()
         for rule, config in rules.items():
-            self.__validate_rules(rule, config, header=rule)
+            self.__validate_rules(config, header=rule)
             if 'Directives' in config and rule in self.headers:
-                for d_rule, d_config in config['Directives'].items():
-                    self.__validate_rules(d_rule, d_config, header=rule, directive=d_rule)
+                for directive, d_config in config['Directives'].items():
+                    self.__validate_rules(d_config, header=rule, directive=directive)
         return self.report
 
-    def __validate_rule_and_value(self, rule, expected_value, header, directive):
+    def __validate_rule_and_value(self, expected_value, header, directive):
         """
         Verify headers content matches provided config.
 
-        :param rule: Name of rule to validate
         :param expected_value: Expected value of header.
         :param header: Name of header
         :param directive: Name of directive (optional)
@@ -135,106 +134,130 @@ class Drheader:
             expected_value_list = [item.strip(' ') for item in expected_value_list[0].split(self.delimiter)]
 
         if directive:
-            error_type = 7
-            rule_value = _to_dict(self.headers[header], ';', ' ')
-        else:
-            error_type = 1
-            rule_value = self.headers
-
-        if rule not in rule_value:
-            self.__add_report_item(severity='high', rule=rule, error_type=error_type, header=header,
-                                   directive=directive, expected=expected_value_list)
-        else:
-            rule_list = [item.strip(' ') for item in rule_value[rule].split(self.delimiter)]
-            if not all(elem in expected_value_list for elem in rule_list):
-                self.__add_report_item(severity='high', rule=rule, error_type=3, header=header, directive=directive,
-                                       expected=expected_value_list, value=rule_value[rule])
-
-    def __validate_not_exists(self, rule, header, directive):
-        """
-        Verify specified rule does not exist in loaded headers.
-
-        :param rule: Name of rule to validate
-        :param header: Name of header
-        :param directive: Name of directive (optional)
-        """
-        if directive:
-            error_type = 8
+            rule = directive
             headers = _to_dict(self.headers[header], ';', ' ')
         else:
-            error_type = 2
-            headers = self.headers
-
-        if rule in headers:
-            self.__add_report_item(severity='high', rule=rule, error_type=error_type, header=header,
-                                   directive=directive)
-
-    def __validate_exists(self, rule, header, directive):
-        """
-        Verify specified rule exists in loaded headers.
-
-        :param rule: Name of rule to validate
-        :param header: Name of header
-        :param directive: Name of directive (optional)
-        """
-        if directive:
-            error_type = 7
-            headers = _to_dict(self.headers[header], ';', ' ')
-        else:
-            error_type = 1
+            rule = header
             headers = self.headers
 
         if rule not in headers:
-            self.__add_report_item(severity='high', rule=rule, error_type=error_type, header=header,
-                                   directive=directive)
+            self.__add_report_item(
+                severity='high',
+                error_type=7 if directive else 1,
+                header=header,
+                directive=directive,
+                expected=expected_value_list)
+        else:
+            rule_list = [item.strip(' ') for item in headers[rule].split(self.delimiter)]
+            if not all(elem in expected_value_list for elem in rule_list):
+                self.__add_report_item(
+                    severity='high',
+                    error_type=3,
+                    header=header,
+                    directive=directive,
+                    expected=expected_value_list,
+                    value=headers[rule])
 
-    def __validate_must_avoid(self, rule, config, header, directive):
+    def __validate_not_exists(self, header, directive):
+        """
+        Verify specified rule does not exist in loaded headers.
+
+        :param header: Name of header
+        :param directive: Name of directive (optional)
+        """
+
+        if directive:
+            rule = directive
+            headers = _to_dict(self.headers[header], ';', ' ')
+        else:
+            rule = header
+            headers = self.headers
+
+        if rule in headers:
+            self.__add_report_item(
+                severity='high',
+                error_type=8 if directive else 2,
+                header=header,
+                directive=directive)
+
+    def __validate_exists(self, header, directive):
+        """
+        Verify specified rule exists in loaded headers.
+
+        :param header: Name of header
+        :param directive: Name of directive (optional)
+        """
+
+        if directive:
+            rule = directive
+            headers = _to_dict(self.headers[header], ';', ' ')
+        else:
+            rule = header
+            headers = self.headers
+
+        if rule not in headers:
+            self.__add_report_item(
+                severity='high',
+                error_type=7 if directive else 1,
+                header=header,
+                directive=directive)
+
+    def __validate_must_avoid(self, config, header, directive):
         """
         Verify specified values do not exist in loaded headers.
 
-        :param rule: Name of rule to validate
         :param config: Configuration rule-set to use
         :param header: Name of header
         :param directive: Name of directive (optional)
         """
 
         try:
+            if directive:
+                rule = directive
+                header_value = _to_dict(self.headers[header], ';', ' ')[rule]
+            else:
+                rule = header
+                header_value = self.headers[rule]
             config['Must-Avoid'] = [item.lower() for item in config['Must-Avoid']]
             for avoid in config['Must-Avoid']:
-                if directive:
-                    rule_value = _to_dict(self.headers[header], ';', ' ')[rule]
-                else:
-                    rule_value = self.headers[rule]
 
-                if avoid in rule_value and rule not in self.anomalies:
+                if avoid in header_value and rule not in self.anomalies:
                     if rule.lower() == 'content-security-policy':
                         policy = _to_dict(self.headers[header], ';', ' ')
                         directive = list(policy.keys())[list(policy.values()).index(avoid)]
-                    self.__add_report_item(severity='medium', rule=rule, error_type=5, header=header,
-                                           directive=directive, avoid=config['Must-Avoid'], value=avoid)
+                    self.__add_report_item(
+                        severity='medium',
+                        error_type=5,
+                        header=header,
+                        directive=directive,
+                        avoid=config['Must-Avoid'],
+                        value=avoid)
         except KeyError:
             pass
 
-    def __validate_must_contain(self, rule, config, header, directive):
+    def __validate_must_contain(self, config, header, directive):
         """
         Verify the provided header contains certain params.
 
-        :param rule: Name of rule to validate
         :param config: Configuration rule-set to use
         :param header: Name of header
         :param directive: Name of directive (optional)
         """
 
         try:
+            if directive:
+                rule = directive
+                header_value = _to_dict(self.headers[header], ';', ' ')[rule]
+            else:
+                rule = header
+                header_value = self.headers[rule]
             if 'Must-Contain-One' in config:
                 config['Must-Contain-One'] = [item.lower() for item in config['Must-Contain-One']]
                 contain = False
                 if directive:
-                    policy = _to_dict(self.headers[header], ';', ' ')
-                    values = policy[rule].split(' ')
+                    values = header_value.split(' ')
                 else:
-                    policy = self.headers[rule]
-                    values = policy.split(self.delimiter)
+                    values = header_value.split(self.delimiter)
                 for value in values:
                     value = value.lstrip()
                     if value in config['Must-Contain-One']:
@@ -242,8 +265,13 @@ class Drheader:
                         break
 
                 if not contain:
-                    self.__add_report_item(severity='high', rule=rule, error_type=6, header=header, directive=directive,
-                                           expected=config['Must-Contain-One'], value=config['Must-Contain-One'])
+                    self.__add_report_item(
+                        severity='high',
+                        error_type=6,
+                        header=header,
+                        directive=directive,
+                        expected=config['Must-Contain-One'],
+                        value=config['Must-Contain-One'])
 
             elif 'Must-Contain' in config:
                 config['Must-Contain'] = [item.lower() for item in config['Must-Contain']]
@@ -256,25 +284,36 @@ class Drheader:
                                 else:
                                     severity = 'medium'
                                 self.__add_report_item(
-                                    severity=severity, rule=rule, error_type=4, header=header,
-                                    expected=config['Must-Contain'], value=contain, cookie=cookie)
+                                    severity=severity,
+                                    error_type=4,
+                                    header=header,
+                                    expected=config['Must-Contain'],
+                                    value=contain,
+                                    cookie=cookie)
                 else:
                     if directive:
-                        rule_value = _to_dict(self.headers[header], ';', ' ')[rule]
+                        rule = directive
+                        header_value = _to_dict(self.headers[header], ';', ' ')[rule]
                     else:
-                        rule_value = self.headers[rule]
+                        rule = header
+                        header_value = self.headers[rule]
+
                     for contain in config['Must-Contain']:
-                        if contain not in rule_value and rule not in self.anomalies:
-                            self.__add_report_item(severity='medium', rule=rule, error_type=4, header=header,
-                                                   directive=directive, expected=config['Must-Contain'], value=contain)
+                        if contain not in header_value and rule not in self.anomalies:
+                            self.__add_report_item(
+                                severity='medium',
+                                error_type=4,
+                                header=header,
+                                directive=directive,
+                                expected=config['Must-Contain'],
+                                value=contain)
         except KeyError:
             pass
 
-    def __validate_rules(self, rule, config, header, directive=None):
+    def __validate_rules(self, config, header, directive=None):
         """
         Entry point for validation.
 
-        :param rule: Name of rule to validate
         :param config: Configuration rule-set to use
         :param header: Name of header
         :param directive: Name of directive (optional)
@@ -285,35 +324,23 @@ class Drheader:
                 self.delimiter = config['Delimiter']
         except KeyError:
             self.delimiter = ';'
-        if config['Required'] is True or (config['Required'] == 'Optional' and rule in self.headers):
+        if config['Required'] is True or (config['Required'] == 'Optional' and header in self.headers):
             if config['Enforce']:
-                self.__validate_rule_and_value(rule, config['Value'], header, directive)
+                self.__validate_rule_and_value(config['Value'], header, directive)
             else:
-                self.__validate_exists(rule, header, directive)
-                self.__validate_must_contain(rule, config, header, directive)
-                self.__validate_must_avoid(rule, config, header, directive)
+                self.__validate_exists(header, directive)
+                self.__validate_must_contain(config, header, directive)
+                self.__validate_must_avoid(config, header, directive)
         else:
-            self.__validate_not_exists(rule, header, directive)
+            self.__validate_not_exists(header, directive)
 
-    def __add_report_item(
-        self,
-        severity,
-        rule,
-        error_type,
-        header,
-        directive=None,
-        expected=None,
-        avoid=None,
-        value='',
-        cookie=''
-    ):
+    def __add_report_item(self, severity, error_type, header, directive=None, expected=None, avoid=None, value='',
+                          cookie=''):
         """
         Add a entry to report.
 
         :param severity: [low, medium, high]
         :type severity: str
-        :param rule: Name of header/rule
-        :type rule: str
         :param error_type: [1...6] related to error_types
         :type error_type: int
         :param expected: Expected value of header
@@ -337,13 +364,13 @@ class Drheader:
             error['value'] = value
 
         if error_type in (4, 5, 6):
-            if rule.lower() == 'set-cookie':
+            if header.lower() == 'set-cookie':
                 error['value'] = cookie
             else:
                 if directive:
                     policy = _to_dict(self.headers[header], ';', ' ')
                     error['value'] = policy[directive].strip('\'')
                 else:
-                    error['value'] = self.headers[rule]
+                    error['value'] = self.headers[header]
             error['anomaly'] = value
         self.report.append(error)
