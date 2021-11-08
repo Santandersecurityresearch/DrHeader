@@ -1,8 +1,9 @@
 Headers:
     Content-Security-Policy:
         Required: True
-        Enforce: False
+        Enforce: True
         Value:
+        - block-all-mixed-content
         Must-Contain-One:
         - default-src 'none'
         - default-src 'self'
@@ -10,8 +11,8 @@ Headers:
         - unsafe-inline
         - unsafe-eval
     X-XSS-Protection:
-        Required: True
-        Enforce: True
+        Required: False
+        Enforce: False
         Value:
         - 1; mode=block
     Server:
@@ -43,9 +44,10 @@ Headers:
         - Secure
     Referrer-Policy:
         Required: True
-        Enforce: False
+        Enforce: True
         Delimiter: ','
         Value:
+        - no-referrer
         Must-Contain-One:
         - strict-origin
         - strict-origin-when-cross-origin
@@ -55,12 +57,17 @@ Headers:
         Enforce: True
         Delimiter: ','
         Value:
-        - no-cache, no-store, must-revalidate
+        - no-cache, no-store, must-revalidate, no-transform
     Pragma:
-        Required: True
-        Enforce: True
+        Required: False
+        Enforce: False
         Value:
         - no-cache
+    X-Permitted-Cross-Domain-Policies:
+        Required: False
+        Enforce: False
+        Value:
+        - by-content-type
     X-powered-by:
         Required: False
         Enforce: False
@@ -85,5 +92,25 @@ Headers:
         Required: False
         Enforce: False
         Value:
+    Clear-Site-Data:
+        Required: True
+        Enforce: True
+        Value:
+         - storage, cache, cookies
+    Cross-Origin-Embedder-Policy:
+        Required: True
+        Enforce: True
+        Value:
+         - require-corp
+    Cross-Origin-Embedder-Policy:
+        Required: True
+        Enforce: True
+        Value:
+         - same-origin
+    Cross-Origin.Resource-Policy:
+        Required: True
+        Enforce: True
+        Value:
+         - same-site
 
-    # TODO - Add ruleset and severity
+           # TODO - Add ruleset and severity
