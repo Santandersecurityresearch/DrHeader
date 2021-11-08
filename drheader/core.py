@@ -187,7 +187,6 @@ class Drheader:
         :param header: Name of header
         :param directive: Name of directive (optional)
         """
-
         if directive:
             rule = directive
             headers = _to_dict(self.headers[header], ';', ' ')
@@ -202,6 +201,8 @@ class Drheader:
                 header=header,
                 directive=directive)
 
+        return rule in headers  # Return value to prevent subsequent avoid/contain checks if the header is not present
+
     def __validate_must_avoid(self, config, header, directive):
         """
         Verify specified values do not exist in loaded headers.
@@ -210,30 +211,27 @@ class Drheader:
         :param header: Name of header
         :param directive: Name of directive (optional)
         """
+        if directive:
+            rule = directive
+            header_value = _to_dict(self.headers[header], ';', ' ')[rule]
+        else:
+            rule = header
+            header_value = self.headers[rule]
 
-        try:
-            if directive:
-                rule = directive
-                header_value = _to_dict(self.headers[header], ';', ' ')[rule]
-            else:
-                rule = header
-                header_value = self.headers[rule]
-            config['Must-Avoid'] = [item.lower() for item in config['Must-Avoid']]
-            for avoid in config['Must-Avoid']:
+        config['Must-Avoid'] = [item.lower() for item in config['Must-Avoid']]
 
-                if avoid in header_value and rule not in self.anomalies:
-                    if rule.lower() == 'content-security-policy':
-                        policy = _to_dict(self.headers[header], ';', ' ')
-                        directive = list(policy.keys())[list(policy.values()).index(avoid)]
-                    self.__add_report_item(
-                        severity='medium',
-                        error_type=5,
-                        header=header,
-                        directive=directive,
-                        avoid=config['Must-Avoid'],
-                        value=avoid)
-        except KeyError:
-            pass
+        for avoid_value in config['Must-Avoid']:
+            if avoid_value in header_value and rule not in self.anomalies:
+                if rule.lower() == 'content-security-policy':
+                    policy = _to_dict(self.headers[header], ';', ' ')
+                    directive = list(policy.keys())[list(policy.values()).index(avoid_value)]
+                self.__add_report_item(
+                    severity='medium',
+                    error_type=5,
+                    header=header,
+                    directive=directive,
+                    avoid=config['Must-Avoid'],
+                    value=avoid_value)
 
     def __validate_must_contain(self, config, header, directive):
         """
@@ -243,72 +241,55 @@ class Drheader:
         :param header: Name of header
         :param directive: Name of directive (optional)
         """
+        if directive:
+            rule = directive
+            header_value = _to_dict(self.headers[header], ';', ' ')[rule]
+        else:
+            rule = header
+            header_value = self.headers[rule]
 
-        try:
-            if directive:
-                rule = directive
-                header_value = _to_dict(self.headers[header], ';', ' ')[rule]
-            else:
-                rule = header
-                header_value = self.headers[rule]
-            if 'Must-Contain-One' in config:
-                config['Must-Contain-One'] = [item.lower() for item in config['Must-Contain-One']]
-                contain = False
-                if directive:
-                    values = header_value.split(' ')
-                else:
-                    values = header_value.split(self.delimiter)
-                for value in values:
-                    value = value.lstrip()
-                    if value in config['Must-Contain-One']:
-                        contain = True
-                        break
+        if 'Must-Contain-One' in config:
+            config['Must-Contain-One'] = [item.lower() for item in config['Must-Contain-One']]
+            contain_values = header_value.split(' ') if directive else header_value.split(self.delimiter)
+            does_contain = False
 
-                if not contain:
-                    self.__add_report_item(
-                        severity='high',
-                        error_type=6,
-                        header=header,
-                        directive=directive,
-                        expected=config['Must-Contain-One'],
-                        value=config['Must-Contain-One'])
+            for contain_value in contain_values:
+                contain_value = contain_value.lstrip()
+                if contain_value in config['Must-Contain-One']:
+                    does_contain = True
+                    break
+            if not does_contain:
+                self.__add_report_item(
+                    severity='high',
+                    error_type=6,
+                    header=header,
+                    directive=directive,
+                    expected=config['Must-Contain-One'],
+                    value=config['Must-Contain-One'])
 
-            elif 'Must-Contain' in config:
-                config['Must-Contain'] = [item.lower() for item in config['Must-Contain']]
-                if rule.lower() == 'set-cookie':
-                    for cookie in self.headers[rule]:
-                        for contain in config['Must-Contain']:
-                            if contain not in cookie:
-                                if contain == 'secure':
-                                    severity = 'high'
-                                else:
-                                    severity = 'medium'
-                                self.__add_report_item(
-                                    severity=severity,
-                                    error_type=4,
-                                    header=header,
-                                    expected=config['Must-Contain'],
-                                    value=contain,
-                                    cookie=cookie)
-                else:
-                    if directive:
-                        rule = directive
-                        header_value = _to_dict(self.headers[header], ';', ' ')[rule]
-                    else:
-                        rule = header
-                        header_value = self.headers[rule]
-
-                    for contain in config['Must-Contain']:
-                        if contain not in header_value and rule not in self.anomalies:
+        elif 'Must-Contain' in config:
+            config['Must-Contain'] = [item.lower() for item in config['Must-Contain']]
+            if header.lower() == 'set-cookie':
+                for cookie in self.headers[header]:
+                    for contain_value in config['Must-Contain']:
+                        if contain_value not in cookie:
                             self.__add_report_item(
-                                severity='medium',
+                                severity='high' if contain_value == 'secure' else 'medium',
                                 error_type=4,
                                 header=header,
-                                directive=directive,
                                 expected=config['Must-Contain'],
-                                value=contain)
-        except KeyError:
-            pass
+                                value=contain_value,
+                                cookie=cookie)
+            else:
+                for contain_value in config['Must-Contain']:
+                    if contain_value not in header_value and rule not in self.anomalies:
+                        self.__add_report_item(
+                            severity='medium',
+                            error_type=4,
+                            header=header,
+                            directive=directive,
+                            expected=config['Must-Contain'],
+                            value=contain_value)
 
     def __validate_rules(self, config, header, directive=None):
         """
@@ -328,9 +309,12 @@ class Drheader:
             if config['Enforce']:
                 self.__validate_rule_and_value(config['Value'], header, directive)
             else:
-                self.__validate_exists(header, directive)
-                self.__validate_must_contain(config, header, directive)
-                self.__validate_must_avoid(config, header, directive)
+                exists = self.__validate_exists(header, directive)
+                if exists:
+                    if 'Must-Contain-One' in config or 'Must-Contain' in config:
+                        self.__validate_must_contain(config, header, directive)
+                    if 'Must-Avoid' in config:
+                        self.__validate_must_avoid(config, header, directive)
         else:
             self.__validate_not_exists(header, directive)
 
