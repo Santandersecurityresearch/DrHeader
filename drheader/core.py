@@ -222,14 +222,24 @@ class Drheader:
             if avoid_value in header_value and rule not in self.anomalies:
                 if rule.lower() == 'content-security-policy':
                     policy = _to_dict(self.headers[header], ';', ' ')
-                    directive = list(policy.keys())[list(policy.values()).index(avoid_value)]
-                self.__add_report_item(
-                    severity='medium',
-                    error_type=5,
-                    header=header,
-                    directive=directive,
-                    avoid=config['Must-Avoid'],
-                    value=avoid_value)
+                    non_compliant_values = [item for item in list(policy.values()) if avoid_value in item]
+                    indices = [list(policy.values()).index(item) for item in non_compliant_values]
+                    for index in indices:
+                        self.__add_report_item(
+                            severity='medium',
+                            error_type=5,
+                            header=header,
+                            directive=list(policy.keys())[index],
+                            avoid=config['Must-Avoid'],
+                            value=avoid_value)
+                else:
+                    self.__add_report_item(
+                        severity='medium',
+                        error_type=5,
+                        header=header,
+                        directive=directive,
+                        avoid=config['Must-Avoid'],
+                        value=avoid_value)
 
     def __validate_must_contain(self, config, header, directive):
         """
