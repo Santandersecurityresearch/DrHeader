@@ -107,10 +107,10 @@ Headers:
         Enforce: True
         Value:
          - same-origin
-    Cross-Origin.Resource-Policy:
+    Cross-Origin-Resource-Policy:
         Required: True
         Enforce: True
         Value:
          - same-site
 
-           # TODO - Add ruleset and severity
+     # TODO - Add ruleset and severity
