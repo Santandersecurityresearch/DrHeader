@@ -119,12 +119,13 @@ class Drheader:
             self.__validate_rules(rule, config)
         return self.report
 
-    def __validate_rule_and_value(self, rule, expected_value):
+    def __validate_rule_and_value(self, rule, expected_value, Severity=None):
         """
         Verify headers content matches provided config.
 
         :param rule: Name of header to validate.
         :param expected_value: Expected value of header.
+        :param severity: severity of the rule.
         :return:
         """
         expected_value = [item.lower() for item in expected_value]
@@ -144,7 +145,7 @@ class Drheader:
             if not all(elem in expected_value_list for elem in rule_list):
                 # if not expected_value_list in rule_list:
                 self.__add_report_item(
-                    severity='high',
+                    severity=Severity if Severity else "high",
                     rule=rule,
                     error_type=3,
                     expected=expected_value_list,
@@ -191,7 +192,7 @@ class Drheader:
             for avoid in config['Must-Avoid']:
                 if avoid in self.headers[rule] and rule not in self.anomalies:
                     self.__add_report_item(
-                        severity='medium',
+                        severity=config['Severity'] if config['Severity'] else "high",
                         rule=rule,
                         error_type=5,
                         avoid=config['Must-Avoid'],
@@ -222,7 +223,7 @@ class Drheader:
                             break
                 if not contain:
                     self.__add_report_item(
-                        severity='high',
+                        severity=config['Severity'] if config['Severity'] else "high",
                         rule=rule,
                         error_type=6,
                         expected=config['Must-Contain-One'],
@@ -236,7 +237,7 @@ class Drheader:
                             if contain not in cookie:
                                 if contain == 'secure':
                                     self.__add_report_item(
-                                        severity='high',
+                                        severity=config['Severity'] if config['Severity'] else "high",
                                         rule=rule,
                                         error_type=4,
                                         expected=config['Must-Contain'],
@@ -245,7 +246,7 @@ class Drheader:
                                     )
                                 else:
                                     self.__add_report_item(
-                                        severity='medium',
+                                        severity=config['Severity'] if config['Severity'] else "high",
                                         rule=rule,
                                         error_type=4,
                                         expected=config['Must-Contain'],
@@ -256,7 +257,7 @@ class Drheader:
                     for contain in config['Must-Contain']:
                         if contain not in self.headers[rule] and rule not in self.anomalies:
                             self.__add_report_item(
-                                severity='medium',
+                                severity=config['Severity'] if config['Severity'] else "high",
                                 rule=rule,
                                 error_type=4,
                                 expected=config['Must-Contain'],
@@ -280,7 +281,7 @@ class Drheader:
             self.delimiter = ';'
         if config['Required'] is True or (config['Required'] == 'Optional' and rule in self.headers):
             if config['Enforce']:
-                self.__validate_rule_and_value(rule, config['Value'])
+                self.__validate_rule_and_value(rule, config['Value'], config['Severity'])
             else:
                 self.__validate_exists(rule)
                 self.__validate_must_contain(rule, config)
