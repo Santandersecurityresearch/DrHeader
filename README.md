@@ -62,7 +62,6 @@ $ drheader scan bulk -ff targets.txt
 There are a number of parameters you can specify during bulk scans, these are:
 | Option            | Description                                            |
 | :---------------- | :----------------------------------------------------- |
-| -p, --post        | Use a post request to obtain headers                   |
 | --json            | Output report as json                                  |
 | --debug           | Show error messages                                    |
 | --rules FILENAME  | Use custom rule set                                    |
@@ -102,7 +101,7 @@ By default, the tool uses **GET** method when making a request, but you can chan
 drheader_instance = Drheader(url="http://test.com", method="POST")
 ```
 
-Remember you can use any method supported by `requests` such as POST, PUT, GET and DELETE.
+Remember you can use any method supported by `requests` such as POST, PUT, GET and DELETE. This feature is not currently available in the CLI. It will be added in an upcoming release
 
 At the same time, you can customize the headers sent by the request. For that, you just have to use the `request_headers` argument:
 

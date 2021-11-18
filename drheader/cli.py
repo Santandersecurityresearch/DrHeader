@@ -218,14 +218,13 @@ def single(ctx, target_url, json_output, debug, rule_file, rule_uri, merge, juni
 @click.argument('file', type=click.File(), required=True)
 @click.option('--file-format', '-ff', 'input_format', type=click.Choice(['json', 'txt']),
               help='bulk file input type. (defaults to json)')
-@click.option('--post', '-p', help='Use a post request to obtain headers', is_flag=True)
 @click.option('--json', 'json_output', help='Output report as json', is_flag=True)
 @click.option('--debug', help='Show error messages', is_flag=True)
 @click.option('--rules', 'rule_file', help='Use custom rule set', type=click.File())
 @click.option('--rules-uri', 'rule_uri', help='Use custom rule set, downloaded from URI')
 @click.option('--merge', help='Merge custom file rules, on top of default rules', is_flag=True)
 @click.pass_context
-def bulk(ctx, file, json_output, post, input_format, debug, rule_file, rule_uri, merge):
+def bulk(ctx, file, json_output, input_format, debug, rule_file, rule_uri, merge):
     """
     Scan multiple http(s) endpoints with drheader.
 
@@ -306,7 +305,7 @@ def bulk(ctx, file, json_output, post, input_format, debug, rule_file, rule_uri,
     for i, v in enumerate(urls):
         logging.debug('Querying: {}...'.format(v))
         drheader_instance = Drheader(
-            url=v['url'], post=post, params=v.get('params', None), verify=ctx.obj['verify'])
+            url=v['url'], params=v.get('params', None), verify=ctx.obj['verify'])
         logging.debug('Analysing: {}...'.format(v))
         drheader_instance.analyze(rules)
         audit.append({'url': v['url'], 'report': drheader_instance.report})
