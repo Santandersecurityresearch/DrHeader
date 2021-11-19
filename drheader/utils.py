@@ -16,7 +16,8 @@ def _to_dict(string_to_convert, item_delimiter, key_value_delimiter):
 
     for item in dict_values:
         key_value = list(filter(None, item.strip().split(key_value_delimiter, 1)))
-        result[key_value[0].strip()] = key_value[1].strip('\'')
+        if len(key_value) == 2:
+            result[key_value[0].strip()] = key_value[1].strip('\'')
 
     return result
 

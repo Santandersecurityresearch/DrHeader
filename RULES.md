@@ -71,7 +71,7 @@ The yaml file structure for drHEADwe is as follows:
 * For each of these elements (or security headers to audit), the following flags can be set based on the specific requirements for that header:
     * Required:
         * 'True' if header is required to be present in the HTTP response
-        * 'False' if header is not required to be present in the HTTP response
+        * 'False' if header is required not to be present in the HTTP response
         * 'Optional' if header can be present in the HTTP response but is not mandatory
     * Enforce:
         * 'True' if the policy enforces a value for that header (full match)
