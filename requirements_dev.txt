@@ -7,7 +7,7 @@ Sphinx==3.2.0
 m2r2==0.3.1
 twine==3.1.1
 pytest==6.2.5
-pytest-runner==4.2
+pytest-runner==5.3.1
 setuptools>=39.0.1
 bandit==1.7.0
 flake8==3.6.0
