@@ -1,9 +1,9 @@
 [![GitHub release](https://img.shields.io/github/release/Santandersecurityresearch/DrHeader.svg)](https://GitHub.com/Santandersecurityresearch/DrHeader/releases/)
 [![Github all releases](https://img.shields.io/github/downloads/Santandersecurityresearch/DrHeader/total.svg)](https://GitHub.com/Santandersecurityresearch/DrHeader/releases/)
-[![HitCount](http://hits.dwyl.io/Santandersecurityresearch/DrHeader.svg)](http://hits.dwyl.io/Santandersecurityresearch/DrHeader)
+[![HitCount](https://hits.dwyl.com/Santandersecurityresearch/DrHeader.svg)](https://hits.dwyl.com/Santandersecurityresearch/DrHeader)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/Santandersecurityresearch/DrHeader.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Santandersecurityresearch/DrHeader/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Santandersecurityresearch/DrHeader.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Santandersecurityresearch/DrHeader/context:python)
-[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+[![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 
 ![drHEADer](assets/img/hero.png)
 
