@@ -1,8 +1,8 @@
 requests>=2.22.0
-jsonschema==3.2.0
+jsonschema==4.2.1
 jsonschema[format]
 Click>=7.0
 validators>=0.14.0
 tabulate==0.8.9
-pyyaml==5.4
+pyyaml==6.0
 junit-xml==1.9
