@@ -92,9 +92,11 @@ Ready to contribute? Here's how to set up
 
 ## Pull Request Guidelines
 
-Before you submit a pull request, please ensure that:
+When submitting a pull request, please ensure that:
 
 1.  You submit it to 'develop' branch and there's no conflicts.
-2.  You check all tests are passing or have created new tests if change not covered in current test suite. 
-3.  Documentation is updated in `README.md` if functionality has been added or modified. If you are creating new classes or methods, please use docstring to document the code.
-4.  The pull request should work for Python >= 3.7
+2.  You check all tests are passing and have created new ones if change not covered in current test suite. 
+3.  You update `README.md` if functionality has been added or modified. If you are creating new classes or methods, please use docstring to document the code.
+4.  You update `RULES.md` when extending or modifying the way rules can be used, adding documentation and examples for the new/modified feature. 
+5.  Code works for Python >= 3.7
+6.  Once PR is submitted, workflow steps are successful (e.g.: Flake8, Bandit, Safety, etc.)
