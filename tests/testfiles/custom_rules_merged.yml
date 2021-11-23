@@ -7,7 +7,7 @@ Headers:
         Required: True
         Enforce: True
         Value:
-        - 1; mode=block
+            - 0
     Server:
         Required: False
         Enforce: False
@@ -16,45 +16,45 @@ Headers:
         Required: True
         Enforce: True
         Value:
-        - max-age=31536000; includeSubDomains
+            - max-age=31536000; includeSubDomains
     X-Frame-Options:
         Required: True
         Enforce: True
         Value:
-        - SAMEORIGIN
-        - DENY
+            - SAMEORIGIN
+            - DENY
     X-Content-Type-Options:
         Required: True
         Enforce: True
         Value:
-        - nosniff
+            - nosniff
     Set-Cookie:
         Required: Optional
         Enforce: False
         Value:
         Must-Contain:
-        - HttpOnly
-        - Secure
+            - HttpOnly
+            - Secure
     Referrer-Policy:
         Required: True
         Enforce: False
         Delimiter: ','
         Value:
         Must-Contain-One:
-        - strict-origin
-        - strict-origin-when-cross-origin
-        - no-referrer
+            - strict-origin
+            - strict-origin-when-cross-origin
+            - no-referrer
     Cache-Control:
         Required: True
         Enforce: True
         Delimiter: ','
         Value:
-        - no-cache, no-store, must-revalidate
+            - no-store, max-age=0
     Pragma:
         Required: True
         Enforce: True
         Value:
-        - no-cache
+            - no-cache
     X-powered-by:
         Required: True
         Enforce: False
