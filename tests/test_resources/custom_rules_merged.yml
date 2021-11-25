@@ -55,7 +55,7 @@ Headers:
         Enforce: True
         Value:
             - no-cache
-    X-powered-by:
+    X-Powered-By:
         Required: True
         Enforce: False
         Value:

@@ -4,10 +4,10 @@
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
     "X-Frame-Options": "DENY",
     "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "strict-origin",
+    "Referrer-Policy": "no-referrer",
     "Cache-Control": "no-store, max-age=0",
     "Pragma": "no-cache",
     "Set-Cookie": [
-        "HttpOnly; Secure"
+        "session_id=4589399433; HttpOnly; Secure"
     ]
 }
