@@ -14,11 +14,11 @@ from drheader.cli_utils import file_junit_report
 
 class TestCliUtilsFunctions(unittest2.TestCase, xmlunittest.XmlTestMixin):
     def setUp(self):
-        with open(os.path.join(os.path.dirname(__file__), 'test_resources/default_rules.yml'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'r') as f:
             self.rules = yaml.safe_load(f.read())['Headers']
             f.close()
 
-        with open(os.path.join(os.path.dirname(__file__), 'test_resources/example_report.json'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json'), 'r') as f:
             self.report = json.loads(f.read())
             f.close()
 
