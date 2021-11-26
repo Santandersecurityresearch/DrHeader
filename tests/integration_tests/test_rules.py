@@ -10,7 +10,7 @@ class TestDefaultRules(TestBase):
         self.assertEqual(len(self.instance.report), 0, msg=self.build_error_message(self.instance.report))
 
     def test_cache_control_not_present_ko(self):
-        headers = self.modify_header('Cache-Control', None)
+        headers = self.delete_header('Cache-Control')
         expected_report_item = {
             'rule': 'Cache-Control',
             'severity': 'high',
@@ -24,7 +24,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Cache-Control'))
 
     def test_cache_control_allow_caching_ko(self):
-        headers = self.modify_header('Cache-Control', 'no-cache')
+        headers = self.add_or_modify_header('Cache-Control', 'no-cache')
         expected_report_item = {
             'rule': 'Cache-Control',
             'severity': 'high',
@@ -39,7 +39,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Cache-Control'))
 
     def test_csp_not_present_ko(self):
-        headers = self.modify_header('Content-Security-Policy', None)
+        headers = self.delete_header('Content-Security-Policy')
         expected_report_item = {
             'rule': 'Content-Security-Policy',
             'severity': 'high',
@@ -51,7 +51,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Content-Security-Policy'))
 
     def test_csp_default_src_ko(self):
-        headers = self.modify_header('Content-Security-Policy', "default-src 'https://www.santander.co.uk'")
+        headers = self.add_or_modify_header('Content-Security-Policy', "default-src 'https://www.santander.co.uk'")
         expected_report_item = {
             'rule': 'Content-Security-Policy',
             'severity': 'high',
@@ -67,7 +67,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Content-Security-Policy'))
 
     def test_pragma_not_present_ko(self):
-        headers = self.modify_header('Pragma', None)
+        headers = self.delete_header('Pragma')
         expected_report_item = {
             'rule': 'Pragma',
             'severity': 'high',
@@ -81,7 +81,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Pragma'))
 
     def test_referrer_policy_not_present_ko(self):
-        headers = self.modify_header('Referrer-Policy', None)
+        headers = self.delete_header('Referrer-Policy')
         expected_report_item = {
             'rule': 'Referrer-Policy',
             'severity': 'high',
@@ -93,7 +93,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Referrer-Policy'))
 
     def test_referrer_policy_not_strict_ko(self):
-        headers = self.modify_header('Referrer-Policy', 'same-origin')
+        headers = self.add_or_modify_header('Referrer-Policy', 'same-origin')
         expected_report_item = {
             'rule': 'Referrer-Policy',
             'severity': 'high',
@@ -109,7 +109,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Referrer-Policy'))
 
     def test_server_ko(self):
-        headers = self.modify_header('Server', 'Apache/2.4.1 (Unix)')
+        headers = self.add_or_modify_header('Server', 'Apache/2.4.1 (Unix)')
         expected_report_item = {
             'severity': 'high',
             'rule': 'Server',
@@ -121,7 +121,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Server'))
 
     def test_set_cookie_not_secure_ko(self):
-        headers = self.modify_header('Set-Cookie', ['session_id=585733723; HttpOnly; SameSite=Strict'])
+        headers = self.add_or_modify_header('Set-Cookie', ['session_id=585733723; HttpOnly; SameSite=Strict'])
         expected_report_item = {
             'rule': 'Set-Cookie',
             'severity': 'high',
@@ -137,7 +137,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Set-Cookie'))
 
     def test_set_cookie_not_httponly_ko(self):
-        headers = self.modify_header('Set-Cookie', ['session_id=585733723; Secure; SameSite=Strict'])
+        headers = self.add_or_modify_header('Set-Cookie', ['session_id=585733723; Secure; SameSite=Strict'])
         expected_report_item = {
             'rule': 'Set-Cookie',
             'severity': 'medium',
@@ -153,7 +153,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Set-Cookie'))
 
     def test_strict_transport_security_not_present_ko(self):
-        headers = self.modify_header('Strict-Transport-Security', None)
+        headers = self.delete_header('Strict-Transport-Security')
         expected_report_item = {
             'rule': 'Strict-Transport-Security',
             'severity': 'high',
@@ -167,7 +167,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='Strict-Transport-Security'))
 
     def test_user_agent_ko(self):
-        headers = self.modify_header('User-Agent', 'Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus Player Build/MMB29T)')
+        headers = self.add_or_modify_header('User-Agent', 'Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus Player Build/MMB29T)')
         expected_report_item = {
             'severity': 'high',
             'rule': 'User-Agent',
@@ -179,7 +179,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='User-Agent'))
 
     def test_x_aspnet_version_ko(self):
-        headers = self.modify_header('X-AspNet-Version', '2.0.50727')
+        headers = self.add_or_modify_header('X-AspNet-Version', '2.0.50727')
         expected_report_item = {
             'severity': 'high',
             'rule': 'X-AspNet-Version',
@@ -191,7 +191,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='X-AspNet-Version'))
 
     def test_x_client_ip_ko(self):
-        headers = self.modify_header('X-Client-IP', '27.59.32.182')
+        headers = self.add_or_modify_header('X-Client-IP', '27.59.32.182')
         expected_report_item = {
             'severity': 'high',
             'rule': 'X-Client-IP',
@@ -203,7 +203,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='X-Client-IP'))
 
     def test_x_content_type_options_not_present_ko(self):
-        headers = self.modify_header('X-Content-Type-Options', None)
+        headers = self.delete_header('X-Content-Type-Options')
         expected_report_item = {
             'rule': 'X-Content-Type-Options',
             'severity': 'high',
@@ -217,7 +217,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='X-Content-Type-Options'))
 
     def test_x_frame_options_not_present_ko(self):
-        headers = self.modify_header('X-Frame-Options', None)
+        headers = self.delete_header('X-Frame-Options')
         expected_report_item = {
             'rule': 'X-Frame-Options',
             'severity': 'high',
@@ -231,7 +231,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='X-Frame-Options'))
 
     def test_x_frame_options_allow_from_ko(self):
-        headers = self.modify_header('X-Frame-Options', 'ALLOW-FROM https//www.unsafe-url.com')
+        headers = self.add_or_modify_header('X-Frame-Options', 'ALLOW-FROM https//www.unsafe-url.com')
         expected_report_item = {
             'rule': 'X-Frame-Options',
             'severity': 'high',
@@ -246,7 +246,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='X-Frame-Options'))
 
     def test_x_forwarded_for_ko(self):
-        headers = self.modify_header('X-Forwarded-For', '2001:db8:85a3:8d3:1319:8a2e:370:7348')
+        headers = self.add_or_modify_header('X-Forwarded-For', '2001:db8:85a3:8d3:1319:8a2e:370:7348')
         expected_report_item = {
             'severity': 'high',
             'rule': 'X-Forwarded-For',
@@ -258,7 +258,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='X-Forwarded-For'))
 
     def test_x_generator_ko(self):
-        headers = self.modify_header('X-Generator', 'Drupal 7 (http://drupal.org)')
+        headers = self.add_or_modify_header('X-Generator', 'Drupal 7 (http://drupal.org)')
         expected_report_item = {
             'severity': 'high',
             'rule': 'X-Generator',
@@ -270,7 +270,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='X-Generator'))
 
     def test_x_powered_by_ko(self):
-        headers = self.modify_header('X-Powered-By', 'ASP.NET')
+        headers = self.add_or_modify_header('X-Powered-By', 'ASP.NET')
         expected_report_item = {
             'severity': 'high',
             'rule': 'X-Powered-By',
@@ -282,7 +282,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='X-Powered-By'))
 
     def test_x_xss_protection_not_present_ko(self):
-        headers = self.modify_header('X-XSS-Protection', None)
+        headers = self.delete_header('X-XSS-Protection')
         expected_report_item = {
             'rule': 'X-XSS-Protection',
             'severity': 'high',
@@ -296,7 +296,7 @@ class TestDefaultRules(TestBase):
                       msg=self.build_error_message(self.instance.report, expected_report=[expected_report_item], rule='X-XSS-Protection'))
 
     def test_x_xss_protection_enable_filter_ko(self):
-        headers = self.modify_header('X-XSS-Protection', '1; mode=block')
+        headers = self.add_or_modify_header('X-XSS-Protection', '1; mode=block')
         expected_report_item = {
             'rule': 'X-XSS-Protection',
             'severity': 'high',

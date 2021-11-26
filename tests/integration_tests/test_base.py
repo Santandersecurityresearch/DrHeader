@@ -33,18 +33,28 @@ class TestBase(TestCase):
             return json.loads(headers_file.read())
 
     @staticmethod
-    def modify_header(header_name, update_value, pattern=None):
-        headers = TestBase.get_headers()
-        if header_name in headers and pattern and update_value is not None:
+    def add_or_modify_header(header_name, update_value, headers=None):
+        headers = TestBase.get_headers() if not headers else headers
+        headers[header_name] = update_value
+        return headers
+
+    @staticmethod
+    def delete_header(header_name, headers=None):
+        headers = TestBase.get_headers() if not headers else headers
+        if header_name in headers:
+            headers.pop(header_name)
+        return headers
+
+    @staticmethod
+    def modify_directive(header_name, update_value, pattern, headers=None):
+        headers = TestBase.get_headers() if not headers else headers
+        if header_name in headers:
             search_result = re.search(pattern, headers[header_name])
             if search_result:
-                matched_string = search_result.group()
-                headers[header_name] = headers[header_name].replace(matched_string, update_value)
+                headers[header_name] = headers[header_name].replace(search_result.group(), update_value)
             else:
                 headers[header_name] = headers[header_name] + '; ' + update_value
-        elif header_name in headers and update_value is None:
-            headers.pop(header_name)
-        elif update_value:
+        else:
             headers[header_name] = update_value
         return headers
 

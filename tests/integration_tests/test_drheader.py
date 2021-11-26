@@ -15,7 +15,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False}
         self.modify_rule('Content-Security-Policy', rule_value)
 
-        headers = self.modify_header('Content-Security-Policy', "default-src 'none'")
+        headers = self.add_or_modify_header('Content-Security-Policy', "default-src 'none'")
         headers['CONTENT-SECURITY-POLICY'] = headers.pop('Content-Security-Policy')
         unexpected_item_regex = ".*" \
             "'rule': 'Content-Security-Policy', " \
@@ -31,7 +31,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False, 'Must-Contain': ["default-src 'none'"]}
         self.modify_rule('Content-Security-Policy', rule_value)
 
-        headers = self.modify_header('Content-Security-Policy', "default-src 'none'")
+        headers = self.add_or_modify_header('Content-Security-Policy', "default-src 'none'")
         headers['Content-Security-Policy'] = headers.pop('Content-Security-Policy').upper()
         unexpected_item_regex = ".*" \
             "'rule': 'Content-Security-Policy', " \
@@ -47,7 +47,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': 'Optional', 'Enforce': True, 'Value': ['0']}
         self.modify_rule('X-XSS-Protection', rule_value)
 
-        headers = self.modify_header('X-XSS-Protection', None)
+        headers = self.delete_header('X-XSS-Protection')
         unexpected_item_regex = ".*" \
             "'rule': 'X-XSS-Protection', " \
             "(.*, )?" \
@@ -62,7 +62,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': 'Optional', 'Enforce': True, 'Value': ['0']}
         self.modify_rule('X-XSS-Protection', rule_value)
 
-        headers = self.modify_header('X-XSS-Protection', '1; mode=block')
+        headers = self.add_or_modify_header('X-XSS-Protection', '1; mode=block')
         expected_report_item = {
             'rule': 'X-XSS-Protection',
             'severity': 'high',
@@ -80,7 +80,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False}
         self.modify_rule('Strict-Transport-Security', rule_value)
 
-        headers = self.modify_header('Strict-Transport-Security', None)
+        headers = self.delete_header('Strict-Transport-Security')
         expected_report_item = {
             'rule': 'Strict-Transport-Security',
             'severity': 'high',
@@ -95,7 +95,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': False}
         self.modify_rule('Server', rule_value)
 
-        headers = self.modify_header('Server', 'Apache/2.4.1 (Unix)')
+        headers = self.add_or_modify_header('Server', 'Apache/2.4.1 (Unix)')
         expected_report_item = {
             'severity': 'high',
             'rule': 'Server',
@@ -110,7 +110,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': True, 'Value': ['DENY']}
         self.modify_rule('X-Frame-Options', rule_value)
 
-        headers = self.modify_header('X-Frame-Options', 'SAMEORIGIN')
+        headers = self.add_or_modify_header('X-Frame-Options', 'SAMEORIGIN')
         expected_report_item = {
             'rule': 'X-Frame-Options',
             'severity': 'high',
@@ -128,7 +128,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False, 'Must-Contain': ['Secure', 'HttpOnly']}
         self.modify_rule('Set-Cookie', rule_value)
 
-        headers = self.modify_header('Set-Cookie', ['session_id=647388212; HttpOnly; SameSite=Strict'])
+        headers = self.add_or_modify_header('Set-Cookie', ['session_id=647388212; HttpOnly; SameSite=Strict'])
         expected_report_item = {
             'rule': 'Set-Cookie',
             'severity': 'high',
@@ -147,7 +147,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False, 'Must-Contain-One': ['must-revalidate', 'no-cache']}
         self.modify_rule('Cache-Control', rule_value)
 
-        headers = self.modify_header('Cache-Control', 'public')
+        headers = self.add_or_modify_header('Cache-Control', 'public')
         expected_report_item = {
             'rule': 'Cache-Control',
             'severity': 'high',
@@ -166,7 +166,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False, 'Must-Avoid': ['unsafe-inline', 'unsafe-eval']}
         self.modify_rule('Content-Security-Policy', rule_value)
 
-        headers = self.modify_header('Content-Security-Policy', "default-src 'self'; connect-src 'unsafe-inline'")
+        headers = self.add_or_modify_header('Content-Security-Policy', "default-src 'self'; connect-src 'unsafe-inline'")
         expected_report_item = {
             'rule': 'Content-Security-Policy - connect-src',
             'severity': 'medium',
@@ -185,7 +185,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False, 'Directives': {'default-src': {'Required': True, 'Enforce': False}}}
         self.modify_rule('Content-Security-Policy', rule_value)
 
-        headers = self.modify_header('Content-Security-Policy', '', pattern='default-src [^;]*(;)?')
+        headers = self.modify_directive('Content-Security-Policy', '', pattern='default-src [^;]*(;)?')
         expected_report_item = {
             'rule': 'Content-Security-Policy - default-src',
             'severity': 'high',
@@ -200,7 +200,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False, 'Directives': {'referrer': {'Required': False}}}
         self.modify_rule('Content-Security-Policy', rule_value)
 
-        headers = self.modify_header('Content-Security-Policy', 'referrer no-referrer;', pattern='referrer [^;]*(;)?')
+        headers = self.modify_directive('Content-Security-Policy', 'referrer no-referrer;', pattern='referrer [^;]*(;)?')
         expected_report_item = {
             'rule': 'Content-Security-Policy - referrer',
             'severity': 'high',
@@ -215,7 +215,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False, 'Directives': {'script-src': {'Required': True, 'Enforce': True, 'Delimiter': ' ', 'Value': ['self']}}}
         self.modify_rule('Content-Security-Policy', rule_value)
 
-        headers = self.modify_header('Content-Security-Policy', 'script-src https://www.santander.co.uk;', pattern='script-src [^;]*(;)?')
+        headers = self.modify_directive('Content-Security-Policy', 'script-src https://www.santander.co.uk;', pattern='script-src [^;]*(;)?')
         expected_report_item = {
             'rule': 'Content-Security-Policy - script-src',
             'severity': 'high',
@@ -233,7 +233,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False, 'Directives': {'connect-src': {'Required': True, 'Enforce': False, 'Delimiter': ' ', 'Must-Contain': ['https://www.santander.co.uk']}}}
         self.modify_rule('Content-Security-Policy', rule_value)
 
-        headers = self.modify_header('Content-Security-Policy', "connect-src 'self';", pattern='connect-src [^;]*(;)?')
+        headers = self.modify_directive('Content-Security-Policy', "connect-src 'self';", pattern='connect-src [^;]*(;)?')
         expected_report_item = {
             'rule': 'Content-Security-Policy - connect-src',
             'severity': 'medium',
@@ -252,7 +252,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False, 'Directives': {'base-uri': {'Required': True, 'Enforce': False, 'Delimiter': ' ', 'Must-Contain-One': ['https://www.santander.co.uk', 'https://www.santander.com']}}}
         self.modify_rule('Content-Security-Policy', rule_value)
 
-        headers = self.modify_header('Content-Security-Policy', "base-uri 'self';", pattern='base-uri [^;]*(;)?')
+        headers = self.modify_directive('Content-Security-Policy', "base-uri 'self';", pattern='base-uri [^;]*(;)?')
         expected_report_item = {
             'rule': 'Content-Security-Policy - base-uri',
             'severity': 'high',
@@ -271,7 +271,7 @@ class TestDrHeader(TestBase):
         rule_value = {'Required': True, 'Enforce': False, 'Directives': {'sandbox': {'Required': True, 'Enforce': False, 'Delimiter': ' ', 'Must-Avoid': ['allow-downloads']}}}
         self.modify_rule('Content-Security-Policy', rule_value)
 
-        headers = self.modify_header('Content-Security-Policy', 'sandbox allow-downloads allow-modals;', pattern='sandbox [^;]*(;)?')
+        headers = self.modify_directive('Content-Security-Policy', 'sandbox allow-downloads allow-modals;', pattern='sandbox [^;]*(;)?')
         expected_report_item = {
             'rule': 'Content-Security-Policy - sandbox',
             'severity': 'medium',
