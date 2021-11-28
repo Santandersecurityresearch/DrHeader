@@ -1,0 +1,103 @@
+Headers:
+  Content-Security-Policy:
+    Required: true
+    Enforce: false
+    Value: null
+    Must-Contain-One:
+    - default-src 'none'
+    - default-src 'self'
+    Must-Avoid:
+    - unsafe-inline
+    - unsafe-eval
+    Severity: null
+  X-XSS-Protection:
+    Required: true
+    Enforce: true
+    Value:
+    - 0
+    Severity: null
+  Server:
+    Required: false
+    Enforce: false
+    Value: null
+    Severity: null
+  Strict-Transport-Security:
+    Required: true
+    Enforce: true
+    Value:
+    - max-age=31536000; includeSubDomains
+    Severity: null
+  X-Frame-Options:
+    Required: true
+    Enforce: true
+    Value:
+    - SAMEORIGIN
+    - DENY
+    Severity: null
+  X-Content-Type-Options:
+    Required: true
+    Enforce: true
+    Value:
+    - nosniff
+    Severity: null
+  Set-Cookie:
+    Required: Optional
+    Enforce: false
+    Value: null
+    Must-Contain:
+    - HttpOnly
+    - Secure
+    Severity: null
+  Referrer-Policy:
+    Required: true
+    Enforce: false
+    Delimiter: ','
+    Value: null
+    Must-Contain-One:
+    - strict-origin
+    - strict-origin-when-cross-origin
+    - no-referrer
+    Severity: null
+  Cache-Control:
+    Required: true
+    Enforce: true
+    Delimiter: ','
+    Value:
+    - no-store, max-age=0
+    Severity: null
+  Pragma:
+    Required: true
+    Enforce: true
+    Value:
+    - no-cache
+    Severity: null
+  X-powered-by:
+    Required: false
+    Enforce: false
+    Value: null
+    Severity: null
+  X-AspNet-Version:
+    Required: false
+    Enforce: false
+    Value: null
+    Severity: null
+  X-Generator:
+    Required: false
+    Enforce: false
+    Value: null
+    Severity: null
+  User-Agent:
+    Required: false
+    Enforce: false
+    Value: null
+    Severity: null
+  X-Forwarded-For:
+    Required: false
+    Enforce: false
+    Value: null
+    Severity: null
+  X-Client-IP:
+    Required: false
+    Enforce: false
+    Value: null
+    Severity: null

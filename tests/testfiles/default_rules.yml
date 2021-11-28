@@ -4,86 +4,101 @@ Headers:
         Enforce: False
         Value:
         Must-Contain-One:
-        - default-src 'none'
-        - default-src 'self'
+            - default-src 'none'
+            - default-src 'self'
         Must-Avoid:
-        - unsafe-inline
-        - unsafe-eval
+            - unsafe-inline
+            - unsafe-eval
+        Severity:
     X-XSS-Protection:
         Required: True
         Enforce: True
         Value:
-        - 1; mode=block
+            - 0
+        Severity:
     Server:
         Required: False
         Enforce: False
         Value:
+        Severity:
     Strict-Transport-Security:
         Required: True
         Enforce: True
         Value:
-        - max-age=31536000; includeSubDomains
+            - max-age=31536000; includeSubDomains
+        Severity:
     X-Frame-Options:
         Required: True
         Enforce: True
         Value:
-        - SAMEORIGIN
-        - DENY
+            - SAMEORIGIN
+            - DENY
+        Severity:
     X-Content-Type-Options:
         Required: True
         Enforce: True
         Value:
-        - nosniff
+            - nosniff
+        Severity:
     Set-Cookie:
         Required: Optional
         Enforce: False
         Value:
         Must-Contain:
-        - HttpOnly
-        - Secure
+            - HttpOnly
+            - Secure
+        Severity:
     Referrer-Policy:
         Required: True
         Enforce: False
         Delimiter: ','
         Value:
         Must-Contain-One:
-        - strict-origin
-        - strict-origin-when-cross-origin
-        - no-referrer
+            - strict-origin
+            - strict-origin-when-cross-origin
+            - no-referrer
+        Severity:
     Cache-Control:
         Required: True
         Enforce: True
         Delimiter: ','
         Value:
-        - no-cache, no-store, must-revalidate
+            - no-store, max-age=0
+        Severity:
     Pragma:
         Required: True
         Enforce: True
         Value:
-        - no-cache
+            - no-cache
+        Severity:
     X-powered-by:
         Required: False
         Enforce: False
         Value:
+        Severity:
     X-AspNet-Version:
         Required: False
         Enforce: False
         Value:
+        Severity:
     X-Generator:
         Required: False
         Enforce: False
         Value:
+        Severity:
     User-Agent:
         Required: False
         Enforce: False
         Value:
+        Severity:
     X-Forwarded-For:
         Required: False
         Enforce: False
         Value:
+        Severity:
     X-Client-IP:
         Required: False
         Enforce: False
         Value:
-
+        Severity:
     # TODO - Add ruleset and severity

@@ -3,11 +3,14 @@ Headers:
         Required: True
         Enforce: False
         Value:
+        Severity:
     X-powered-by:
         Required: True
         Enforce: False
         Value:
+        Severity:
     New-Invented-Header:
         Required: True
         Enforce: True
         Value:
+        Severity:

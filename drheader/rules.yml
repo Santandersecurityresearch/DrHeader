@@ -4,8 +4,8 @@ Headers:
         Enforce: False
         Value:
         Must-Contain-One:
-        - default-src 'none'
-        - default-src 'self'
+            - default-src 'none'
+            - default-src 'self'
         Must-Avoid:
         - unsafe-inline
         - unsafe-eval
@@ -44,14 +44,11 @@ Headers:
         Enforce: False
         Value:
         Must-Contain:
-        - HttpOnly
         - Secure
         Severity:
     Referrer-Policy:
         Required: True
         Enforce: False
-        Delimiter: ','
-        Value:
         Must-Contain-One:
         - strict-origin
         - strict-origin-when-cross-origin

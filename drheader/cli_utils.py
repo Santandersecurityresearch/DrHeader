@@ -3,11 +3,9 @@
 """Utils for drheader console script."""
 
 import json
-
-import click
-
 import os
 
+import click
 from junit_xml import TestSuite, TestCase
 
 
