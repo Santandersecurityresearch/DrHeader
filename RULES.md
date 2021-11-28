@@ -14,15 +14,18 @@ Headers:
     Value:
     - SAMEORIGIN
     - DENY
+    Severity:
   X-XSS-Protection:
     Required: True
     Enforce: True
     Value:
     - 1; mode=block
+    Severity:
   Server:
     Required: False
     Enforce: False
     Value:
+    Severity:
   Content-Security-Policy:
     Required: True
     Enforce: False
@@ -45,6 +48,7 @@ Headers:
         Value:
         Must-Avoid:
         - http://www.example.com
+    Severity:
   Set-Cookie:
     Required: Optional
     Enforce: False
@@ -52,12 +56,14 @@ Headers:
     Must-Contain:
     - HttpOnly
     - Secure
+    Severity:
   Cache-Control:
     Required: True
     Enforce: True
     Delimiter: ','
     Value:
     - no-cache, no-store, must-revalidate
+    Severity:
 ```
 
 # File Structure
@@ -86,3 +92,5 @@ The yaml file structure for drHEADwe is as follows:
         * It can be set to a list of values where at least one should be part of the header. The validation will be successful if at least one value is found in the value set for that header (ie: for Content-Security-Policy the policy specifies that either "default-src 'none'" OR "default-src 'self'" should be part of the header value)
     * Must-Avoid: To be used when 'Required' is set to True or Optional and 'Enforce' is set to False.
         * It can be set to a list of values that should not be part of the header. The validation will be successful if none of the values are found in the value set for that header (ie: for Content-Security-Policy the policy specifies that "unsafe-inline" AND "unsafe-eval" should not be part of the header value)
+    * Severity: Severity of rule if missing.
+      * It can be high, medium or low
