@@ -135,7 +135,7 @@ class Drheader:
 
         if rule not in self.headers:
             self.__add_report_item(
-                severity='high',
+                severity=Severity if Severity else "high",
                 rule=rule,
                 error_type=1,
                 expected=expected_value_list
@@ -152,7 +152,7 @@ class Drheader:
                     value=self.headers[rule]
                 )
 
-    def __validate_not_exists(self, rule):
+    def __validate_not_exists(self, rule, config=None):
         """
         Verify specified rule does not exist in loaded headers.
 
@@ -161,12 +161,12 @@ class Drheader:
 
         if rule in self.headers:
             self.__add_report_item(
-                severity='high',
+                severity=config['Severity'] if config['Severity'] else "high",
                 rule=rule,
                 error_type=2
             )
 
-    def __validate_exists(self, rule):
+    def __validate_exists(self, rule, config):
         """
         Verify specified rule exists in loaded headers.
 
@@ -174,7 +174,7 @@ class Drheader:
         """
         if rule not in self.headers:
             self.__add_report_item(
-                severity='high',
+                severity=config['Severity'] if config['Severity'] else "high",
                 rule=rule,
                 error_type=1
             )
@@ -283,11 +283,11 @@ class Drheader:
             if config['Enforce']:
                 self.__validate_rule_and_value(rule, config['Value'], config['Severity'])
             else:
-                self.__validate_exists(rule)
+                self.__validate_exists(rule,config)
                 self.__validate_must_contain(rule, config)
                 self.__validate_must_avoid(rule, config)
         else:
-            self.__validate_not_exists(rule)
+            self.__validate_not_exists(rule,config)
 
     def __add_report_item(
         self,
