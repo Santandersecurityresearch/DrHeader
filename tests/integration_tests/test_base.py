@@ -3,13 +3,13 @@ import logging
 import os
 import re
 
+import unittest2
 import yaml
-from unittest2 import TestCase
 
 from drheader import Drheader
 
 
-class TestBase(TestCase):
+class TestBase(unittest2.TestCase):
 
     def setUp(self):
         self.logger = logging.Logger
@@ -87,3 +87,8 @@ class TestBase(TestCase):
         if append_text:
             error_message = '%s\n\n%s' % (error_message, append_text)
         return error_message
+
+
+# start unittest2 to run these tests
+if __name__ == "__main__":
+    unittest2.main()

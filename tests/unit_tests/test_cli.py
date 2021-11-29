@@ -186,3 +186,8 @@ class TestCliUtils(unittest2.TestCase, xmlunittest.XmlTestMixin):
     def test_file_junit_report_contains_seventeen_testcases(self):
         root = self.assertXmlDocument(self.xml)
         self.assertEqual(root.xpath('count(./testsuite/testcase)'), 17)
+
+
+# start unittest2 to run these tests
+if __name__ == "__main__":
+    unittest2.main()
