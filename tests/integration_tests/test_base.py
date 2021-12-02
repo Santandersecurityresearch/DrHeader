@@ -15,21 +15,21 @@ class TestBase(unittest2.TestCase):
         self.logger = logging.Logger
 
     def tearDown(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'w') as test_rules_file,\
-             open(os.path.join(os.path.dirname(__file__), '../../drheader/rules.yml')) as default_rules_file:
-            default_rules = yaml.safe_load(default_rules_file.read())
-            yaml.dump(default_rules, test_rules_file, sort_keys=False)
+        with open(os.path.join(os.path.dirname(__file__), '../../drheader/rules.yml')) as rules_file:
+            default_rules = yaml.safe_load(rules_file.read())
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'w') as rules_file:
+            yaml.dump(default_rules, rules_file, sort_keys=False)
 
     def process_test(self, url=None, method="GET", headers=None, status_code=None):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'r') as test_rules_file:
-            rules = yaml.safe_load(test_rules_file.read())['Headers']
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as rules_file:
+            rules = yaml.safe_load(rules_file.read())['Headers']
 
         self.instance = Drheader(url=url, method=method, headers=headers, status_code=status_code)
         self.instance.analyze(rules=rules)
 
     @staticmethod
     def get_headers():
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/headers_ok.json'), 'r') as headers_file:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/headers_ok.json')) as headers_file:
             return json.loads(headers_file.read())
 
     @staticmethod

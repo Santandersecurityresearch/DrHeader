@@ -17,9 +17,9 @@ from drheader.cli_utils import file_junit_report
 class TestCli(unittest2.TestCase):
 
     def setUp(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json'), 'r') as report_file:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json')) as report_file:
             self.mock_report = json.load(report_file)
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'r') as rules_file:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as rules_file:
             self.mock_rules = yaml.safe_load(rules_file)
 
     @mock.patch('drheader.cli.load_rules')
@@ -79,7 +79,7 @@ class TestCli(unittest2.TestCase):
         runner = CliRunner()
         result = runner.invoke(cli.main, ['scan', 'single', 'https://www.google.com', '--json'])
 
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json'), 'r') as report_file:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json')) as report_file:
             self.assertEqual(json.load(report_file), json.loads(result.output))
 
     @mock.patch('drheader.cli.file_junit_report')
@@ -153,13 +153,13 @@ class TestCli(unittest2.TestCase):
 class TestCliUtils(unittest2.TestCase, xmlunittest.XmlTestMixin):
 
     def setUp(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as f:
             self.rules = yaml.safe_load(f.read())['Headers']
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json')) as f:
             self.report = json.loads(f.read())
 
         file_junit_report(self.rules, self.report)
-        with open('reports/junit.xml', 'r') as f:
+        with open('reports/junit.xml') as f:
             self.xml = f.read()
 
     def test_file_junit_report_writes_default_file(self):
@@ -171,8 +171,8 @@ class TestCliUtils(unittest2.TestCase, xmlunittest.XmlTestMixin):
 
     def test_file_junit_report_contains_ten_failures_and_seventeen_cases(self):
         root = self.assertXmlDocument(self.xml)
-        self.assertXmlHasAttribute(root, 'failures', expected_values=('10'))
-        self.assertXmlHasAttribute(root, 'tests', expected_values=('17'))
+        self.assertXmlHasAttribute(root, 'failures', expected_values='10')
+        self.assertXmlHasAttribute(root, 'tests', expected_values='17')
 
     def test_file_junit_report_contains_only_one_testsuite(self):
         root = self.assertXmlDocument(self.xml)

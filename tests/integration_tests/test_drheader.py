@@ -288,13 +288,13 @@ class TestDrHeader(TestBase):
 
     @staticmethod
     def modify_rule(rule_name, update_value, modify_key=None):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'r+') as test_rules_file:
-            rules = yaml.safe_load(test_rules_file.read())
-
-            if modify_key:
-                rules['Headers'][rule_name][modify_key] = update_value
-            elif update_value is None:
-                rules['Headers'].pop(rule_name)
-            else:
-                rules['Headers'][rule_name] = update_value
-            yaml.dump(rules, test_rules_file)
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as rules_file:
+            rules = yaml.safe_load(rules_file.read())
+        if modify_key:
+            rules['Headers'][rule_name][modify_key] = update_value
+        elif update_value is None:
+            rules['Headers'].pop(rule_name)
+        else:
+            rules['Headers'][rule_name] = update_value
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'w') as rules_file:
+            yaml.dump(rules, rules_file, sort_keys=False)

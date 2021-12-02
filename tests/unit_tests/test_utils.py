@@ -14,11 +14,11 @@ from drheader.utils import load_rules, get_rules_from_uri
 class TestUtilsFunctions(unittest2.TestCase):
 
     def setUp(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as f:
             self.default_rules = yaml.safe_load(f.read())
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml')) as f:
             self.custom_rules = yaml.safe_load(f.read())
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules_merged.yml'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules_merged.yml')) as f:
             self.custom_rules_merged = yaml.safe_load(f.read())
 
     def test_load_rules_should_load_default_rules_when_no_rules_file_is_provided(self):
@@ -26,13 +26,13 @@ class TestUtilsFunctions(unittest2.TestCase):
         self.assertEqual(rules, self.default_rules['Headers'])
 
     def test_load_rules_should_load_custom_rules_when_a_rules_file_is_provided(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml')) as f:
             rules = load_rules(f)
 
         self.assertEqual(rules, self.custom_rules['Headers'])
 
     def test_load_rules_should_merge_custom_rules_with_default_rules_when_merge_flag_is_true(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml')) as f:
             rules = load_rules(f, True)
 
         self.assertEqual(rules, self.custom_rules_merged['Headers'])
@@ -53,6 +53,7 @@ class TestUtilsFunctions(unittest2.TestCase):
 
         with self.assertRaises(Exception) as e:
             get_rules_from_uri(uri)
+
         self.assertEqual('No content retrieved from {}'.format(uri), str(e.exception))
 
 
