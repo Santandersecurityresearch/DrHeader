@@ -22,17 +22,6 @@ def _to_dict(string_to_convert, item_delimiter, key_value_delimiter):
     return result
 
 
-def _to_lower_dict(some_dict):
-    """Convert all keys to lowercase"""
-    result = {}
-    for key, value in some_dict.items():
-        try:
-            result[key.lower()] = value
-        except AttributeError:
-            result[key] = value
-    return result
-
-
 def load_rules(rule_file=None, merge=None):
     """
     Loads drheader ruleset. Will load local defaults unless overridden.
@@ -40,7 +29,7 @@ def load_rules(rule_file=None, merge=None):
     :param rule_file: file object of rules.
     :type rule_file: file
     :param merge: flag indicating to merge file_rule with default rules
-    :type rule_file: boolean
+    :type merge: boolean
     :return: drheader rules
     :rtype: dict
     """
@@ -61,7 +50,7 @@ def load_rules(rule_file=None, merge=None):
 
 def merge_rules(default_rules, custom_rules):
     """
-    Mege both rule set. Rules defined in 'custom_rules', also present in 'default_rules', will be overriden.
+    Merge both rule set. Rules defined in 'custom_rules', also present in 'default_rules', will be overridden.
     If a new rule is present in custom_rules, not present in default_rules, it will be added.
     :param default_rules: base file object of rules.
     :type default_rules: dict
@@ -77,16 +66,16 @@ def merge_rules(default_rules, custom_rules):
     return default_rules
 
 
-def get_rules_from_uri(URI):
+def get_rules_from_uri(uri):
     """
     Retrieves custom rule set from URL
-    :param URI: URL to your custom rules file
-    :type URI: uri
+    :param uri: URL to your custom rules file
+    :type uri: uri
     :return: rules file
     :rtype: file
     """
-    download = requests.get(URI)
+    download = requests.get(uri)
     if not download.content:
-        raise Exception('No content retrieved from {}'.format(URI))
+        raise Exception('No content retrieved from {}'.format(uri))
     file = io.BytesIO(download.content)
     return file
