@@ -93,4 +93,4 @@ The yaml file structure for drHEADwe is as follows:
     * Must-Avoid: To be used when 'Required' is set to True or Optional and 'Enforce' is set to False.
         * It can be set to a list of values that should not be part of the header. The validation will be successful if none of the values are found in the value set for that header (ie: for Content-Security-Policy the policy specifies that "unsafe-inline" AND "unsafe-eval" should not be part of the header value)
     * Severity (Optional): Severity of rule if missing.
-      * It can be high, medium or low
+      * It can be high, medium or low.
