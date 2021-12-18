@@ -3,37 +3,31 @@ Headers:
         Required: True
         Enforce: False
         Value:
-        Severity:
     X-XSS-Protection:
         Required: True
         Enforce: True
         Value:
             - 0
-        Severity:
     Server:
         Required: False
         Enforce: False
         Value:
-        Severity:
     Strict-Transport-Security:
         Required: True
         Enforce: True
         Value:
             - max-age=31536000; includeSubDomains
-        Severity:
     X-Frame-Options:
         Required: True
         Enforce: True
         Value:
             - SAMEORIGIN
             - DENY
-        Severity:
     X-Content-Type-Options:
         Required: True
         Enforce: True
         Value:
             - nosniff
-        Severity:
     Set-Cookie:
         Required: Optional
         Enforce: False
@@ -41,7 +35,6 @@ Headers:
         Must-Contain:
             - HttpOnly
             - Secure
-        Severity:
     Referrer-Policy:
         Required: True
         Enforce: False
@@ -51,52 +44,42 @@ Headers:
             - strict-origin
             - strict-origin-when-cross-origin
             - no-referrer
-        Severity:
     Cache-Control:
         Required: True
         Enforce: True
         Delimiter: ','
         Value:
             - no-store, max-age=0
-        Severity:
     Pragma:
         Required: True
         Enforce: True
         Value:
             - no-cache
-        Severity:
     X-powered-by:
         Required: True
         Enforce: False
         Value:
-        Severity:
     X-AspNet-Version:
         Required: False
         Enforce: False
         Value:
-        Severity:
     X-Generator:
         Required: False
         Enforce: False
         Value:
-        Severity:
     User-Agent:
         Required: False
         Enforce: False
         Value:
-        Severity:
     X-Forwarded-For:
         Required: False
         Enforce: False
         Value:
-        Severity:
     X-Client-IP:
         Required: False
         Enforce: False
         Value:
-        Severity:
     New-Invented-Header:
         Required: True
         Enforce: True
         Value:
-        Severity:

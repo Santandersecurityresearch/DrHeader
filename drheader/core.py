@@ -118,7 +118,7 @@ class Drheader:
                     self.__validate_rules(d_config, header=rule, directive=directive)
         return self.report
 
-    def __validate_rule_and_value(self, expected_value, header, directive, Severity=None):
+    def __validate_rule_and_value(self, expected_value, header, directive, Severity=False):
         """
         Verify headers content matches provided config.
 
@@ -173,7 +173,7 @@ class Drheader:
 
         if rule in headers:
             self.__add_report_item(
-                severity=config['Severity'] if config['Severity'] else "high",
+                severity= config['Severity'] if ("Severity" in config) else "high",
                 error_type=8 if directive else 2,
                 header=header,
                 directive=directive)
@@ -194,7 +194,7 @@ class Drheader:
 
         if rule not in headers:
             self.__add_report_item(
-                severity=config['Severity'] if config['Severity']  else "high",
+                severity= config['Severity'] if ("Severity" in config) else "high",
                 error_type=7 if directive else 1,
                 header=header,
                 directive=directive)
@@ -226,7 +226,7 @@ class Drheader:
                     indices = [list(policy.values()).index(item) for item in non_compliant_values]
                     for index in indices:
                         self.__add_report_item(
-                            severity=config['Severity'] if config['Severity'] else "high",
+                            severity=config['Severity'] if ("Severity" in config) else "medium",
                             error_type=5,
                             header=header,
                             directive=list(policy.keys())[index],
@@ -234,7 +234,7 @@ class Drheader:
                             value=avoid_value)
                 else:
                     self.__add_report_item(
-                        severity=config['Severity'] if config['Severity'] else "high",
+                        severity=config['Severity'] if ("Severity" in config) else "high",
                         error_type=5,
                         header=header,
                         directive=directive,
@@ -268,7 +268,7 @@ class Drheader:
                     break
             if not does_contain:
                 self.__add_report_item(
-                    severity=config['Severity'] if config['Severity'] else "high",
+                    severity= config['Severity'] if ("Severity" in config) else "high",
                     error_type=6,
                     header=header,
                     directive=directive,
@@ -282,7 +282,7 @@ class Drheader:
                     for contain_value in config['Must-Contain']:
                         if contain_value not in cookie:
                             self.__add_report_item(
-                                severity=config['Severity'] if (contain_value == 'secure' and config['Severity']) else 'medium',
+                                severity=config['Severity'] if (contain_value == 'secure' and ("Severity" in config)) else 'medium',
                                 error_type=4,
                                 header=header,
                                 expected=config['Must-Contain'],
@@ -292,7 +292,7 @@ class Drheader:
                 for contain_value in config['Must-Contain']:
                     if contain_value not in header_value and rule not in self.anomalies:
                         self.__add_report_item(
-                            severity=config['Severity'] if config['Severity'] else 'medium',
+                            severity=config['Severity'] if ("Severity" in config) else 'medium',
                             error_type=4,
                             header=header,
                             directive=directive,
@@ -314,7 +314,10 @@ class Drheader:
 
         if config['Required'] is True or (config['Required'] == 'Optional' and header in self.headers):
             if config['Enforce']:
-                self.__validate_rule_and_value(config['Value'], header, directive, config['Severity'])
+                if "Severity" in config:
+                    self.__validate_rule_and_value(config['Value'], header, directive, config['Severity'])
+                else:
+                    self.__validate_rule_and_value(config['Value'], header, directive, config)
             else:
                 exists = self.__validate_exists(header, directive, config)
                 if exists:

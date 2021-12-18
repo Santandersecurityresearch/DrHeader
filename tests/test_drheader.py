@@ -399,7 +399,6 @@ class DrheaderRules(unittest2.TestCase):
             },
             {
                 'rule': 'Content-Security-Policy - connect-src',
-                'severity': 'high',
                 'message': 'Must-Avoid directive included',
                 'avoid': ['unsafe-inline', 'unsafe-eval'],
                 'delimiter': ';',
@@ -420,21 +419,18 @@ class DrheaderRules(unittest2.TestCase):
             },
             {   
                 'rule': 'Strict-Transport-Security',
-                'severity': 'high',
                 'message': 'Header not included in response',
                 'expected': ['max-age=31536000', 'includesubdomains'],
                 'delimiter': ';'
             },
             {
                 'rule': 'X-Frame-Options',
-                'severity': 'high',
                 'message': 'Header not included in response',
                 'expected': ['sameorigin', 'deny'],
                 'delimiter': ';'
             },
             {   
                 'rule': 'X-Content-Type-Options',
-                'severity': 'high',
                 'message': 'Header not included in response',
                 'expected': ['nosniff'],
                 'delimiter': ';'
@@ -478,8 +474,7 @@ class DrheaderRules(unittest2.TestCase):
         rule_value['Directives'] = {
             'script-src': {
                 'Required': True,
-                'Enforce': False,
-                "Severity":""
+                'Enforce': False
             }
         }
         self.modify_rules('Content-Security-Policy', rule_value)
@@ -507,8 +502,7 @@ class DrheaderRules(unittest2.TestCase):
                 'Required': True,
                 'Enforce': True,
                 'Delimiter': ' ',
-                'Value': ['self'],
-                "Severity":""
+                'Value': ['self']
             }
         }
         self.modify_rules('Content-Security-Policy', rule_value)
@@ -540,8 +534,7 @@ class DrheaderRules(unittest2.TestCase):
                 'Enforce': False,
                 'Delimiter': ' ',
                 'Value': '',
-                'Must-Avoid': ['https://www.santander.co.uk'],
-                "Severity": ""
+                'Must-Avoid': ['https://www.santander.co.uk']
             }
         }
         self.modify_rules('Content-Security-Policy', rule_value)
@@ -574,8 +567,7 @@ class DrheaderRules(unittest2.TestCase):
                 'Enforce': False,
                 'Delimiter': ' ',
                 'Value': '',
-                'Must-Contain': ['https://www.santander.co.uk'],
-                "Severity": ""
+                'Must-Contain': ['https://www.santander.co.uk']
             }
         }
         self.modify_rules('Content-Security-Policy', rule_value)
@@ -608,8 +600,7 @@ class DrheaderRules(unittest2.TestCase):
                 'Enforce': False,
                 'Delimiter': ' ',
                 'Value': '',
-                'Must-Contain-One': ['https://www.santander.co.uk', 'https://www.google.com'],
-                "Severity": ""
+                'Must-Contain-One': ['https://www.santander.co.uk', 'https://www.google.com']
             }
         }
         self.modify_rules('Content-Security-Policy', rule_value)

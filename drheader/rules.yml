@@ -9,13 +9,11 @@ Headers:
         Must-Avoid:
         - unsafe-inline
         - unsafe-eval
-        Severity:
     X-XSS-Protection:
         Required: True
         Enforce: True
         Value:
         - 1; mode=block
-        Severity:
     Server:
         Required: False
         Enforce: False
@@ -25,27 +23,23 @@ Headers:
         Enforce: True
         Value:
         - max-age=31536000; includeSubDomains
-        Severity:
     X-Frame-Options:
         Required: True
         Enforce: True
         Value:
         - SAMEORIGIN
         - DENY
-        Severity:
     X-Content-Type-Options:
         Required: True
         Enforce: True
         Value:
         - nosniff
-        Severity:
     Set-Cookie:
         Required: Optional
         Enforce: False
         Value:
         Must-Contain:
         - Secure
-        Severity:
     Referrer-Policy:
         Required: True
         Enforce: False
@@ -53,20 +47,17 @@ Headers:
         - strict-origin
         - strict-origin-when-cross-origin
         - no-referrer
-        Severity:
     Cache-Control:
         Required: True
         Enforce: True
         Delimiter: ','
         Value:
         - no-cache, no-store, must-revalidate
-        Severity:
     Pragma:
         Required: True
         Enforce: True
         Value:
         - no-cache
-        Severity:
     X-powered-by:
         Required: False
         Enforce: False
@@ -75,25 +66,20 @@ Headers:
         Required: False
         Enforce: False
         Value:
-        Severity:
     X-Generator:
         Required: False
         Enforce: False
         Value:
-        Severity:
     User-Agent:
         Required: False
         Enforce: False
         Value:
-        Severity:
     X-Forwarded-For:
         Required: False
         Enforce: False
         Value:
-        Severity:
     X-Client-IP:
         Required: False
         Enforce: False
         Value:
-        Severity:
     # TODO - Add ruleset and severity
