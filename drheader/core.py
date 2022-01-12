@@ -234,7 +234,7 @@ class Drheader:
                             value=avoid_value)
                 else:
                     self.__add_report_item(
-                        severity=config['Severity'] if ("Severity" in config) else "high",
+                        severity=config['Severity'] if ("Severity" in config) else "medium",
                         error_type=5,
                         header=header,
                         directive=directive,
@@ -281,8 +281,9 @@ class Drheader:
                 for cookie in self.headers[header]:
                     for contain_value in config['Must-Contain']:
                         if contain_value not in cookie:
+                            default_severity = 'high' if contain_value == 'secure' else 'medium'
                             self.__add_report_item(
-                                severity=config['Severity'] if (contain_value == 'secure' and ("Severity" in config)) else 'medium',
+                                severity=config['Severity'] if (contain_value == 'secure' and ("Severity" in config)) else default_severity,
                                 error_type=4,
                                 header=header,
                                 expected=config['Must-Contain'],
@@ -317,7 +318,7 @@ class Drheader:
                 if "Severity" in config:
                     self.__validate_rule_and_value(config['Value'], header, directive, config['Severity'])
                 else:
-                    self.__validate_rule_and_value(config['Value'], header, directive, config)
+                    self.__validate_rule_and_value(config['Value'], header, directive)
             else:
                 exists = self.__validate_exists(header, directive, config)
                 if exists:
