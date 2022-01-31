@@ -56,34 +56,34 @@ Ready to contribute? Here's how to set up
 1.  Fork the <span class="title-ref">drheader</span> repo on GitHub.
 
 2.  Clone your fork locally:
-    
+
         $ git clone git@github.com:your_name_here/drheader.git
 
 3.  Install your local copy into a virtualenv. Assuming you have
     virtualenvwrapper installed, this is how you set up your fork for
     local development:
-    
+
         $ mkvirtualenv drheader
         $ cd drheader/
         $ python setup.py develop
 
 4.  Create a branch for local development:
-    
+
         $ git checkout -b name-of-your-bugfix-or-feature
-    
+
     Now you can make your changes locally.
 
 5.  When you're done making changes, check that your changes pass flake8
     and the tests, including testing other Python versions with tox:
-    
+
         $ flake8 drheader tests
-        $ python setup.py test or py.test
+        $ py.test
         $ tox
-    
+
     To get flake8 and tox, just pip install them into your virtualenv.
 
 6.  Commit your changes and push your branch to GitHub:
-    
+
         $ git add .
         $ git commit -m "Your detailed description of your changes."
         $ git push origin name-of-your-bugfix-or-feature
@@ -95,8 +95,8 @@ Ready to contribute? Here's how to set up
 When submitting a pull request, please ensure that:
 
 1.  You submit it to 'develop' branch and there's no conflicts.
-2.  You check all tests are passing and have created new ones if change not covered in current test suite. 
+2.  You check all tests are passing and have created new ones if change not covered in current test suite.
 3.  You update `README.md` if functionality has been added or modified. If you are creating new classes or methods, please use docstring to document the code.
-4.  You update `RULES.md` when extending or modifying the way rules can be used, adding documentation and examples for the new/modified feature. 
+4.  You update `RULES.md` when extending or modifying the way rules can be used, adding documentation and examples for the new/modified feature.
 5.  Code works for Python >= 3.7
 6.  Once PR is submitted, workflow steps are successful (e.g.: Flake8, Bandit, Safety, etc.)

@@ -24,10 +24,6 @@ with open('HISTORY.md') as history_file:
 with open('requirements.txt') as f:
     requirements = f.read()
 
-setup_requirements = ['pytest-runner', ]
-
-test_requirements = ['pytest']
-
 setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -52,9 +48,7 @@ setup(
     author='Santander UK Security Engineering',
     name='drheader',
     packages=['drheader'],
-    setup_requires=setup_requirements,
     test_suite='tests',
-    tests_require=test_requirements, 
     url='https://github.com/santandersecurityresearch/drheader',
     version='1.6.0',
     zip_safe=False,
