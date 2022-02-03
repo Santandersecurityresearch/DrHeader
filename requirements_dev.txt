@@ -5,7 +5,7 @@ tox==3.24.5
 coverage==6.2
 Sphinx==4.3.0
 m2r2==0.3.2
-twine==3.7.1
+twine==3.8.0
 pytest==6.2.5
 setuptools>=39.0.1
 bandit==1.7.1
