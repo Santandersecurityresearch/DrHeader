@@ -156,7 +156,7 @@ class Drheader:
                     expected=expected_value_list,
                     value=headers[rule])
 
-    def __validate_not_exists(self, header, directive,config):
+    def __validate_not_exists(self, header, directive, config):
         """
         Verify specified rule does not exist in loaded headers.
 
@@ -173,7 +173,7 @@ class Drheader:
 
         if rule in headers:
             self.__add_report_item(
-                severity= config['Severity'] if ("Severity" in config) else "high",
+                severity=config['Severity'] if ("Severity" in config) else "high",
                 error_type=8 if directive else 2,
                 header=header,
                 directive=directive)
@@ -194,7 +194,7 @@ class Drheader:
 
         if rule not in headers:
             self.__add_report_item(
-                severity= config['Severity'] if ("Severity" in config) else "high",
+                severity=config['Severity'] if ("Severity" in config) else "high",
                 error_type=7 if directive else 1,
                 header=header,
                 directive=directive)
@@ -268,7 +268,7 @@ class Drheader:
                     break
             if not does_contain:
                 self.__add_report_item(
-                    severity= config['Severity'] if ("Severity" in config) else "high",
+                    severity=config['Severity'] if ("Severity" in config) else "high",
                     error_type=6,
                     header=header,
                     directive=directive,
@@ -283,7 +283,8 @@ class Drheader:
                         if contain_value not in cookie:
                             default_severity = 'high' if contain_value == 'secure' else 'medium'
                             self.__add_report_item(
-                                severity=config['Severity'] if (contain_value == 'secure' and ("Severity" in config)) else default_severity,
+                                severity=config['Severity'] if (contain_value == 'secure' and (
+                                    "Severity" in config)) else default_severity,
                                 error_type=4,
                                 header=header,
                                 expected=config['Must-Contain'],
