@@ -118,7 +118,7 @@ class Drheader:
                     self.__validate_rules(d_config, header=rule, directive=directive)
         return self.report
 
-    def __validate_rule_and_value(self, expected_value, header, directive):
+    def __validate_rule_and_value(self, expected_value, header, directive, Severity=False):
         """
         Verify headers content matches provided config.
 
@@ -140,7 +140,7 @@ class Drheader:
 
         if rule not in headers:
             self.__add_report_item(
-                severity='high',
+                severity=Severity if Severity else "high",
                 error_type=7 if directive else 1,
                 header=header,
                 directive=directive,
@@ -149,14 +149,14 @@ class Drheader:
             rule_list = [item.strip(' ') for item in headers[rule].split(self.delimiter)]
             if not all(elem in expected_value_list for elem in rule_list):
                 self.__add_report_item(
-                    severity='high',
+                    severity=Severity if Severity else "high",
                     error_type=3,
                     header=header,
                     directive=directive,
                     expected=expected_value_list,
                     value=headers[rule])
 
-    def __validate_not_exists(self, header, directive):
+    def __validate_not_exists(self, header, directive, config):
         """
         Verify specified rule does not exist in loaded headers.
 
@@ -173,12 +173,12 @@ class Drheader:
 
         if rule in headers:
             self.__add_report_item(
-                severity='high',
+                severity=config['Severity'] if ("Severity" in config) else "high",
                 error_type=8 if directive else 2,
                 header=header,
                 directive=directive)
 
-    def __validate_exists(self, header, directive):
+    def __validate_exists(self, header, directive, config):
         """
         Verify specified rule exists in loaded headers.
 
@@ -194,7 +194,7 @@ class Drheader:
 
         if rule not in headers:
             self.__add_report_item(
-                severity='high',
+                severity=config['Severity'] if ("Severity" in config) else "high",
                 error_type=7 if directive else 1,
                 header=header,
                 directive=directive)
@@ -226,7 +226,7 @@ class Drheader:
                     indices = [list(policy.values()).index(item) for item in non_compliant_values]
                     for index in indices:
                         self.__add_report_item(
-                            severity='medium',
+                            severity=config['Severity'] if ("Severity" in config) else "medium",
                             error_type=5,
                             header=header,
                             directive=list(policy.keys())[index],
@@ -234,7 +234,7 @@ class Drheader:
                             value=avoid_value)
                 else:
                     self.__add_report_item(
-                        severity='medium',
+                        severity=config['Severity'] if ("Severity" in config) else "medium",
                         error_type=5,
                         header=header,
                         directive=directive,
@@ -268,7 +268,7 @@ class Drheader:
                     break
             if not does_contain:
                 self.__add_report_item(
-                    severity='high',
+                    severity=config['Severity'] if ("Severity" in config) else "high",
                     error_type=6,
                     header=header,
                     directive=directive,
@@ -281,8 +281,10 @@ class Drheader:
                 for cookie in self.headers[header]:
                     for contain_value in config['Must-Contain']:
                         if contain_value not in cookie:
+                            default_severity = 'high' if contain_value == 'secure' else 'medium'
                             self.__add_report_item(
-                                severity='high' if contain_value == 'secure' else 'medium',
+                                severity=config['Severity'] if (contain_value == 'secure' and (
+                                    "Severity" in config)) else default_severity,
                                 error_type=4,
                                 header=header,
                                 expected=config['Must-Contain'],
@@ -292,7 +294,7 @@ class Drheader:
                 for contain_value in config['Must-Contain']:
                     if contain_value not in header_value and rule not in self.anomalies:
                         self.__add_report_item(
-                            severity='medium',
+                            severity=config['Severity'] if ("Severity" in config) else 'medium',
                             error_type=4,
                             header=header,
                             directive=directive,
@@ -314,16 +316,19 @@ class Drheader:
 
         if config['Required'] is True or (config['Required'] == 'Optional' and header in self.headers):
             if config['Enforce']:
-                self.__validate_rule_and_value(config['Value'], header, directive)
+                if "Severity" in config:
+                    self.__validate_rule_and_value(config['Value'], header, directive, config['Severity'])
+                else:
+                    self.__validate_rule_and_value(config['Value'], header, directive)
             else:
-                exists = self.__validate_exists(header, directive)
+                exists = self.__validate_exists(header, directive, config)
                 if exists:
                     if 'Must-Contain-One' in config or 'Must-Contain' in config:
                         self.__validate_must_contain(config, header, directive)
                     if 'Must-Avoid' in config:
                         self.__validate_must_avoid(config, header, directive)
         elif config['Required'] is False:
-            self.__validate_not_exists(header, directive)
+            self.__validate_not_exists(header, directive, config)
 
     def __add_report_item(self, severity, error_type, header, directive=None, expected=None, avoid=None, value='',
                           cookie=''):
