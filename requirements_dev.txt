@@ -6,7 +6,7 @@ coverage==6.3.1
 Sphinx==4.3.0
 m2r2==0.3.2
 twine==3.8.0
-pytest==7.0.0
+pytest==7.0.1
 setuptools>=39.0.1
 bandit==1.7.2
 flake8==4.0.1
