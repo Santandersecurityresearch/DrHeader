@@ -26,7 +26,7 @@ class TestCli(unittest2.TestCase):
     @mock.patch('drheader.cli.Drheader')
     def test_compare_should_analyse_headers(self, drheader_mock, load_rules_mock):
         drheader_instance = drheader_mock.return_value
-        drheader_instance.report = self.mock_report
+        drheader_instance.reporter.report = self.mock_report
         load_rules_mock.return_value = self.mock_rules
 
         with tempfile.NamedTemporaryFile() as tmp:
@@ -45,7 +45,7 @@ class TestCli(unittest2.TestCase):
     @mock.patch('drheader.cli.Drheader')
     def test_compare_invalid_format_should_raise_exception_and_exit(self, drheader_mock, load_rules_mock):
         drheader_instance = drheader_mock.return_value
-        drheader_instance.report = self.mock_report
+        drheader_instance.reporter.report = self.mock_report
         load_rules_mock.return_value = self.mock_rules
 
         with tempfile.NamedTemporaryFile() as tmp:
@@ -61,7 +61,7 @@ class TestCli(unittest2.TestCase):
     @mock.patch('drheader.cli.Drheader')
     def test_scan_single_should_analyse_target_url(self, drheader_mock, load_rules_mock):
         drheader_instance = drheader_mock.return_value
-        drheader_instance.report = self.mock_report
+        drheader_instance.reporter.report = self.mock_report
         load_rules_mock.return_value = self.mock_rules
 
         runner = CliRunner()
@@ -73,7 +73,7 @@ class TestCli(unittest2.TestCase):
     @mock.patch('drheader.cli.Drheader')
     def test_scan_single_with_json_flag_should_output_json(self, drheader_mock, load_rules_mock):
         drheader_instance = drheader_mock.return_value
-        drheader_instance.report = self.mock_report
+        drheader_instance.reporter.report = self.mock_report
         load_rules_mock.return_value = self.mock_rules
 
         runner = CliRunner()
@@ -87,7 +87,7 @@ class TestCli(unittest2.TestCase):
     @mock.patch('drheader.cli.Drheader')
     def test_scan_single_with_junit_flag_should_write_junit_report(self, drheader_mock, load_rules_mock, junit_mock):
         drheader_instance = drheader_mock.return_value
-        drheader_instance.report = self.mock_report
+        drheader_instance.reporter.report = self.mock_report
         load_rules_mock.return_value = self.mock_rules
 
         runner = CliRunner()
@@ -99,7 +99,7 @@ class TestCli(unittest2.TestCase):
     @mock.patch('drheader.cli.Drheader')
     def test_scan_bulk_should_read_json_file(self, drheader_mock, load_rules_mock):
         drheader_instance = drheader_mock.return_value
-        drheader_instance.report = self.mock_report
+        drheader_instance.reporter.report = self.mock_report
         load_rules_mock.return_value = self.mock_rules
 
         with tempfile.NamedTemporaryFile() as tmp:
@@ -118,7 +118,7 @@ class TestCli(unittest2.TestCase):
     @mock.patch('drheader.cli.Drheader')
     def test_scan_bulk_should_read_txt_file(self, drheader_mock, load_rules_mock):
         drheader_instance = drheader_mock.return_value
-        drheader_instance.report = self.mock_report
+        drheader_instance.reporter.report = self.mock_report
         load_rules_mock.return_value = self.mock_rules
 
         with tempfile.NamedTemporaryFile() as tmp:
@@ -137,7 +137,7 @@ class TestCli(unittest2.TestCase):
     @mock.patch('drheader.cli.Drheader')
     def test_scan_bulk_invalid_format_should_raise_exception_and_exit(self, drheader_mock, load_rules_mock):
         drheader_instance = drheader_mock.return_value
-        drheader_instance.report = self.mock_report
+        drheader_instance.reporter.report = self.mock_report
         load_rules_mock.return_value = self.mock_rules
 
         with tempfile.NamedTemporaryFile() as tmp:

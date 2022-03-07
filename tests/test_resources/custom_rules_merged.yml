@@ -1,85 +1,58 @@
 Headers:
+    Cache-Control:
+        Required: True
+        Value:
+            - no-store
+            - max-age=0
     Content-Security-Policy:
         Required: True
-        Enforce: False
-        Value:
-    X-XSS-Protection:
+    Pragma:
         Required: True
-        Enforce: True
         Value:
-            - 0
-    Server:
-        Required: False
-        Enforce: False
-        Value:
-    Strict-Transport-Security:
-        Required: True
-        Enforce: True
-        Value:
-            - max-age=31536000; includeSubDomains
-    X-Frame-Options:
-        Required: True
-        Enforce: True
-        Value:
-            - SAMEORIGIN
-            - DENY
-    X-Content-Type-Options:
-        Required: True
-        Enforce: True
-        Value:
-            - nosniff
-    Set-Cookie:
-        Required: Optional
-        Enforce: False
-        Value:
-        Must-Contain:
-            - HttpOnly
-            - Secure
+            - no-cache
     Referrer-Policy:
         Required: True
-        Enforce: False
-        Delimiter: ','
-        Value:
         Must-Contain-One:
             - strict-origin
             - strict-origin-when-cross-origin
             - no-referrer
-    Cache-Control:
-        Required: True
-        Enforce: True
-        Delimiter: ','
-        Value:
-            - no-store, max-age=0
-    Pragma:
-        Required: True
-        Enforce: True
-        Value:
-            - no-cache
-    X-Powered-By:
-        Required: True
-        Enforce: False
-        Value:
-    X-AspNet-Version:
+    Server:
         Required: False
-        Enforce: False
+    Set-Cookie:
+        Required: Optional
+        Must-Contain:
+            - HttpOnly
+            - Secure
+    Strict-Transport-Security:
+        Required: True
         Value:
-    X-Generator:
-        Required: False
-        Enforce: False
-        Value:
+            - max-age=31536000
+            - includeSubDomains
     User-Agent:
         Required: False
-        Enforce: False
-        Value:
-    X-Forwarded-For:
+    X-AspNet-Version:
         Required: False
-        Enforce: False
-        Value:
     X-Client-IP:
         Required: False
-        Enforce: False
+    X-Content-Type-Options:
+        Required: True
         Value:
+            - nosniff
+    X-Forwarded-For:
+        Required: False
+    X-Frame-Options:
+        Required: True
+        Value-One-Of:
+            - DENY
+            - SAMEORIGIN
+    X-Generator:
+        Required: False
+    X-Powered-By:
+        Required: True
+    X-XSS-Protection:
+        Required: True
+        Value:
+            - 0
     New-Invented-Header:
         Required: True
-        Enforce: True
-        Value:
+        Value: required-value
