@@ -31,10 +31,10 @@ Headers:
   Content-Security-Policy:
     Required: True
     Must-Avoid:
-        - block-all-mixed-content
-        - referrer
-        - unsafe-inline
-        - unsafe-eval
+      - block-all-mixed-content
+      - referrer
+      - unsafe-inline
+      - unsafe-eval
     Directives:
       Default-Src:
         Required: True
@@ -42,6 +42,15 @@ Headers:
           - none
           - self
         Severity: Critical
+      Report-To:
+        Required: Optional
+        Value: /_/csp_report
+  Referrer-Policy:
+    Required: True
+    Value-Any-Of:
+      - no-referrer
+      - same-origin
+      - strict-origin
   Server:
     Required: False
     Severity: Warning
@@ -68,8 +77,8 @@ The yaml file structure for drHEADer is described below. All elements are case-i
 expected and disallowed values are case-insensitive.
 
 * There must always be a root element `headers`
-* Inside the root element, there can be as many elements as headers you want to audit (e.g. Content-Security-Policy,
-Set-Cookie)
+* Inside the root element, there can be as many elements as headers you want to audit *(e.g. Content-Security-Policy,
+Set-Cookie)*
 
 * Each header must specify whether the header is required via the `required` element. It can take the following values:
   * `True`: The item must be present in the HTTP response
@@ -78,17 +87,18 @@ Set-Cookie)
 
 * For items that are set as required or optional, the following additional rules may also be set. The checks will only
 run if the item is present in the HTTP response:
-  * `Value`: The item value must match the expected value(s)
-  * `Value-One-Of`: The item value must match exactly one of the expected values
+  * `Value`: The item value must be an exact match with the expected value
+  * `Value-One-Of`: The item value must be an exact match with exactly one of the expected values
+  * `Value-Any-Of`: The item value must be an exact match with one or more of the expected values
   * `Must-Avoid`: The item value must not contain any of the disallowed values
   * `Must-Contain`: The item value must contain all the expected values
-  * `Must-Contain-One`: The item value must contain at least one of the expected values
+  * `Must-Contain-One`: The item value must contain one or more of the expected values
 
 * You can override the default severity for an item by providing a custom severity in the `severity` element
 
 Within each header element, rules can be set for individual directives via the `directives` element. There can be as
-many directive elements as directives you want to audit (e.g. default-src, script-src). The same validations
-as above are available for individual directives
+many directive elements as directives you want to audit *(e.g. default-src, script-src)*. The same validations
+as above are available for individual directives.
 
 ### Expected and Disallowed Values
 For elements that define expected or disallowed values, those values can be given either as a list or a string. The two
@@ -115,43 +125,58 @@ Order is not preserved when validating. That is, both values shown below are val
 ```
 
 #### Permissible Values
-For must-avoid, must-contain and must-contain-one checks, the expected or disallowed values can take a number of
-different formats to cover various avoid and contain scenarios that you might want to enforce:
-* Enforce or disallow standalone directives or values:
+For checks that define expected or disallowed values, these values can take a number of different formats to cover
+various scenarios that you might want to enforce:
+* Enforce or disallow standalone directives or values
 ```yaml
-Must-Contain: no-store
+Value: no-store
 ```
-* Enforce or disallow entire key-value directives:
+* Enforce or disallow entire key-value directives
 ```yaml
-Must-Contain: max-age=0
+Value: max-age=0
 ```
-* Enforce or disallow specific keys for key-value directives, without stipulating the value:
+* Enforce or disallow specific keys for key-value directives, without stipulating the value
 ```yaml
-Must-Contain: max-age
+Value: max-age
 ```
+You can also specify values from key-value directives *(e.g. unsafe-eval, unsafe-inline)* as valid disallowed values for
+must-avoid checks when validating policy headers. See [Validating Policy Headers](#validating-policy-headers).
+
 The validations will match the expected or disallowed values against the whole item value (standalone directive/value,
 entire key-value directive, or key for key-value directive).
+
+If a value is typically declared in quotation marks, such as those for
+[`Clear-Site-Data`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Clear-Site-Data) or keywords for policy
+headers, you must omit the quotation marks:
+```yaml
+Clear-Site-Data:
+  Required: True
+  Value:
+    - cache
+    - storage
+```
 
 ### Validating Policy Headers
 Policy headers are those that generally follow the syntax `<policy-directive>; <policy-directive>` where
 `<policy-directive>` consists of `<directive> <value>` and `<value>` can consist of multiple items and keywords.
-Currently, this covers `Content-Security-Policy` and `Feature-Policy`.
+Currently, this covers
+[`Content-Security-Policy`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy) and
+[`Feature-Policy`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy).
 
-The quotation marks around keywords such as 'none', 'self' and 'unsafe-inline' in such policy headers must not be
-included in expected or disallowed values. The quotation marks are stripped from these values in HTTP responses before
-they are compared to the expected and disallowed values.
-<br />
-
-In addition to the formats described above, for policy headers, you can also define disallowed values in must-avoid
-checks that will be searched for in the values of all key-value directives. The below will report back all directives in
-the CSP that contain `unsafe-eval` or `unsafe-inline` as non-compliant:
+You can define disallowed values in must-avoid checks that will be searched for in the values of all key-value
+directives. The below will report back all directives in the CSP that contain `unsafe-eval` or `unsafe-inline` as
+non-compliant:
 ```yaml
 Content-Security-Policy:
-    Required: True
-    Must-Avoid:
-      - unsafe-eval
-      - unsafe-inline
+  Required: True
+  Must-Avoid:
+    - unsafe-eval
+    - unsafe-inline
 ```
+
+The quotation marks around keywords such as `'none'`, `'self'` and `'unsafe-inline'` in policy headers must not be
+included in expected or disallowed values. The quotation marks are stripped from these values in HTTP responses before
+they are compared to the expected and disallowed values.
 
 ### Validating Directives
 The mechanism for validating directives is the same as that for validating headers, and all the same validations are
@@ -213,18 +238,18 @@ If the directives are not declared in a key-value format, or the value does not 
 ### Hardening the CSP
 ```yaml
 Content-Security-Policy:
-    Required: True
-    Must-Avoid:
-        - unsafe-inline
-        - unsafe-eval
-        - unsafe-hashes
-    Directives:
-      Default-Src:
-        Required: True
-        Must-Contain: 'https:'
-      Script-Src:
-        Required: True
-        Value: self
+  Required: True
+  Must-Avoid:
+    - unsafe-inline
+    - unsafe-eval
+    - unsafe-hashes
+  Directives:
+    Default-Src:
+      Required: True
+      Must-Contain: 'https:'
+    Script-Src:
+      Required: True
+      Value: self
 ```
 
 ### Securing Cookies

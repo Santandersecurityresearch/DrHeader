@@ -7,7 +7,7 @@ from requests.structures import CaseInsensitiveDict
 from drheader.report import Reporter
 from drheader.utils import load_rules, parse_policy
 from drheader.validator import DELIMITERS, validate_exists, validate_not_exists, validate_must_avoid, \
-    validate_must_contain, validate_must_contain_one, validate_value, validate_value_one_of
+    validate_must_contain, validate_must_contain_one, validate_value, validate_value_any_of, validate_value_one_of
 
 
 class Drheader:
@@ -82,10 +82,13 @@ class Drheader:
             return header in self.headers
 
     def _validate_enforced_value(self, config, header_value, header, directive):
-        if config.get('value') is not None:
+        if 'value' in config:
             report_item = validate_value(config, header_value, header, directive)
             self._add_to_report_if_exists(report_item)
-        elif config.get('value-one-of'):
+        if 'value-any-of' in config:
+            report_item = validate_value_any_of(config, header_value, header, directive)
+            self._add_to_report_if_exists(report_item)
+        if 'value-one-of' in config:
             report_item = validate_value_one_of(config, header_value, header, directive)
             self._add_to_report_if_exists(report_item)
 

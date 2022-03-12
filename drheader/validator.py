@@ -33,14 +33,16 @@ def validate_exists(config, headers, header, directive=None):
 
     if exist_item.strip().lower() not in validation_items:
         severity = config.get('severity', 'high')
+        delimiter = delimiters['value_delimiter'] if directive else delimiters['item_delimiter']
         if 'value' in config:
-            delimiter = delimiters['value_delimiter'] if directive else delimiters['item_delimiter']
             expected = _get_expected_values(config, 'value', delimiter)
             return ReportItem(severity, Error.REQUIRED, header, directive, expected=expected, delimiter=delimiter)
+        if 'value-any-of' in config:
+            expected = _get_expected_values(config, 'value-any-of', delimiter)
+            return ReportItem(severity, Error.REQUIRED, header, directive, expected=expected, delimiter=delimiter)
         if 'value-one-of' in config:
-            delimiter = delimiters['value_delimiter'] if directive else delimiters['item_delimiter']
             expected = _get_expected_values(config, 'value-one-of', delimiter)
-            return ReportItem(severity, Error.REQUIRED, header, directive, expected_one=expected, delimiter=delimiter)
+            return ReportItem(severity, Error.REQUIRED, header, directive, expected=expected)
         else:
             return ReportItem(severity, Error.REQUIRED, header, directive)
 
@@ -85,7 +87,7 @@ def validate_value(config, item_value, header, directive=None):
         validation_items, raw_value = kvd.value, kvd.raw_value
     else:
         delimiter = delimiters['item_delimiter']
-        validation_items = item_value.split(delimiter)
+        validation_items = [item.strip(delimiters.get('strip_items')) for item in item_value.split(delimiter)]
         raw_value = item_value
 
     validation_items = {str(item).strip().lower() for item in validation_items}
@@ -94,6 +96,40 @@ def validate_value(config, item_value, header, directive=None):
     if validation_items != {item.lower() for item in expected}:
         severity = config.get('severity', 'high')
         return ReportItem(severity, Error.VALUE, header, directive, raw_value, expected=expected, delimiter=delimiter)
+
+
+def validate_value_any_of(config, item_value, header, directive=None):
+    """
+    Validate that a given header or directive matches a given value
+    :param config: The configuration of the enforce-value rule
+    :param item_value: The value of the header or directive against which to validate
+    :param header: The header to validate
+    :param directive: The directive to validate
+    """
+    delimiters = _get_delimiters(header, config)
+
+    if directive:
+        delimiter = delimiters['value_delimiter']
+        kvd = _get_directive(directive, parse_policy(item_value, **delimiters, key_values_only=True))
+        validation_items, raw_value = kvd.value, kvd.raw_value
+    else:
+        delimiter = delimiters['item_delimiter']
+        validation_items = [item.strip(delimiters.get('strip_items')) for item in item_value.split(delimiter)]
+        raw_value = item_value
+
+    validation_items = {str(item).strip().lower() for item in validation_items}
+    accepted = _get_expected_values(config, 'value-any-of', delimiter)
+    accepted_lower = [item.lower() for item in accepted]
+    anomalies = []
+
+    for item in validation_items:
+        if item not in accepted_lower:
+            anomalies.append(item)
+
+    if anomalies:
+        severity = config.get('severity', 'high')
+        return ReportItem(severity, Error.VALUE_ANY, header, directive, raw_value, expected=accepted,
+                          delimiter=delimiter, anomalies=anomalies)
 
 
 def validate_value_one_of(config, item_value, header, directive=None):
@@ -116,9 +152,9 @@ def validate_value_one_of(config, item_value, header, directive=None):
 
     accepted = _get_expected_values(config, 'value-one-of', delimiter)
 
-    if str(item_value).strip().lower() not in {item.lower() for item in accepted}:
+    if str(item_value).strip(delimiters.get('strip_items')).lower() not in {item.lower() for item in accepted}:
         severity = config.get('severity', 'high')
-        return ReportItem(severity, Error.VALUE, header, directive, raw_value, expected_one=accepted)
+        return ReportItem(severity, Error.VALUE_ONE, header, directive, raw_value, expected=accepted)
 
 
 def validate_must_avoid(config, item_value, header, directive=None):
@@ -144,14 +180,15 @@ def validate_must_avoid(config, item_value, header, directive=None):
 
     validation_items = {str(item).strip().lower() for item in validation_items}
     disallowed = _get_expected_values(config, 'must-avoid', delimiter)
-    severity = config.get('severity', 'medium')
-    findings = []
+    anomalies = []
 
     for avoid in disallowed:
         if avoid.lower() in validation_items:
-            item = ReportItem(severity, Error.AVOID, header, directive, raw_value, avoid=disallowed, anomaly=avoid)
-            findings.append(item)
-    return findings
+            anomalies.append(avoid)
+
+    if anomalies:
+        severity = config.get('severity', 'medium')
+        return ReportItem(severity, Error.AVOID, header, directive, raw_value, avoid=disallowed, anomalies=anomalies)
 
 
 def validate_must_contain(config, item_value, header, directive=None):
@@ -175,15 +212,16 @@ def validate_must_contain(config, item_value, header, directive=None):
 
     validation_items = {str(item).strip().lower() for item in validation_items}
     expected = _get_expected_values(config, 'must-contain', delimiter)
-    severity = config.get('severity', 'medium')
-    findings = []
+    anomalies = []
 
     for contain in expected:
         if contain.lower() not in validation_items:
-            item = ReportItem(severity, Error.CONTAIN, header, directive, raw_value, expected=expected, anomaly=contain,
-                              delimiter=delimiter)
-            findings.append(item)
-    return findings
+            anomalies.append(contain)
+
+    if anomalies:
+        severity = config.get('severity', 'medium')
+        return ReportItem(severity, Error.CONTAIN, header, directive, raw_value, expected=expected, delimiter=delimiter,
+                          anomalies=anomalies)
 
 
 def validate_must_contain_one(config, item_value, header, directive=None):
@@ -210,7 +248,7 @@ def validate_must_contain_one(config, item_value, header, directive=None):
 
     if not any(contain.lower() in validation_items for contain in expected):
         severity = config.get('severity', 'high')
-        return ReportItem(severity, Error.CONTAIN_ONE, header, directive, raw_value, expected_one=expected)
+        return ReportItem(severity, Error.CONTAIN_ONE, header, directive, raw_value, expected=expected)
 
 
 def _validate_must_avoid_for_policy_header(config, item_value, header, delimiters):
@@ -227,7 +265,7 @@ def _validate_must_avoid_for_policy_header(config, item_value, header, delimiter
     validation_items = {str(item).strip().lower() for item in validation_items}
     disallowed = _get_expected_values(config, 'must-avoid', delimiters['item_delimiter'])
     severity = config.get('severity', 'medium')
-    findings = []
+    anomalies, ncd_items, report_items = [], {}, []
 
     for avoid in disallowed:
         if avoid.lower() in validation_items:
@@ -240,14 +278,22 @@ def _validate_must_avoid_for_policy_header(config, item_value, header, delimiter
                     pass
 
             if not non_compliant_directives:
-                item = ReportItem(severity, Error.AVOID, header, value=item_value, avoid=disallowed, anomaly=avoid)
-                findings.append(item)
+                anomalies.append(avoid)
             else:
                 for ncd in non_compliant_directives:
                     directive, value = ncd.key, ncd.raw_value
-                    item = ReportItem(severity, Error.AVOID, header, directive, value, avoid=disallowed, anomaly=avoid)
-                    findings.append(item)
-    return findings
+                    item = {'value': value, 'anomalies': ncd_items.get(directive, {}).get('anomalies', []) + [avoid]}
+                    ncd_items[directive] = item
+
+    if anomalies:
+        item = ReportItem(severity, Error.AVOID, header, value=item_value, avoid=disallowed, anomalies=anomalies)
+        report_items.append(item)
+    if ncd_items:
+        for directive in ncd_items:
+            value, anomalies = ncd_items[directive]['value'], ncd_items[directive]['anomalies']
+            item = ReportItem(severity, Error.AVOID, header, directive, value, avoid=disallowed, anomalies=anomalies)
+            report_items.append(item)
+    return report_items
 
 
 def _get_delimiters(header, config):

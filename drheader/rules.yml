@@ -17,11 +17,10 @@ Headers:
                     - self
     Pragma:
         Required: True
-        Value:
-            - no-cache
+        Value: no-cache
     Referrer-Policy:
         Required: True
-        Must-Contain-One:
+        Value-Any-Of:
             - strict-origin
             - strict-origin-when-cross-origin
             - no-referrer
@@ -45,8 +44,7 @@ Headers:
         Required: False
     X-Content-Type-Options:
         Required: True
-        Value:
-            - nosniff
+        Value: nosniff
     X-Forwarded-For:
         Required: False
     X-Frame-Options:
@@ -60,5 +58,4 @@ Headers:
         Required: False
     X-XSS-Protection:
         Required: True
-        Value:
-            - 0
+        Value: 0

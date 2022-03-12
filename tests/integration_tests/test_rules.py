@@ -29,7 +29,7 @@ class TestDefaultRules(TestBase):
         expected = {
             'rule': 'Cache-Control',
             'severity': 'high',
-            'message': 'Value does not match security policy',
+            'message': 'Value does not match security policy. All of the expected items were expected',
             'expected': ['no-store', 'max-age=0'],
             'delimiter': ',',
             'value': 'no-cache'
@@ -54,8 +54,8 @@ class TestDefaultRules(TestBase):
         expected = {
             'rule': 'Content-Security-Policy - default-src',
             'severity': 'high',
-            'message': 'Value does not match security policy',
-            'expected-one': ['none', 'self'],
+            'message': 'Value does not match security policy. Exactly one of the expected items was expected',
+            'expected': ['none', 'self'],
             'value': 'https://example.com'
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
@@ -79,7 +79,9 @@ class TestDefaultRules(TestBase):
         expected = {
             'rule': 'Referrer-Policy',
             'severity': 'high',
-            'message': 'Header not included in response'
+            'message': 'Header not included in response',
+            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
+            'delimiter': ','
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Referrer-Policy'))
 
@@ -90,9 +92,11 @@ class TestDefaultRules(TestBase):
         expected = {
             'rule': 'Referrer-Policy',
             'severity': 'high',
-            'message': 'Must-Contain-One directive missed',
-            'expected-one': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
-            'value': 'same-origin'
+            'message': 'Value does not match security policy. At least one of the expected items was expected',
+            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
+            'value': 'same-origin',
+            'anomalies': ['same-origin'],
+            'delimiter': ','
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Referrer-Policy'))
 
@@ -114,10 +118,10 @@ class TestDefaultRules(TestBase):
         expected = {
             'rule': 'Set-Cookie',
             'severity': 'medium',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain directive missed. All of the expected items were expected',
             'expected': ['HttpOnly', 'Secure'],
             'value': 'session_id=585733723; HttpOnly; SameSite=Strict',
-            'anomaly': 'Secure',
+            'anomalies': ['Secure'],
             'delimiter': ';'
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Set-Cookie'))
@@ -129,10 +133,10 @@ class TestDefaultRules(TestBase):
         expected = {
             'rule': 'Set-Cookie',
             'severity': 'medium',
-            'message': 'Must-Contain directive missed',
+            'message': 'Must-Contain directive missed. All of the expected items were expected',
             'expected': ['HttpOnly', 'Secure'],
             'value': 'session_id=585733723; Secure; SameSite=Strict',
-            'anomaly': 'HttpOnly',
+            'anomalies': ['HttpOnly'],
             'delimiter': ';',
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Set-Cookie'))
@@ -203,7 +207,7 @@ class TestDefaultRules(TestBase):
             'rule': 'X-Frame-Options',
             'severity': 'high',
             'message': 'Header not included in response',
-            'expected-one': ['DENY', 'SAMEORIGIN']
+            'expected': ['DENY', 'SAMEORIGIN']
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'X-Frame-Options'))
 
@@ -214,8 +218,8 @@ class TestDefaultRules(TestBase):
         expected = {
             'rule': 'X-Frame-Options',
             'severity': 'high',
-            'message': 'Value does not match security policy',
-            'expected-one': ['DENY', 'SAMEORIGIN'],
+            'message': 'Value does not match security policy. Exactly one of the expected items was expected',
+            'expected': ['DENY', 'SAMEORIGIN'],
             'value': 'ALLOW-FROM https//example.com'
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'X-Frame-Options'))
@@ -272,7 +276,7 @@ class TestDefaultRules(TestBase):
         expected = {
             'rule': 'X-XSS-Protection',
             'severity': 'high',
-            'message': 'Value does not match security policy',
+            'message': 'Value does not match security policy. All of the expected items were expected',
             'expected': ['0'],
             'value': '1; mode=block'
         }

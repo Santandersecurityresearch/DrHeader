@@ -42,7 +42,7 @@ class TestDrHeader(TestBase):
         expected = {
             'rule': 'X-XSS-Protection',
             'severity': 'high',
-            'message': 'Value does not match security policy',
+            'message': 'Value does not match security policy. All of the expected items were expected',
             'expected': ['0'],
             'value': '1; mode=block'
         }
@@ -80,11 +80,27 @@ class TestDrHeader(TestBase):
         expected = {
             'rule': 'X-Frame-Options',
             'severity': 'high',
-            'message': 'Value does not match security policy',
+            'message': 'Value does not match security policy. All of the expected items were expected',
             'expected': ['DENY'],
             'value': 'SAMEORIGIN'
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'X-Frame-Options'))
+
+    def test_header_enforced_value_any_of_ko(self):
+        self.modify_rule('Referrer-Policy', {'Required': True, 'Value-Any-Of': ['same-origin', 'no-referrer']})
+        headers = super().add_or_modify_header('Referrer-Policy', 'same-origin, origin-when-cross-origin')
+
+        report = super().process_test(headers=headers)
+        expected = {
+            'rule': 'Referrer-Policy',
+            'severity': 'high',
+            'message': 'Value does not match security policy. At least one of the expected items was expected',
+            'value': 'same-origin, origin-when-cross-origin',
+            'expected': ['same-origin', 'no-referrer'],
+            'delimiter': ',',
+            'anomalies': ['origin-when-cross-origin']
+        }
+        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Referrer-Policy'))
 
     def test_header_enforced_value_one_of_ko(self):
         self.modify_rule('Referrer-Policy', {'Required': True, 'Value-One-Of': ['same-origin', 'no-referrer']})
@@ -94,41 +110,11 @@ class TestDrHeader(TestBase):
         expected = {
             'rule': 'Referrer-Policy',
             'severity': 'high',
-            'message': 'Value does not match security policy',
+            'message': 'Value does not match security policy. Exactly one of the expected items was expected',
             'value': 'origin-when-cross-origin',
-            'expected-one': ['same-origin', 'no-referrer']
+            'expected': ['same-origin', 'no-referrer']
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Referrer-Policy'))
-
-    def test_header_must_contain_ko(self):
-        self.modify_rule('Set-Cookie', {'Required': True, 'Must-Contain': ['Secure', 'HttpOnly']})
-        headers = super().add_or_modify_header('Set-Cookie', ['session_id=647388212; HttpOnly; SameSite=Strict'])
-
-        report = super().process_test(headers=headers)
-        expected = {
-            'rule': 'Set-Cookie',
-            'severity': 'medium',
-            'message': 'Must-Contain directive missed',
-            'expected': ['Secure', 'HttpOnly'],
-            'value': 'session_id=647388212; HttpOnly; SameSite=Strict',
-            'anomaly': 'Secure',
-            'delimiter': ';'
-        }
-        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Set-Cookie'))
-
-    def test_header_must_contain_one_ko(self):
-        self.modify_rule('Cache-Control', {'Required': True, 'Must-Contain-One': ['must-revalidate', 'no-cache']})
-        headers = super().add_or_modify_header('Cache-Control', 'public')
-
-        report = super().process_test(headers=headers)
-        expected = {
-            'rule': 'Cache-Control',
-            'severity': 'high',
-            'message': 'Must-Contain-One directive missed',
-            'expected-one': ['must-revalidate', 'no-cache'],
-            'value': 'public'
-        }
-        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Cache-Control'))
 
     def test_header_must_avoid_ko(self):
         self.modify_rule('Content-Security-Policy', {'Required': True, 'Must-Avoid': ['unsafe-inline', 'unsafe-eval']})
@@ -141,9 +127,39 @@ class TestDrHeader(TestBase):
             'message': 'Must-Avoid directive included',
             'avoid': ['unsafe-inline', 'unsafe-eval'],
             'value': "'unsafe-eval'",
-            'anomaly': 'unsafe-eval'
+            'anomalies': ['unsafe-eval']
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
+
+    def test_header_must_contain_ko(self):
+        self.modify_rule('Set-Cookie', {'Required': True, 'Must-Contain': ['Secure', 'HttpOnly']})
+        headers = super().add_or_modify_header('Set-Cookie', ['session_id=647388212; HttpOnly; SameSite=Strict'])
+
+        report = super().process_test(headers=headers)
+        expected = {
+            'rule': 'Set-Cookie',
+            'severity': 'medium',
+            'message': 'Must-Contain directive missed. All of the expected items were expected',
+            'expected': ['Secure', 'HttpOnly'],
+            'value': 'session_id=647388212; HttpOnly; SameSite=Strict',
+            'anomalies': ['Secure'],
+            'delimiter': ';'
+        }
+        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Set-Cookie'))
+
+    def test_header_must_contain_one_ko(self):
+        self.modify_rule('Cache-Control', {'Required': True, 'Must-Contain-One': ['must-revalidate', 'no-cache']})
+        headers = super().add_or_modify_header('Cache-Control', 'public')
+
+        report = super().process_test(headers=headers)
+        expected = {
+            'rule': 'Cache-Control',
+            'severity': 'high',
+            'message': 'Must-Contain-One directive missed. At least one of the expected items was expected',
+            'expected': ['must-revalidate', 'no-cache'],
+            'value': 'public'
+        }
+        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Cache-Control'))
 
     def test_directive_enforced_value_ko(self):
         self.modify_rule('Content-Security-Policy', {'Required': True, 'Directives': {'script-src': {'Required': True, 'Value': ['self']}}})
@@ -153,9 +169,25 @@ class TestDrHeader(TestBase):
         expected = {
             'rule': 'Content-Security-Policy - script-src',
             'severity': 'high',
-            'message': 'Value does not match security policy',
+            'message': 'Value does not match security policy. All of the expected items were expected',
             'expected': ['self'],
             'value': 'https://example.com'
+        }
+        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
+
+    def test_directive_enforced_value_any_of_ko(self):
+        self.modify_rule('Content-Security-Policy', {'Required': True, 'Directives': {'style-src': {'Required': True, 'Value-Any-Of': ['https://example1.com', 'https://example2.com']}}})
+        headers = super().add_or_modify_header('Content-Security-Policy', 'style-src https://example.com')
+
+        report = super().process_test(headers=headers)
+        expected = {
+            'rule': 'Content-Security-Policy - style-src',
+            'severity': 'high',
+            'message': 'Value does not match security policy. At least one of the expected items was expected',
+            'value': 'https://example.com',
+            'expected': ['https://example1.com', 'https://example2.com'],
+            'anomalies': ['https://example.com'],
+            'delimiter': ' '
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
 
@@ -167,38 +199,9 @@ class TestDrHeader(TestBase):
         expected = {
             'rule': 'Content-Security-Policy - default-src',
             'severity': 'high',
-            'message': 'Value does not match security policy',
+            'message': 'Value does not match security policy. Exactly one of the expected items was expected',
             'value': 'https://example.com',
-            'expected-one': ['none', 'self']
-        }
-        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
-
-    def test_directive_must_contain_ko(self):
-        self.modify_rule('Content-Security-Policy', {'Required': True, 'Directives': {'connect-src': {'Required': True, 'Must-Contain': ['https://example.com']}}})
-        headers = super().add_or_modify_header('Content-Security-Policy', "default-src 'none'; connect-src 'self'")
-
-        report = super().process_test(headers=headers)
-        expected = {
-            'rule': 'Content-Security-Policy - connect-src',
-            'severity': 'medium',
-            'message': 'Must-Contain directive missed',
-            'expected': ['https://example.com'],
-            'value': "'self'",
-            'anomaly': 'https://example.com'
-        }
-        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
-
-    def test_directive_must_contain_one_ko(self):
-        self.modify_rule('Content-Security-Policy', {'Required': True, 'Directives': {'base-uri': {'Required': True, 'Must-Contain-One': ['https://example1.com', 'https://example2.com']}}})
-        headers = super().add_or_modify_header('Content-Security-Policy', "default-src 'none'; base-uri 'self'")
-
-        report = super().process_test(headers=headers)
-        expected = {
-            'rule': 'Content-Security-Policy - base-uri',
-            'severity': 'high',
-            'message': 'Must-Contain-One directive missed',
-            'expected-one': ['https://example1.com', 'https://example2.com'],
-            'value': "'self'"
+            'expected': ['none', 'self']
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
 
@@ -213,7 +216,36 @@ class TestDrHeader(TestBase):
             'message': 'Must-Avoid directive included',
             'avoid': ['allow-scripts'],
             'value': 'allow-scripts allow-modals',
-            'anomaly': 'allow-scripts'
+            'anomalies': ['allow-scripts']
+        }
+        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
+
+    def test_directive_must_contain_ko(self):
+        self.modify_rule('Content-Security-Policy', {'Required': True, 'Directives': {'connect-src': {'Required': True, 'Must-Contain': ['https://example.com']}}})
+        headers = super().add_or_modify_header('Content-Security-Policy', "default-src 'none'; connect-src 'self'")
+
+        report = super().process_test(headers=headers)
+        expected = {
+            'rule': 'Content-Security-Policy - connect-src',
+            'severity': 'medium',
+            'message': 'Must-Contain directive missed. All of the expected items were expected',
+            'expected': ['https://example.com'],
+            'value': "'self'",
+            'anomalies': ['https://example.com']
+        }
+        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
+
+    def test_directive_must_contain_one_ko(self):
+        self.modify_rule('Content-Security-Policy', {'Required': True, 'Directives': {'base-uri': {'Required': True, 'Must-Contain-One': ['https://example1.com', 'https://example2.com']}}})
+        headers = super().add_or_modify_header('Content-Security-Policy', "default-src 'none'; base-uri 'self'")
+
+        report = super().process_test(headers=headers)
+        expected = {
+            'rule': 'Content-Security-Policy - base-uri',
+            'severity': 'high',
+            'message': 'Must-Contain-One directive missed. At least one of the expected items was expected',
+            'expected': ['https://example1.com', 'https://example2.com'],
+            'value': "'self'"
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
 
