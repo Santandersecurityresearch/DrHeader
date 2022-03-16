@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import NamedTuple
 
 
 class ErrorType(Enum):
@@ -12,19 +13,16 @@ class ErrorType(Enum):
     VALUE_ONE = 'Value does not match security policy. Exactly one of the expected items was expected'
 
 
-class ReportItem:
-
-    def __init__(self, severity, error_type, header, directive=None, value=None, avoid=None, expected=None,
-                 anomalies=None, delimiter=None):
-        self.severity = severity
-        self.error_type = error_type
-        self.header = header
-        self.directive = directive
-        self.value = value
-        self.avoid = avoid
-        self.expected = expected
-        self.anomalies = anomalies
-        self.delimiter = delimiter
+class ReportItem(NamedTuple):
+    severity: str
+    error_type: ErrorType
+    header: str
+    directive: str = None
+    value: str = None
+    avoid: list = None
+    expected: list = None
+    anomalies: list = None
+    delimiter: str = None
 
 
 class Reporter:

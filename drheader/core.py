@@ -74,7 +74,7 @@ class Drheader:
     def _validate_exists(self, is_required, config, header, directive):
         if is_required == 'true':
             report_item = validate_exists(config, self.headers, header, directive)
-            self._add_to_report_if_exists(validate_exists(config, self.headers, header, directive))
+            self._add_to_report_if_exists(report_item)
             return bool(not report_item)
         if directive:
             return directive in parse_policy(self.headers[header], **DELIMITERS[header], keys_only=True)

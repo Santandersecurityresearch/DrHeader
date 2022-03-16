@@ -16,7 +16,7 @@ class TestValidator(unittest2.TestCase):
     def assert_report_items_equal(self, expected_report_item, observed_report_item, msg=None):
         does_validate = True
 
-        for field, value in vars(expected_report_item).items():
+        for field in expected_report_item._asdict():
             expected = getattr(expected_report_item, field)
             observed = getattr(observed_report_item, field)
             if not expected == observed:
