@@ -3,10 +3,10 @@
 
 """The setup script."""
 
-from setuptools import setup
-
 import os
 import re
+
+from setuptools import setup
 
 base_dir = os.path.dirname(__file__)
 

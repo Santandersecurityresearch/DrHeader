@@ -1,87 +1,61 @@
 Headers:
+  Cache-Control:
+    Required: true
+    Value:
+    - no-store
+    - max-age=0
   Content-Security-Policy:
     Required: true
-    Enforce: false
-    Value: null
-    Must-Contain-One:
-    - default-src 'none'
-    - default-src 'self'
     Must-Avoid:
     - unsafe-inline
     - unsafe-eval
-  X-XSS-Protection:
+    Directives:
+      default-src:
+        Required: true
+        Value-One-Of:
+        - none
+        - self
+  Pragma:
     Required: true
-    Enforce: true
-    Value:
-    - 0
-  Server:
-    Required: false
-    Enforce: false
-    Value: null
-  Strict-Transport-Security:
-    Required: true
-    Enforce: true
-    Value:
-    - max-age=31536000; includeSubDomains
-  X-Frame-Options:
-    Required: true
-    Enforce: true
-    Value:
-    - SAMEORIGIN
-    - DENY
-  X-Content-Type-Options:
-    Required: true
-    Enforce: true
-    Value:
-    - nosniff
-  Set-Cookie:
-    Required: Optional
-    Enforce: false
-    Value: null
-    Must-Contain:
-    - HttpOnly
-    - Secure
+    Value: no-cache
   Referrer-Policy:
     Required: true
-    Enforce: false
-    Delimiter: ','
-    Value: null
-    Must-Contain-One:
+    Value-Any-Of:
     - strict-origin
     - strict-origin-when-cross-origin
     - no-referrer
-  Cache-Control:
+  Server:
+    Required: false
+  Set-Cookie:
+    Required: Optional
+    Must-Contain:
+    - HttpOnly
+    - Secure
+  Strict-Transport-Security:
     Required: true
-    Enforce: true
-    Delimiter: ','
     Value:
-    - no-store, max-age=0
-  Pragma:
-    Required: true
-    Enforce: true
-    Value:
-    - no-cache
-  X-Powered-By:
-    Required: false
-    Enforce: false
-    Value: null
-  X-AspNet-Version:
-    Required: false
-    Enforce: false
-    Value: null
-  X-Generator:
-    Required: false
-    Enforce: false
-    Value: null
+    - max-age=31536000
+    - includeSubDomains
   User-Agent:
     Required: false
-    Enforce: false
-    Value: null
-  X-Forwarded-For:
+  X-AspNet-Version:
     Required: false
-    Enforce: false
-    Value: null
   X-Client-IP:
     Required: false
-    Enforce: false
-    Value: null
+  X-Content-Type-Options:
+    Required: true
+    Value: nosniff
+  X-Forwarded-For:
+    Required: false
+  X-Frame-Options:
+    Required: true
+    Value-One-Of:
+    - DENY
+    - SAMEORIGIN
+  X-Generator:
+    Required: false
+  X-Powered-By:
+    Required: false
+  X-XSS-Protection:
+    Required: true
+    Value: 0

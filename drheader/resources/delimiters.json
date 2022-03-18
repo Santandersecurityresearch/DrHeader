@@ -1,0 +1,40 @@
+{
+    "Cache-Control": {
+        "item_delimiter": ",",
+        "key_delimiter": "="
+    },
+    "Clear-Site-Data": {
+        "item_delimiter": ",",
+        "strip_items": "\" "
+    },
+    "Content-Security-Policy": {
+        "item_delimiter": ";",
+        "key_delimiter": " ",
+        "value_delimiter": " ",
+        "strip_items": "' "
+    },
+    "Feature-Policy": {
+        "item_delimiter": ";",
+        "key_delimiter": " ",
+        "value_delimiter": " ",
+        "strip_items": "' "
+    },
+    "Referrer-Policy": {
+        "item_delimiter": ","
+    },
+    "Set-Cookie": {
+        "item_delimiter": ";",
+        "key_delimiter": "="
+    },
+    "Strict-Transport-Security": {
+        "item_delimiter": ";",
+        "key_delimiter": "="
+    },
+    "X-Forwarded-For": {
+        "item_delimiter": ","
+    },
+    "X-XSS-Protection": {
+        "item_delimiter": ";",
+        "key_delimiter": "="
+    }
+}

@@ -86,7 +86,7 @@ It is also possible to call drHEADer from within an existing project, and this i
 from drheader import Drheader
 
 # create drheader instance
-drheader_instance = Drheader(headers={'X-XSS-Protection': '1; mode=block'}, status_code=200)
+drheader_instance = Drheader(headers={'X-XSS-Protection': '1; mode=block'})
 
 report = drheader_instance.analyze()
 print(report)

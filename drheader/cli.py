@@ -130,8 +130,8 @@ def compare(file, json_output, debug, rule_file, rule_uri, merge):
         logging.debug('Analysing : {}'.format(i['url']))
         drheader_instance = Drheader(url=i['url'], headers=i['headers'])
         drheader_instance.analyze(rules)
-        audit.append({'url': i['url'], 'report': drheader_instance.report})
-        if drheader_instance.report:
+        audit.append({'url': i['url'], 'report': drheader_instance.reporter.report})
+        if drheader_instance.reporter.report:
             exit_code = EXIT_CODE_FAILURE
 
     echo_bulk_report(audit, json_output)
@@ -192,25 +192,25 @@ def single(ctx, target_url, json_output, debug, rule_file, rule_uri, merge, juni
         else:
             raise click.ClickException('Failed to analyze headers.')
 
-    if drheader_instance.report:
+    if drheader_instance.reporter.report:
         exit_code = EXIT_CODE_FAILURE
 
     if json_output:
-        click.echo(json.dumps(drheader_instance.report))
+        click.echo(json.dumps(drheader_instance.reporter.report))
     else:
         click.echo()
-        if not drheader_instance.report:
+        if not drheader_instance.reporter.report:
             click.echo('No issues found!')
         else:
-            click.echo('{0} issues found'.format(len(drheader_instance.report)))
-            for i in drheader_instance.report:
+            click.echo('{0} issues found'.format(len(drheader_instance.reporter.report)))
+            for i in drheader_instance.reporter.report:
                 values = []
                 for k, v in i.items():
                     values.append([k, v])
                 click.echo('----')
                 click.echo(tabulate(values, tablefmt="presto"))
     if junit:
-        file_junit_report(rules, drheader_instance.report)
+        file_junit_report(rules, drheader_instance.reporter.report)
     sys.exit(exit_code)
 
 
@@ -308,8 +308,8 @@ def bulk(ctx, file, json_output, input_format, debug, rule_file, rule_uri, merge
             url=v['url'], params=v.get('params', None), verify=ctx.obj['verify'])
         logging.debug('Analysing: {}...'.format(v))
         drheader_instance.analyze(rules)
-        audit.append({'url': v['url'], 'report': drheader_instance.report})
-        if drheader_instance.report:
+        audit.append({'url': v['url'], 'report': drheader_instance.reporter.report})
+        if drheader_instance.reporter.report:
             exit_code = EXIT_CODE_FAILURE
 
     echo_bulk_report(audit, json_output)

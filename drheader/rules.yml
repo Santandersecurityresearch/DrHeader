@@ -1,89 +1,61 @@
 Headers:
+    Cache-Control:
+        Required: True
+        Value:
+            - no-store
+            - max-age=0
     Content-Security-Policy:
         Required: True
-        Enforce: False
-        Value:
-        Must-Contain-One:
-            - default-src 'none'
-            - default-src 'self'
         Must-Avoid:
             - unsafe-inline
             - unsafe-eval
-    X-XSS-Protection:
+        Directives:
+            default-src:
+                Required: True
+                Value-One-Of:
+                    - none
+                    - self
+    Pragma:
         Required: True
-        Enforce: True
-        Value:
-            - 0
-    Server:
-        Required: False
-        Enforce: False
-        Value:
-    Strict-Transport-Security:
-        Required: True
-        Enforce: True
-        Value:
-            - max-age=31536000; includeSubDomains
-    X-Frame-Options:
-        Required: True
-        Enforce: True
-        Value:
-            - SAMEORIGIN
-            - DENY
-    X-Content-Type-Options:
-        Required: True
-        Enforce: True
-        Value:
-            - nosniff
-    Set-Cookie:
-        Required: Optional
-        Enforce: False
-        Value:
-        Must-Contain:
-            - HttpOnly
-            - Secure
+        Value: no-cache
     Referrer-Policy:
         Required: True
-        Enforce: False
-        Delimiter: ','
-        Value:
-        Must-Contain-One:
+        Value-Any-Of:
             - strict-origin
             - strict-origin-when-cross-origin
             - no-referrer
-    Cache-Control:
+    Server:
+        Required: False
+    Set-Cookie:
+        Required: Optional
+        Must-Contain:
+            - HttpOnly
+            - Secure
+    Strict-Transport-Security:
         Required: True
-        Enforce: True
-        Delimiter: ','
         Value:
-            - no-store, max-age=0
-    Pragma:
-        Required: True
-        Enforce: True
-        Value:
-            - no-cache
-    X-Powered-By:
-        Required: False
-        Enforce: False
-        Value:
-    X-AspNet-Version:
-        Required: False
-        Enforce: False
-        Value:
-    X-Generator:
-        Required: False
-        Enforce: False
-        Value:
+            - max-age=31536000
+            - includeSubDomains
     User-Agent:
         Required: False
-        Enforce: False
-        Value:
-    X-Forwarded-For:
+    X-AspNet-Version:
         Required: False
-        Enforce: False
-        Value:
     X-Client-IP:
         Required: False
-        Enforce: False
-        Value:
-
-    # TODO - Add ruleset and severity
+    X-Content-Type-Options:
+        Required: True
+        Value: nosniff
+    X-Forwarded-For:
+        Required: False
+    X-Frame-Options:
+        Required: True
+        Value-One-Of:
+            - DENY
+            - SAMEORIGIN
+    X-Generator:
+        Required: False
+    X-Powered-By:
+        Required: False
+    X-XSS-Protection:
+        Required: True
+        Value: 0
