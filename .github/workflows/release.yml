@@ -25,8 +25,8 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements_dev.txt
 
-      - name: Test with Nosetests
-        run: python -m nose --with-xunit --xunit-file=${{ matrix.python-version }}.results.xml
+      - name: Test with pytest
+        run: python -m pytest --junitxml ${{ matrix.python-version }}.results.xml
 
       - name: Flake8 styles
         run: python -m flake8 drheader
