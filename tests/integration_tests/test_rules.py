@@ -80,8 +80,7 @@ class TestDefaultRules(TestBase):
             'rule': 'Referrer-Policy',
             'severity': 'high',
             'message': 'Header not included in response',
-            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
-            'delimiter': ','
+            'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer']
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Referrer-Policy'))
 
@@ -92,11 +91,9 @@ class TestDefaultRules(TestBase):
         expected = {
             'rule': 'Referrer-Policy',
             'severity': 'high',
-            'message': 'Value does not match security policy. At least one of the expected items was expected',
+            'message': 'Value does not match security policy. Exactly one of the expected items was expected',
             'expected': ['strict-origin', 'strict-origin-when-cross-origin', 'no-referrer'],
-            'value': 'same-origin',
-            'anomalies': ['same-origin'],
-            'delimiter': ','
+            'value': 'same-origin'
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Referrer-Policy'))
 

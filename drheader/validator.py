@@ -90,10 +90,16 @@ def validate_value(config, item_value, header, directive=None):
         validation_items = [item.strip(delimiters.get('strip_items')) for item in item_value.split(delimiter)]
         raw_value = item_value
 
-    validation_items = {str(item).strip().lower() for item in validation_items}
     expected = _get_expected_values(config, 'value', delimiter)
 
-    if validation_items != {item.lower() for item in expected}:
+    if config.get('preserve-order'):
+        validation_items = [str(item).strip().lower() for item in validation_items]
+        expected_lower = [item.lower() for item in expected]
+    else:
+        validation_items = {str(item).strip().lower() for item in validation_items}
+        expected_lower = {item.lower() for item in expected}
+
+    if validation_items != expected_lower:
         severity = config.get('severity', 'high')
         return ReportItem(severity, Error.VALUE, header, directive, raw_value, expected=expected, delimiter=delimiter)
 
