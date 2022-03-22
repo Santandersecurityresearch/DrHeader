@@ -1,6 +1,8 @@
 {
     "X-XSS-Protection": "0",
     "Content-Security-Policy": "default-src 'none'; script-src 'self'; object-src 'self'; frame-src 'self'",
+    "Cross-Origin-Embedder-Policy": "require-corp",
+    "Cross-Origin-Opener-Policy": "same-origin",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
     "X-Frame-Options": "DENY",
     "X-Content-Type-Options": "nosniff",

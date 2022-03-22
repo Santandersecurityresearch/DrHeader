@@ -10,7 +10,7 @@ class TestDefaultRules(TestBase):
         self.assertEqual(len(report), 0, msg=super().build_error_message(report))
 
     def test_cache_control_not_present_ko(self):
-        headers = super().delete_header('Cache-Control')
+        headers = super().delete_headers('Cache-Control')
 
         report = super().process_test(headers=headers)
         expected = {
@@ -37,7 +37,7 @@ class TestDefaultRules(TestBase):
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Cache-Control'))
 
     def test_csp_not_present_ko(self):
-        headers = super().delete_header('Content-Security-Policy')
+        headers = super().delete_headers('Content-Security-Policy')
 
         report = super().process_test(headers=headers)
         expected = {
@@ -60,8 +60,58 @@ class TestDefaultRules(TestBase):
         }
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Content-Security-Policy'))
 
+    def test_coep_not_present_ko(self):
+        headers = super().delete_headers('Cross-Origin-Embedder-Policy')
+
+        report = super().process_test(headers=headers, cross_origin_isolated=True)
+        expected = {
+            'rule': 'Cross-Origin-Embedder-Policy',
+            'severity': 'high',
+            'message': 'Header not included in response',
+            'expected': ['require-corp']
+        }
+        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Cross-Origin-Embedder-Policy'))
+
+    def test_coep_unsafe_none_ko(self):
+        headers = super().add_or_modify_header('Cross-Origin-Embedder-Policy', 'unsafe-none')
+
+        report = super().process_test(headers=headers, cross_origin_isolated=True)
+        expected = {
+            'rule': 'Cross-Origin-Embedder-Policy',
+            'severity': 'high',
+            'message': 'Value does not match security policy. All of the expected items were expected',
+            'expected': ['require-corp'],
+            'value': 'unsafe-none'
+        }
+        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Cross-Origin-Embedder-Policy'))
+
+    def test_coop_not_present_ko(self):
+        headers = super().delete_headers('Cross-Origin-Opener-Policy')
+
+        report = super().process_test(headers=headers, cross_origin_isolated=True)
+        expected = {
+            'rule': 'Cross-Origin-Opener-Policy',
+            'severity': 'high',
+            'message': 'Header not included in response',
+            'expected': ['same-origin']
+        }
+        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Cross-Origin-Opener-Policy'))
+
+    def test_coop_allow_popups_ko(self):
+        headers = super().add_or_modify_header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups')
+
+        report = super().process_test(headers=headers, cross_origin_isolated=True)
+        expected = {
+            'rule': 'Cross-Origin-Opener-Policy',
+            'severity': 'high',
+            'message': 'Value does not match security policy. All of the expected items were expected',
+            'expected': ['same-origin'],
+            'value': 'same-origin-allow-popups'
+        }
+        self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Cross-Origin-Opener-Policy'))
+
     def test_pragma_not_present_ko(self):
-        headers = super().delete_header('Pragma')
+        headers = super().delete_headers('Pragma')
 
         report = super().process_test(headers=headers)
         expected = {
@@ -73,7 +123,7 @@ class TestDefaultRules(TestBase):
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Pragma'))
 
     def test_referrer_policy_not_present_ko(self):
-        headers = super().delete_header('Referrer-Policy')
+        headers = super().delete_headers('Referrer-Policy')
 
         report = super().process_test(headers=headers)
         expected = {
@@ -142,7 +192,7 @@ class TestDefaultRules(TestBase):
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'Set-Cookie'))
 
     def test_strict_transport_security_not_present_ko(self):
-        headers = super().delete_header('Strict-Transport-Security')
+        headers = super().delete_headers('Strict-Transport-Security')
 
         report = super().process_test(headers=headers)
         expected = {
@@ -188,7 +238,7 @@ class TestDefaultRules(TestBase):
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'X-Client-IP'))
 
     def test_x_content_type_options_not_present_ko(self):
-        headers = super().delete_header('X-Content-Type-Options')
+        headers = super().delete_headers('X-Content-Type-Options')
 
         report = super().process_test(headers=headers)
         expected = {
@@ -200,7 +250,7 @@ class TestDefaultRules(TestBase):
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'X-Content-Type-Options'))
 
     def test_x_frame_options_not_present_ko(self):
-        headers = super().delete_header('X-Frame-Options')
+        headers = super().delete_headers('X-Frame-Options')
 
         report = super().process_test(headers=headers)
         expected = {
@@ -258,7 +308,7 @@ class TestDefaultRules(TestBase):
         self.assertIn(expected, report, msg=super().build_error_message(report, expected, 'X-Powered-By'))
 
     def test_x_xss_protection_not_present_ko(self):
-        headers = super().delete_header('X-XSS-Protection')
+        headers = super().delete_headers('X-XSS-Protection')
 
         report = super().process_test(headers=headers)
         expected = {

@@ -12,6 +12,8 @@ from drheader.validator import DELIMITERS, validate_exists, validate_not_exists,
 
 class Drheader:
 
+    _CROSS_ORIGIN_HEADERS = ['cross-origin-embedder-policy', 'cross-origin-opener-policy']
+
     def __init__(self, headers=None, url=None, method='get', params=None, request_headers=None, verify=True):
         """
         Initialise a Drheader instance
@@ -34,14 +36,18 @@ class Drheader:
             self.headers = CaseInsensitiveDict(headers)
         self.reporter = Reporter()
 
-    def analyze(self, rules=None):
+    def analyze(self, rules=None, cross_origin_isolated=False):
         """
         Analyse the loaded headers against the provided ruleset
         :param dict rules: The ruleset to validate the headers against
+        :param bool cross_origin_isolated: Enable cross-origin isolation validations
         """
         if not rules:
             rules = load_rules()
+
         for header, config in rules.items():
+            if header.lower() in self._CROSS_ORIGIN_HEADERS and not cross_origin_isolated:
+                continue
             if header.lower() != 'set-cookie':
                 self._analyze(config, header)
             elif header in self.headers:
