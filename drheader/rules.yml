@@ -13,7 +13,7 @@ Headers:
         Required: True
         Enforce: True
         Value:
-            - 0
+            - 1; mode=block
     Server:
         Required: False
         Enforce: False
