@@ -7,8 +7,8 @@ your specific requirements.
 * [Sample Policy](#sample-policy)
 * [File Structure](#file-structure)
   * [Expected and Disallowed Values](#expected-and-disallowed-values)
-  * [Validation Order](#validation-order)
-  * [Permissible Values](#permissible-values)
+    * [Permissible Values](#permissible-values)
+    * [Validation Order](#validation-order)
   * [Validating Policy Headers](#validating-policy-headers)
   * [Validating Directives](#validating-directives)
   * [Validating Cookies](#validating-cookies)
@@ -18,6 +18,7 @@ your specific requirements.
   * [Securing Cookies](#securing-cookies)
   * [Preventing Caching](#preventing-caching)
   * [Enforcing Cross-Origin Isolation](#enforcing-cross-origin-isolation)
+  * [Enforcing a Fallback Referrer Policy](#enforcing-a-fallback-referrer-policy)
 
 ## Sample Policy
 drHEADer policy is defined in a yaml file. An example policy is given below:
@@ -47,7 +48,7 @@ Headers:
         Value: /_/csp_report
   Referrer-Policy:
     Required: True
-    Value-Any-Of:
+    Value-One-Of:
       - no-referrer
       - same-origin
       - strict-origin
@@ -115,15 +116,6 @@ If given as a string, individual items must be separated with the correct item d
 being evaluated. Therefore, for expected or disallowed values that specify multiple items, giving them as a list is
 generally preferred. For values that specify only a single item, a string is preferred for its simpler syntax.
 
-#### Validation Order
-Order is not preserved when validating. That is, both values shown below are valid for the above rule:
-```json
-{"Strict-Transport-Security": "max-age=31536000; includeSubDomains"}
-```
-```json
-{"Strict-Transport-Security": "includeSubDomains; max-age=31536000"}
-```
-
 #### Permissible Values
 For checks that define expected or disallowed values, these values can take a number of different formats to cover
 various scenarios that you might want to enforce:
@@ -140,14 +132,12 @@ Value: max-age=0
 Value: max-age
 ```
 You can also specify values from key-value directives *(e.g. unsafe-eval, unsafe-inline)* as valid disallowed values for
-must-avoid checks when validating policy headers. See [Validating Policy Headers](#validating-policy-headers).
+must-avoid checks when validating policy headers *(see [validating policy headers](#validating-policy-headers))*.
 
-The validations will match the expected or disallowed values against the whole item value (standalone directive/value,
-entire key-value directive, or key for key-value directive).
-
-If a value is typically declared in quotation marks, such as those for
-[`Clear-Site-Data`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Clear-Site-Data) or keywords for policy
-headers, you must omit the quotation marks:
+The validations will match the expected or disallowed values against the whole item value *(standalone directive/value,
+entire key-value directive, or key for key-value directive)*.  If a value is typically declared in quotation marks,
+such as those for [`Clear-Site-Data`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Clear-Site-Data), or
+keywords for policy headers, you must omit the quotation marks:
 ```yaml
 Clear-Site-Data:
   Required: True
@@ -155,6 +145,27 @@ Clear-Site-Data:
     - cache
     - storage
 ```
+
+#### Validation Order
+By default, order is not preserved when validating. That is, both values shown below are valid for the `Cache-Control`
+rule in the sample policy at the beginning of this document:
+```json
+{"Cache-Control": "no-store; max-age=0"}
+```
+```json
+{"Cache-Control": "max-age=0; no-store"}
+```
+
+There may be scenarios in which you want to preserve order, such as when specifying a fallback policy for
+[`Referrer-Policy`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy#specify_a_fallback_policy).
+In such scenarios, you can set `preserve-order` to `True`:
+```yaml
+Value:
+  - no-referrer
+  - strict-origin-when-cross-origin
+Preserve-Order: True
+```
+This is only supported for the `value` validation.
 
 ### Validating Policy Headers
 Policy headers are those that generally follow the syntax `<policy-directive>; <policy-directive>` where
@@ -214,8 +225,8 @@ that returns multiple cookies.
 
 ### Validating Custom Headers
 You can include custom headers for validation, and run the same validations on them, as you would any standard headers.
-If providing multiple expected or disallowed values for value, must-avoid, must-contain or must-contain-one checks, you
-need to specify the relevant delimiters in the `item-delimiter`, `key-delimiter` and `value-delimiter` elements:
+If providing multiple expected or disallowed values for value, avoid or contain checks, you  need to specify the
+relevant delimiters in the `item-delimiter`, `key-delimiter` and `value-delimiter` elements:
 ```yaml
 X-Custom-Header:
   Required: True
@@ -285,4 +296,14 @@ Cross-Origin-Embedder-Policy:
 Cross-Origin-Opener-Policy:
   Required: True
   Value: same-origin
+```
+
+### Enforcing a Fallback Referrer Policy
+```yaml
+Referrer-Policy:
+  Required: True
+  Value:
+    - no-referrer
+    - strict-origin-when-cross-origin
+  Preserve-Order: True
 ```

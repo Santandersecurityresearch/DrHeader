@@ -47,6 +47,14 @@ class TestValidator(unittest2.TestCase):
         expected = ReportItem('high', ErrorType.VALUE, 'strict-transport-security', value=header_value, expected=['max-age=31536000', 'includesubdomains'], delimiter=';')
         self.assertEqual(expected, response, msg='The report items are not equal:\n')
 
+    def test_validate_value__enforced_order_not_correct__ko(self):
+        config = CaseInsensitiveDict({'required': True, 'value': ['no-referrer', 'strict-origin-when-cross-origin'], 'preserve-order': True})
+        header_value = 'strict-origin-when-cross-origin, no-referrer'
+
+        response = validator.validate_value(config, header_value, 'referrer-policy')
+        expected = ReportItem('high', ErrorType.VALUE, 'referrer-policy', value=header_value, expected=['no-referrer', 'strict-origin-when-cross-origin'], delimiter=',')
+        self.assertEqual(expected, response, msg='The report items are not equal:\n')
+
     def test_validate_value_any_of__ok(self):
         config = CaseInsensitiveDict({'required': True, 'value-any-of': ['no-referrer', 'same-origin', 'strict-origin']})
 
