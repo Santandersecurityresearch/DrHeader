@@ -297,6 +297,8 @@ Cross-Origin-Opener-Policy:
   Required: True
   Value: same-origin
 ```
+** Note that cross-origin isolation validations are opt-in *(see
+[cross-origin isolation](README.md#cross-origin-isolation))*
 
 ### Enforcing a Fallback Referrer Policy
 ```yaml

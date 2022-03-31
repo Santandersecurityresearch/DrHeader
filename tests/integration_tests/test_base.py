@@ -13,12 +13,12 @@ class TestBase(unittest2.TestCase):
         self._reset_default_rules()
 
     @staticmethod
-    def process_test(headers=None, url=None):
+    def process_test(headers=None, url=None, cross_origin_isolated=False):
         with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as rules:
             rules = yaml.safe_load(rules.read())['Headers']
 
         drheader = Drheader(headers=headers, url=url)
-        return drheader.analyze(rules=rules)
+        return drheader.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
 
     @staticmethod
     def get_headers():
@@ -32,10 +32,10 @@ class TestBase(unittest2.TestCase):
         return headers
 
     @staticmethod
-    def delete_header(header_name):
+    def delete_headers(*header_names):
         headers = TestBase.get_headers()
-        if header_name in headers:
-            headers.pop(header_name)
+        for header in header_names:
+            headers.pop(header, None)
         return headers
 
     @staticmethod

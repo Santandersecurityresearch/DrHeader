@@ -124,6 +124,25 @@ drheader_instance = Drheader(url="http://test.com", verify=False)
 
 Other arguments may be included in the future such as _timeout_, *allow_redirects* or _proxies_.
 
+#### Cross-Origin Isolation
+The default rules in drHEADer support cross-origin isolation via the `Cross-Origin-Embedder-Policy` and
+`Cross-Origin-Opener-Policy` headers. Due to the potential for this to break websites that have not yet properly
+configured their sub-resources for cross-origin isolation, these validations are opt-in at analysis time. If you want to
+enforce these cross-origin isolation validations, you must pass the `cross-origin-isolated` flag.
+
+Using the CLI:
+```shell
+$ drheader scan single https://example.com --cross-origin-isolated
+```
+
+In a project:
+```python
+import drheader
+
+drheader_instance = drheader.Drheader(url='https://example.com')
+drheader_instance.analyze(cross_origin_isolated=True)
+```
+
 ## How Do I Customise drHEADer Rules?
 
 DrHEADer relies on a yaml file that defines the policy it will use when auditing security headers. The file is located at `./drheader/rules.yml`, and you can customise it to fit your particular needs. Please follow this [link](RULES.md) if you want to know more.
@@ -137,7 +156,7 @@ DrHEADer relies on a yaml file that defines the policy it will use when auditing
 We have a lot of ideas for drHEADer, and will push often as a result. Some of the things you'll see shortly are:
 
 * Building on the Python library to make it easier to embed in your own projects.
-* Releasing the API, which is seperate from the core library - the API allows you to hit URLs or endpoints at scale
+* Releasing the API, which is separate from the core library - the API allows you to hit URLs or endpoints at scale
 * Better integration into MiTM proxies.
 
 ## Who Is Behind It?

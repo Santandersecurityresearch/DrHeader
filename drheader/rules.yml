@@ -15,6 +15,12 @@ Headers:
                 Value-One-Of:
                     - none
                     - self
+    Cross-Origin-Embedder-Policy:
+        Required: True
+        Value: require-corp
+    Cross-Origin-Opener-Policy:
+        Required: True
+        Value: same-origin
     Pragma:
         Required: True
         Value: no-cache

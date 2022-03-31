@@ -27,9 +27,15 @@ class TestDrHeader(TestBase):
         report = super().process_test(headers=headers)
         self.assertEqual(0, len(report), msg=super().build_error_message(report))
 
+    def test_headers_cross_origin_isolated_disabled_ok(self):
+        headers = super().delete_headers('Cross-Origin-Embedder-Policy', 'Cross-Origin-Opener-Policy')
+
+        report = super().process_test(headers=headers, cross_origin_isolated=False)
+        self.assertEqual(0, len(report), msg=super().build_error_message(report))
+
     def test_optional_header_not_present_ok(self):
         self.modify_rule('X-XSS-Protection', {'Required': 'Optional', 'Value': ['0']})
-        headers = super().delete_header('X-XSS-Protection')
+        headers = super().delete_headers('X-XSS-Protection')
 
         report = super().process_test(headers=headers)
         self.assertEqual(0, len(report), msg=super().build_error_message(report))
@@ -50,7 +56,7 @@ class TestDrHeader(TestBase):
 
     def test_header_required_ko(self):
         self.modify_rule('Strict-Transport-Security', {'Required': True})
-        headers = super().delete_header('Strict-Transport-Security')
+        headers = super().delete_headers('Strict-Transport-Security')
 
         report = super().process_test(headers=headers)
         expected = {
