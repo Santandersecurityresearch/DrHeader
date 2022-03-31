@@ -17,7 +17,7 @@ Headers:
         Value: no-cache
     Referrer-Policy:
         Required: True
-        Value-Any-Of:
+        Value-One-Of:
             - strict-origin
             - strict-origin-when-cross-origin
             - no-referrer
