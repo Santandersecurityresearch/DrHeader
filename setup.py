@@ -47,7 +47,7 @@ setup(
     keywords='drheader',
     author='Santander UK Security Engineering',
     name='drheader',
-    packages=['drheader'],
+    packages=['drheader', 'drheader/validators'],
     test_suite='tests',
     url='https://github.com/santandersecurityresearch/drheader',
     version='1.6.0',

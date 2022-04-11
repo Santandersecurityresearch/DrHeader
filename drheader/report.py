@@ -1,8 +1,8 @@
-from enum import Enum
+import enum
 from typing import NamedTuple
 
 
-class ErrorType(Enum):
+class ErrorType(enum.Enum):
     AVOID = 'Must-Avoid directive included'
     CONTAIN = 'Must-Contain directive missed. All of the expected items were expected'
     CONTAIN_ONE = 'Must-Contain-One directive missed. At least one of the expected items was expected'
@@ -18,6 +18,7 @@ class ReportItem(NamedTuple):
     error_type: ErrorType
     header: str
     directive: str = None
+    cookie: str = None
     value: str = None
     avoid: list = None
     expected: list = None
@@ -31,15 +32,23 @@ class Reporter:
         self.report = []
 
     def add_item(self, item):
+        """Adds a validation failure to the final report.
+
+        Args:
+            item (ReportItem): ReportItem instance describing the validation failure to add to the report.
         """
-        Add a validation finding to the final report
-        :param item: The report item to add as a validation finding
-        """
-        finding = {
-            'rule': '{} - {}'.format(item.header, item.directive) if item.directive else item.header,
-            'message': item.error_type.value.format('Directive' if item.directive else 'Header'),
-            'severity': item.severity
-        }
+        finding = {}
+        if item.directive:
+            finding['rule'] = f'{item.header} - {item.directive}'
+            finding['message'] = item.error_type.value.format('Directive')
+        elif item.cookie:
+            finding['rule'] = f'{item.header} - {item.cookie}'
+            finding['message'] = item.error_type.value.format('Cookie')
+        else:
+            finding['rule'] = item.header
+            finding['message'] = item.error_type.value.format('Header')
+
+        finding['severity'] = item.severity
 
         if item.value:
             finding['value'] = item.value
@@ -47,7 +56,7 @@ class Reporter:
             finding['expected'] = item.expected
             if len(item.expected) > 1 and item.delimiter:
                 finding['delimiter'] = item.delimiter
-        if item.avoid:
+        elif item.avoid:
             finding['avoid'] = item.avoid
         if item.anomalies:
             finding['anomalies'] = item.anomalies

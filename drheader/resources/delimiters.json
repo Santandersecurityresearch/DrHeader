@@ -5,19 +5,19 @@
     },
     "Clear-Site-Data": {
         "item_delimiter": ",",
-        "strip_items": "\" "
+        "strip": "\" "
     },
     "Content-Security-Policy": {
         "item_delimiter": ";",
         "key_delimiter": " ",
         "value_delimiter": " ",
-        "strip_items": "' "
+        "strip": "' "
     },
     "Feature-Policy": {
         "item_delimiter": ";",
         "key_delimiter": " ",
         "value_delimiter": " ",
-        "strip_items": "' "
+        "strip": "' "
     },
     "Referrer-Policy": {
         "item_delimiter": ","

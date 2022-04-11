@@ -12,6 +12,8 @@ your specific requirements.
   * [Validating Policy Headers](#validating-policy-headers)
   * [Validating Directives](#validating-directives)
   * [Validating Cookies](#validating-cookies)
+    * [Validating Cookies Globally](#validating-cookies-globally)
+    * [Validating Named Cookies](#validating-named-cookies)
   * [Validating Custom Headers](#validating-custom-headers)
 * [Example Use Cases](#example-use-cases)
   * [Hardening the CSP](#hardening-the-csp)
@@ -114,7 +116,7 @@ Value: max-age=31536000; includeSubDomains
 ```
 If given as a string, individual items must be separated with the correct item delimiter for the header or directive
 being evaluated. Therefore, for expected or disallowed values that specify multiple items, giving them as a list is
-generally preferred. For values that specify only a single item, a string is preferred for its simpler syntax.
+generally preferred.
 
 #### Permissible Values
 For checks that define expected or disallowed values, these values can take a number of different formats to cover
@@ -131,11 +133,11 @@ Value: max-age=0
 ```yaml
 Value: max-age
 ```
-You can also specify values from key-value directives *(e.g. unsafe-eval, unsafe-inline)* as valid disallowed values for
-must-avoid checks when validating policy headers *(see [validating policy headers](#validating-policy-headers))*.
+You can also specify keyword values *(e.g. unsafe-eval, unsafe-inline)* as valid disallowed values for must-avoid checks
+when validating policy headers *(see [validating policy headers](#validating-policy-headers))*.
 
 The validations will match the expected or disallowed values against the whole item value *(standalone directive/value,
-entire key-value directive, or key for key-value directive)*.  If a value is typically declared in quotation marks,
+entire key-value directive, or key for key-value directive)*. If a value is typically declared in quotation marks,
 such as those for [`Clear-Site-Data`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Clear-Site-Data), or
 keywords for policy headers, you must omit the quotation marks:
 ```yaml
@@ -165,7 +167,7 @@ Value:
   - strict-origin-when-cross-origin
 Preserve-Order: True
 ```
-This is only supported for the `value` validation.
+This option is only supported by the `value` validation for headers. Directive and cookie validations are not supported.
 
 ### Validating Policy Headers
 Policy headers are those that generally follow the syntax `<policy-directive>; <policy-directive>` where
@@ -187,7 +189,14 @@ Content-Security-Policy:
 
 The quotation marks around keywords such as `'none'`, `'self'` and `'unsafe-inline'` in policy headers must not be
 included in expected or disallowed values. The quotation marks are stripped from these values in HTTP responses before
-they are compared to the expected and disallowed values.
+they are compared to the expected and disallowed values. The exception to this is if you're enforcing an exact value for
+the policy header (i.e. using the `value`, `value-any-of` or `value-one-of` validation), in which case you must keep the
+quotation marks around keywords:
+```yaml
+Content-Security-Policy:
+  Required: True
+  Value: default-src 'none'; script-src 'self'; style-src 'unsafe-inline'
+```
 
 ### Validating Directives
 The mechanism for validating directives is the same as that for validating headers, and all the same validations are
@@ -219,14 +228,51 @@ Content-Security-Policy:
 ```
 
 ### Validating Cookies
-Cookies validations are defined in the `set-cookie` element. The validations will run against all the cookies in the
-HTTP response. It is currently not possible to specify a validation to run only against a specific cookie in a response
-that returns multiple cookies.
+Cookie validations are defined in the `set-cookie` element. The validations for cookies work slightly differently to
+those for headers and directives.
+
+When defining a rule for a cookie, you have two options:
+1. [Apply the rule globally to all cookies](#validating-cookies-globally)
+2. [Apply the rule only to a specific named cookie](#validating-named-cookies)
+
+#### Validating Cookies Globally
+To validate cookies globally, you must define the rule under the `set-cookie` element as you would for other headers.
+```yaml
+Set-Cookie:
+  Required: Optional
+  Must-Contain:
+    - HttpOnly
+    - Secure
+```
+This example will enforce that all cookies returned set the `HttpOnly` and `Secure` flags. Global validations support
+only `must-avoid`, `must-contain` and `must-contain-one` rules.
+
+#### Validating Named Cookies
+To validate a named cookie, you must specify the cookie to be validated as an element under the `cookies` element. You
+can then define validation rules per cookie. DrHEADer will search for a cookie matching the named one and apply the
+validations only to that cookie.
+```yaml
+Set-Cookie:
+  Required: True
+  Cookies:
+    Session-Id:
+      Required: True
+      Must-Contain: Max-Age
+```
+
+The cookie validation mechanism for a named cookie assumes the following:
+
+* The cookie name and value are declared as the first attribute in the format `<cookie-name>=<cookie-value>;`
+* The cookie name does contain an equals sign `=`
+* The cookie value does contain a semicolon `;`
+
+The `value`, `value-any-of` and `value-one-of` validations are not supported for named cookies. The `directives`
+element is also not supported for named cookies.
 
 ### Validating Custom Headers
 You can include custom headers for validation, and run the same validations on them, as you would any standard headers.
-If providing multiple expected or disallowed values for value, avoid or contain checks, you  need to specify the
-relevant delimiters in the `item-delimiter`, `key-delimiter` and `value-delimiter` elements:
+If providing multiple expected or disallowed values for value, avoid or contain checks, you need to specify the relevant
+delimiters in the `item-delimiter`, `key-delimiter` and `value-delimiter` elements:
 ```yaml
 X-Custom-Header:
   Required: True
