@@ -1,4 +1,4 @@
-"""Entry point for analysis."""
+"""Main module and entry point for analysis."""
 import json
 import os
 
@@ -23,6 +23,7 @@ class Drheader:
         cookies (CaseInsensitiveDict): The cookies to analyse.
         reporter (Reporter): Reporter instance that generates and holds the final report.
     """
+
     def __init__(self, headers=None, url=None, method='get', params=None, request_headers=None, verify=True):
         """Initialises a Drheader instance.
 
@@ -38,7 +39,7 @@ class Drheader:
             verify (bool): (optional) A flag to verify the server's TLS certificate. Default is True.
 
         Raises:
-            ValueError: If neither headers nor url is provided.
+            ValueError: If neither headers nor url is provided, or if url is not a valid URL.
         """
         if not headers:
             if not url:
@@ -69,12 +70,11 @@ class Drheader:
             and its associated severity, and, if applicable, the observed value of the header, any expected, disallowed
             or anomalous values, and the correct delimiter. For example:
             {
-                'rule': 'Cache-Control',
-                'message': 'Value does not match security policy. All of the expected items were expected',
+                'rule': 'Referrer-Policy',
+                'message': 'Value does not match security policy. Exactly one of the expected items was expected',
                 'severity': 'high',
-                'value': 'no-cache'
-                'expected': ['no-store', 'max-age=0'],
-                'delimiter': ',',
+                'value': 'origin-when-cross-origin'
+                'expected': ['same-origin', 'strict-origin-when-cross-origin']
             }
         """
         if not rules:
@@ -98,13 +98,6 @@ class Drheader:
         return self.reporter.report
 
     def _analyze_header(self, config, validator, header):
-        """Analyses a single header for validation.
-
-        Args:
-            config (dict): The rules against which to assess the header.
-            validator (HeaderValidator): The header validator to run the validations.
-            header (str): The header to validate.
-        """
         if header.lower() != 'set-cookie':
             self._validate_rules(config, validator, header)
         elif header in self.headers:
@@ -112,36 +105,14 @@ class Drheader:
                 self._validate_rules(config, validator, header, cookie=cookie)
 
     def _analyze_directives(self, config, validator, header):
-        """Analyses the directives in a single header for validation.
-
-        Args:
-            config (dict): The configuration of the rules against which to assess the directives.
-            validator (DirectiveValidator): The directive validator to run the validations.
-            header (str): The header to validate.
-        """
         for directive, config in config['directives'].items():
             self._validate_rules(config, validator, header, directive=directive)
 
     def _analyze_cookies(self, config, validator):
-        """Analyses the cookies for validation.
-
-        Args:
-            config (dict): The configuration of the rules against which to assess the cookies.
-            validator (CookieValidator): The cookie validator to run the validations.
-        """
         for cookie, config in config['cookies'].items():
             self._validate_rules(config, validator, header='Set-Cookie', cookie=cookie)
 
     def _validate_rules(self, config, validator, header, directive=None, cookie=None):
-        """Starts the validation of a single header, directive or cookie.
-
-        Args:
-            config (dict): The rules against which to assess the header, directive or cookie
-            validator (ValidatorBase): The validator to run the validations.
-            header (str): The header to validate.
-            directive (str): (optional) The directive to validate.
-            cookie (str): (optional) The cookie to validate.
-        """
         if header in _DELIMITERS:
             config['delimiters'] = _DELIMITERS[header]
 
@@ -157,15 +128,6 @@ class Drheader:
                 self._validate_avoid_and_contain_values(config, validator, header, directive, cookie)
 
     def _validate_exists(self, is_required, config, validator, header, directive, cookie):
-        """Run an exists validation for a single header, directive or cookie.
-
-        If a validation failure occurs, it will generate a finding in the report.
-
-        Returns:
-            A boolean flag indicating whether the exists validation was successful. If is_required is 'optional', the
-            flag will only indicate whether the given header, directive or cookie is present in the headers, without
-            running any validation.
-        """
         if is_required == 'true':
             report_item = validator.validate_exists(config, header, directive=directive, cookie=cookie)
             self._add_to_report_if_exists(report_item)
@@ -178,11 +140,6 @@ class Drheader:
             return header in self.headers
 
     def _validate_enforced_value(self, config, validator, header, directive):
-        """Runs an enforced value validation for a single header, directive or cookie.
-
-        This method is applicable only when a 'value', 'value-one-of' or 'value-any-of' rule is defined. If a
-        validation failure occurs, it will generate a finding in the report.
-        """
         if 'value' in config:
             report_item = validator.validate_value(config, header, directive=directive)
             self._add_to_report_if_exists(report_item)
@@ -194,11 +151,6 @@ class Drheader:
             self._add_to_report_if_exists(report_item)
 
     def _validate_avoid_and_contain_values(self, config, validator, header, directive, cookie):
-        """Runs avoid and contain validations for a single header, directive or cookie.
-
-        This method is applicable only when a 'must-avoid', 'must-contain' or 'must-contain-one' rule is defined. If
-        any validation failures occur, they will generate a finding the report.
-        """
         if 'must-avoid' in config:
             report_item = validator.validate_must_avoid(config, header, directive=directive, cookie=cookie)
             self._add_to_report_if_exists(report_item)
@@ -210,7 +162,6 @@ class Drheader:
             self._add_to_report_if_exists(report_item)
 
     def _add_to_report_if_exists(self, report_item):
-        """Adds a validation failure, or a list of validation failures, to the report."""
         if report_item:
             try:
                 self.reporter.add_item(report_item)
@@ -220,23 +171,6 @@ class Drheader:
 
 
 def _get_headers_from_url(url, method, params, headers, verify):
-    """Retrieves headers from a URL.
-
-    Args:
-        url (str): The URL from which to retrieve the headers.
-        method (str): The HTTP verb to use when retrieving the headers.
-        params (dict): Any request parameters to send when retrieving the headers.
-        headers (dict): Any request headers to send when retrieving the headers.
-        verify (bool): A flag to verify the server's TLS certificate.
-
-    Returns:
-        A dict containing the response headers returned from the HTTP request. Header names are given in the dict
-        keys, and header values in the dict values. Cookies are aggregated into a list, with one entry in the list
-        per cookie. The list of cookies is returned in the value corresponding to the dict key 'set-cookie'.
-
-    Raises:
-        ValueError: If url is not a valid URL.
-    """
     if not validators.url(url):
         raise ValueError(f"Cannot retrieve headers from '{url}'. The URL is malformed")
 

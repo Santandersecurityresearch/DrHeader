@@ -1,14 +1,15 @@
+"""Primary module for report generation and storage."""
 import enum
 from typing import NamedTuple
 
 
 class ErrorType(enum.Enum):
     AVOID = 'Must-Avoid directive included'
-    CONTAIN = 'Must-Contain directive missed. All of the expected items were expected'
+    CONTAIN = 'Must-Contain directive missed'
     CONTAIN_ONE = 'Must-Contain-One directive missed. At least one of the expected items was expected'
     DISALLOWED = '{} should not be returned'
     REQUIRED = '{} not included in response'
-    VALUE = 'Value does not match security policy. All of the expected items were expected'
+    VALUE = 'Value does not match security policy'
     VALUE_ANY = 'Value does not match security policy. At least one of the expected items was expected'
     VALUE_ONE = 'Value does not match security policy. Exactly one of the expected items was expected'
 
@@ -27,15 +28,21 @@ class ReportItem(NamedTuple):
 
 
 class Reporter:
+    """Class to generate and store reports from a scan.
+
+    Attributes:
+        report (list): The report detailing validation failures encountered during a scan.
+    """
 
     def __init__(self):
+        """Initialises a Reporter instance with an empty report."""
         self.report = []
 
     def add_item(self, item):
-        """Adds a validation failure to the final report.
+        """Adds a validation failure to the report.
 
         Args:
-            item (ReportItem): ReportItem instance describing the validation failure to add to the report.
+            item (ReportItem): The validation failure to be added.
         """
         finding = {}
         if item.directive:

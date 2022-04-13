@@ -33,7 +33,7 @@ class TestDefaultRules(unittest2.TestCase):
         report = utils.process_test(headers=headers)
         expected = {
             'rule': 'Cache-Control',
-            'message': 'Value does not match security policy. All of the expected items were expected',
+            'message': 'Value does not match security policy',
             'severity': 'high',
             'value': 'no-cache',
             'expected': ['no-store', 'max-age=0'],
@@ -83,7 +83,7 @@ class TestDefaultRules(unittest2.TestCase):
         report = utils.process_test(headers=headers, cross_origin_isolated=True)
         expected = {
             'rule': 'Cross-Origin-Embedder-Policy',
-            'message': 'Value does not match security policy. All of the expected items were expected',
+            'message': 'Value does not match security policy',
             'severity': 'high',
             'value': 'unsafe-none',
             'expected': ['require-corp']
@@ -108,7 +108,7 @@ class TestDefaultRules(unittest2.TestCase):
         report = utils.process_test(headers=headers, cross_origin_isolated=True)
         expected = {
             'rule': 'Cross-Origin-Opener-Policy',
-            'message': 'Value does not match security policy. All of the expected items were expected',
+            'message': 'Value does not match security policy',
             'severity': 'high',
             'value': 'same-origin-allow-popups',
             'expected': ['same-origin']
@@ -169,7 +169,7 @@ class TestDefaultRules(unittest2.TestCase):
         report = utils.process_test(headers=headers)
         expected = {
             'rule': 'Set-Cookie - session_id',
-            'message': 'Must-Contain directive missed. All of the expected items were expected',
+            'message': 'Must-Contain directive missed',
             'severity': 'high',
             'value': 'session_id=585733723; HttpOnly; SameSite=Strict',
             'expected': ['HttpOnly', 'Secure'],
@@ -184,7 +184,7 @@ class TestDefaultRules(unittest2.TestCase):
         report = utils.process_test(headers=headers)
         expected = {
             'rule': 'Set-Cookie - session_id',
-            'message': 'Must-Contain directive missed. All of the expected items were expected',
+            'message': 'Must-Contain directive missed',
             'severity': 'high',
             'value': 'session_id=585733723; Secure; SameSite=Strict',
             'expected': ['HttpOnly', 'Secure'],
@@ -327,7 +327,7 @@ class TestDefaultRules(unittest2.TestCase):
         report = utils.process_test(headers=headers)
         expected = {
             'rule': 'X-XSS-Protection',
-            'message': 'Value does not match security policy. All of the expected items were expected',
+            'message': 'Value does not match security policy',
             'severity': 'high',
             'value': '1; mode=block',
             'expected': ['0']

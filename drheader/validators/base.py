@@ -1,7 +1,9 @@
+"""Base module for validators."""
 import abc
 
 
 class ValidatorBase:
+    """Base class for validators."""
 
     @abc.abstractmethod
     def validate_exists(self, config, header, directive=None, cookie=None):
@@ -90,8 +92,14 @@ class ValidatorBase:
 
 
 class UnsupportedValidationError(Exception):
+    """Exception to be raised when an unsupported validation is called.
+
+    Attributes:
+        message (string): A message describing the error.
+    """
 
     def __init__(self, message):
+        """Initialises an UnsupportedValidationError instance with a message."""
         self.message = message
 
 

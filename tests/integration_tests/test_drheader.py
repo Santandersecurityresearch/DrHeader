@@ -51,7 +51,7 @@ class TestDrHeader(unittest2.TestCase):
         report = utils.process_test(headers=headers)
         expected = {
             'rule': 'Cache-Control',
-            'message': 'Value does not match security policy. All of the expected items were expected',
+            'message': 'Value does not match security policy',
             'severity': 'high',
             'value': 'no-cache',
             'expected': ['no-store']
@@ -89,7 +89,7 @@ class TestDrHeader(unittest2.TestCase):
         report = utils.process_test(headers=headers)
         expected = {
             'rule': 'Cache-Control',
-            'message': 'Value does not match security policy. All of the expected items were expected',
+            'message': 'Value does not match security policy',
             'severity': 'high',
             'value': 'no-cache',
             'expected': ['no-store']
@@ -148,7 +148,7 @@ class TestDrHeader(unittest2.TestCase):
         report = utils.process_test(headers=headers)
         expected = {
             'rule': 'Cache-Control',
-            'message': 'Must-Contain directive missed. All of the expected items were expected',
+            'message': 'Must-Contain directive missed',
             'severity': 'high',
             'value': 'private',
             'expected': ['must-revalidate'],
@@ -177,7 +177,7 @@ class TestDrHeader(unittest2.TestCase):
         report = utils.process_test(headers=headers)
         expected = {
             'rule': 'Content-Security-Policy - style-src',
-            'message': 'Value does not match security policy. All of the expected items were expected',
+            'message': 'Value does not match security policy',
             'severity': 'high',
             'value': 'https://example.com',
             'expected': ['self']
@@ -236,7 +236,7 @@ class TestDrHeader(unittest2.TestCase):
         report = utils.process_test(headers=headers)
         expected = {
             'rule': 'Content-Security-Policy - style-src',
-            'message': 'Must-Contain directive missed. All of the expected items were expected',
+            'message': 'Must-Contain directive missed',
             'severity': 'high',
             'value': "'self'",
             'expected': ['https://example.com'],
@@ -304,7 +304,7 @@ class TestDrHeader(unittest2.TestCase):
         report = utils.process_test(headers=headers)
         expected = {
             'rule': 'Set-Cookie - session',
-            'message': 'Must-Contain directive missed. All of the expected items were expected',
+            'message': 'Must-Contain directive missed',
             'severity': 'high',
             'value': '657488329; HttpOnly; SameSite=Lax; Secure',
             'expected': ['HttpOnly', 'SameSite=Strict', 'Secure'],

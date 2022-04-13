@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
-"""Utils for drheader."""
-
+"""Utility functions for core module."""
 import io
 import logging
 import os
@@ -26,8 +24,11 @@ def parse_policy(policy, item_delimiter=None, key_delimiter=None, value_delimite
         item_delimiter (str): (optional) The character that delimits individual directives.
         key_delimiter (str): (optional) The character that delimits keys and values in key-value directives.
         value_delimiter (str): (optional) The character that delimits individual values in key-value directives.
-        strip (str): (optional) A string of characters to strip from policy values.
+        strip (str): (optional) A string of characters to strip from directive values.
         keys_only (bool): (optional) A flag to return only keys from key-value directives. Default is False.
+
+    Returns:
+        A list of directives.
     """
     if not item_delimiter:
         return [policy.strip(strip)]
@@ -49,18 +50,20 @@ def parse_policy(policy, item_delimiter=None, key_delimiter=None, value_delimite
     return directives
 
 
-def load_rules(rule_file=None, merge=None):
-    """
-    Loads drheader ruleset. Will load local defaults unless overridden.
-    If merge flag is present, result file will be a merge between local defaults and custom file
-    :param rule_file: file object of rules.
-    :type rule_file: file
-    :param merge: flag indicating to merge file_rule with default rules
-    :type merge: boolean
-    :return: drheader rules
-    :rtype: dict
-    """
+def load_rules(rule_file=None, merge=False):
+    """Returns a drHEADer ruleset from a file.
 
+    The loaded ruleset can be configured to be merged with the default drHEADer rules. If a rule exists in both the
+    custom rules and default rules, the custom one will take priority and override the default one. Otherwise, the new
+    custom rule will be appended to the default rules. If no file is provided, the default rules will be returned.
+
+    Args:
+        rule_file (file): (optional) The YAML file containing the ruleset.
+        merge (bool): (optional) A flag to merge the loaded rules with the drHEADer default rules. Default is False.
+
+    Returns:
+        A dict containing the loaded rules.
+    """
     if rule_file:
         logging.debug('')
         rules = yaml.safe_load(rule_file.read())
@@ -76,13 +79,7 @@ def load_rules(rule_file=None, merge=None):
 
 
 def get_rules_from_uri(uri):
-    """
-    Retrieves custom rule set from URL
-    :param uri: URL to your custom rules file
-    :type uri: uri
-    :return: rules file
-    :rtype: file
-    """
+    """Retrieves a rules file from a URL."""
     download = requests.get(uri)
     if not download.content:
         raise Exception('No content retrieved from {}'.format(uri))
@@ -91,6 +88,7 @@ def get_rules_from_uri(uri):
 
 
 def translate_to_case_insensitive_dict(dict_to_translate):
+    """Recursively transforms a dict into a case-insensitive dict."""
     for key, value in dict_to_translate.items():
         if isinstance(value, dict):
             dict_to_translate[key] = translate_to_case_insensitive_dict(value)
@@ -107,17 +105,6 @@ def _extract_key_value_directive(directive, value_delimiter, strip):
 
 
 def _merge_rules(default_rules, custom_rules):
-    """
-    Merge both rule set. Rules defined in 'custom_rules', also present in 'default_rules', will be overridden.
-    If a new rule is present in custom_rules, not present in default_rules, it will be added.
-    :param default_rules: base file object of rules.
-    :type default_rules: dict
-    :param custom_rules: override file object of rules.
-    :type custom_rules: dict
-    :return: final rule
-    :rtype: dict
-    """
-
     for rule in custom_rules['Headers']:
         default_rules['Headers'][rule] = custom_rules['Headers'][rule]
 
