@@ -3,10 +3,10 @@
 
 """The setup script."""
 
-from setuptools import setup
-
 import os
 import re
+
+from setuptools import setup
 
 base_dir = os.path.dirname(__file__)
 
@@ -23,10 +23,6 @@ with open('HISTORY.md') as history_file:
 
 with open('requirements.txt') as f:
     requirements = f.read()
-
-setup_requirements = ['pytest-runner', ]
-
-test_requirements = ['pytest']
 
 setup(
     classifiers=[
@@ -51,11 +47,9 @@ setup(
     keywords='drheader',
     author='Santander UK Security Engineering',
     name='drheader',
-    packages=['drheader'],
-    setup_requires=setup_requirements,
+    packages=['drheader', 'drheader/validators'],
     test_suite='tests',
-    tests_require=test_requirements, 
     url='https://github.com/santandersecurityresearch/drheader',
-    version='1.6.0',
+    version='1.7.0',
     zip_safe=False,
 )

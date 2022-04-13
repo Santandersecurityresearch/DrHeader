@@ -17,10 +17,12 @@ jobs:
            python-version: ${{ matrix.python-version }}
 
       - name: Install PIP Dependencies
-        run: pip install -r requirements_dev.txt
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements_dev.txt
 
-      - name: Test with Nosetests
-        run: python -m nose --with-xunit --xunit-file=${{ matrix.python-version }}.results.xml
+      - name: Test with pytest
+        run: python -m pytest --junitxml ${{ matrix.python-version }}.results.xml
 
       - name: Upload Test results
         uses: actions/upload-artifact@master
@@ -36,7 +38,7 @@ jobs:
 
       - name: Safety dependency scan
         run: python -m safety check
-        
+
       - name: Checkout origin branch if PR 'to-branch' is master
         if: github.base_ref == 'master'
         uses: actions/checkout@v2
