@@ -5,11 +5,11 @@ from typing import NamedTuple
 
 class ErrorType(enum.Enum):
     AVOID = 'Must-Avoid directive included'
-    CONTAIN = 'Must-Contain directive missed. All of the expected items were expected'
+    CONTAIN = 'Must-Contain directive missed'
     CONTAIN_ONE = 'Must-Contain-One directive missed. At least one of the expected items was expected'
     DISALLOWED = '{} should not be returned'
     REQUIRED = '{} not included in response'
-    VALUE = 'Value does not match security policy. All of the expected items were expected'
+    VALUE = 'Value does not match security policy'
     VALUE_ANY = 'Value does not match security policy. At least one of the expected items was expected'
     VALUE_ONE = 'Value does not match security policy. Exactly one of the expected items was expected'
 
