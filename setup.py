@@ -50,6 +50,6 @@ setup(
     packages=['drheader', 'drheader/validators'],
     test_suite='tests',
     url='https://github.com/santandersecurityresearch/drheader',
-    version='1.6.0',
+    version='1.7.0',
     zip_safe=False,
 )
