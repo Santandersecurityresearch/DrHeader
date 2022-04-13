@@ -1,3 +1,4 @@
+"""Primary module for report generation and storage."""
 import enum
 from typing import NamedTuple
 
@@ -27,15 +28,21 @@ class ReportItem(NamedTuple):
 
 
 class Reporter:
+    """Class to generate and store reports from a scan.
+
+    Attributes:
+        report (list): The report detailing validation failures encountered during a scan.
+    """
 
     def __init__(self):
+        """Initialises a Reporter instance with an empty report."""
         self.report = []
 
     def add_item(self, item):
-        """Adds a validation failure to the final report.
+        """Adds a validation failure to the report.
 
         Args:
-            item (ReportItem): ReportItem instance describing the validation failure to add to the report.
+            item (ReportItem): The validation failure to be added.
         """
         finding = {}
         if item.directive:

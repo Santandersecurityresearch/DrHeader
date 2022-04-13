@@ -1,3 +1,4 @@
+"""Validator module for cookies."""
 from drheader import report, utils
 from drheader.validators import base
 
@@ -5,32 +6,56 @@ _DELIMITER_TYPE = 'item_delimiter'
 
 
 class CookieValidator(base.ValidatorBase):
+    """Validator class for validating cookies.
+
+    Attributes:
+        cookies (CaseInsensitiveDict): The cookies to analyse.
+    """
 
     def __init__(self, cookies):
+        """Initialises a CookieValidator instance with cookies."""
         self.cookies = cookies
 
     def validate_exists(self, config, header, directive=None, cookie=None):
+        """See base class."""
         if cookie not in self.cookies:
             severity = config.get('severity', 'high')
             error_type = report.ErrorType.REQUIRED
             return report.ReportItem(severity, error_type, header, cookie=cookie)
 
     def validate_not_exists(self, config, header, directive=None, cookie=None):
+        """See base class."""
         if cookie in self.cookies:
             severity = config.get('severity', 'high')
             error_type = report.ErrorType.DISALLOWED
             return report.ReportItem(severity, error_type, header, cookie=cookie)
 
     def validate_value(self, config, header, directive=None):
+        """Method not supported.
+
+        Raises:
+            UnsupportedValidationError: If the method is called.
+        """
         raise base.UnsupportedValidationError("'Value' validations are not supported for cookies")
 
     def validate_value_any_of(self, config, header, directive=None):
+        """Method not supported.
+
+        Raises:
+            UnsupportedValidationError: If the method is called.
+        """
         raise base.UnsupportedValidationError("'Value-Any-Of' validations are not supported for cookies")
 
     def validate_value_one_of(self, config, header, directive=None):
+        """Method not supported.
+
+        Raises:
+            UnsupportedValidationError: If the method is called.
+        """
         raise base.UnsupportedValidationError("'Value-One-Of' validations are not supported for cookies")
 
     def validate_must_avoid(self, config, header, directive=None, cookie=None):
+        """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         disallowed = base.get_expected_values(config, 'must-avoid', delimiter)
 
@@ -50,6 +75,7 @@ class CookieValidator(base.ValidatorBase):
                                      anomalies=anomalies)
 
     def validate_must_contain(self, config, header, directive=None, cookie=None):
+        """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'must-contain', delimiter)
 
@@ -69,6 +95,7 @@ class CookieValidator(base.ValidatorBase):
                                      anomalies=anomalies, delimiter=delimiter)
 
     def validate_must_contain_one(self, config, header, directive=None, cookie=None):
+        """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'must-contain-one', delimiter)
 
