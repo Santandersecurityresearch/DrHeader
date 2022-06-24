@@ -53,8 +53,7 @@ class HeaderValidator(base.ValidatorBase):
 
         header_value = self.headers[header]
         strip_chars = base.get_delimiter(config, 'strip') if header.lower() in _STRIP_HEADERS else None
-        header_items = utils.parse_policy(header_value, item_delimiter=delimiter, strip_chars=strip_chars)
-
+        header_items = utils.parse_policy(header_value, item_delimiter=delimiter, strip=strip_chars)
         if config.get('preserve-order'):
             header_items = [item.lower() for item in header_items]
             expected_lower = [item.lower() for item in expected]
@@ -64,8 +63,9 @@ class HeaderValidator(base.ValidatorBase):
 
         if header_items != expected_lower:
             severity = config.get('severity', 'high')
-            error_type = ErrorType.VALUE
-            return ReportItem(severity, error_type, header, value=header_value, expected=expected, delimiter=delimiter)
+            error_type = report.ErrorType.VALUE
+            return report.ReportItem(severity, error_type, header, value=header_value, expected=expected,
+                                     delimiter=delimiter)
 
     def value_any_of(self, config, header, **kwargs):
         """See base class."""
