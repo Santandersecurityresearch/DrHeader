@@ -59,12 +59,21 @@ class Reporter:
 
         if item.value:
             finding['value'] = item.value
+            finding['message'] = finding['message'] + " \n These are the actual values: " + item.value
         if item.expected:
             finding['expected'] = item.expected
+            expected_string = ""
+            for expect in item.expected:
+                if expected_string != "":
+                    expected_string += "; "
+                expected_string += expect
+            finding['message'] = finding['message'] + " \n These are the expected values: " + expected_string
             if len(item.expected) > 1 and item.delimiter:
                 finding['delimiter'] = item.delimiter
         elif item.avoid:
             finding['avoid'] = item.avoid
+            finding['message'] = finding['message'] + " \n Avoid values: " + str(item.avoid)
         if item.anomalies:
             finding['anomalies'] = item.anomalies
+            finding['message'] = finding['message'] + " \n Anomalies: " + str(item.anomalies)
         self.report.append(finding)
