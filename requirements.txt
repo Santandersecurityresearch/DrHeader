@@ -1,5 +1,5 @@
 requests>=2.22.0
-jsonschema==4.4.0
+jsonschema==4.17.0
 jsonschema[format]
 Click>=7.0
 validators>=0.14.0
