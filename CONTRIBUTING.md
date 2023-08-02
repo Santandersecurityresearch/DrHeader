@@ -76,11 +76,9 @@ Ready to contribute? Here's how to set up
 5.  When you're done making changes, check that your changes pass flake8
     and the tests, including testing other Python versions with tox:
 
-        $ flake8 drheader tests
-        $ py.test
         $ tox
 
-    To get flake8 and tox, just pip install them into your virtualenv.
+    To get tox, just pip install it into your virtualenv.
 
 6.  Commit your changes and push your branch to GitHub:
 
@@ -98,5 +96,5 @@ When submitting a pull request, please ensure that:
 2.  You check all tests are passing and have created new ones if change not covered in current test suite.
 3.  You update `README.md` if functionality has been added or modified. If you are creating new classes or methods, please use docstring to document the code.
 4.  You update `RULES.md` when extending or modifying the way rules can be used, adding documentation and examples for the new/modified feature.
-5.  Code works for Python >= 3.7
+5.  Code works for Python >= 3.8
 6.  Once PR is submitted, workflow steps are successful (e.g.: Flake8, Bandit, Safety, etc.)

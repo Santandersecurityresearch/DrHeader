@@ -10,7 +10,6 @@ pytest==7.4.0
 setuptools>=39.0.1
 bandit==1.7.4
 validators>=0.14.0
-unittest2==1.1.0
 xmlunittest==0.5.0
 junit-xml==1.9
 responses==0.23.3

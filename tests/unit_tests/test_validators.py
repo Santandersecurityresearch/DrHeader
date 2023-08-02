@@ -1,13 +1,13 @@
 from unittest import mock
 
-import unittest2
+import unittest
 from requests import structures
 
 from drheader import report, utils
 from drheader.validators import header_validator
 
 
-class TestBase(unittest2.TestCase):
+class TestBase(unittest.TestCase):
 
     def assert_report_items_equal(self, expected_report_item, observed_report_item, msg=None):
         does_validate = True
