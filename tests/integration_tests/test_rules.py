@@ -1,9 +1,9 @@
-import unittest2
+import unittest
 
 from tests.integration_tests import utils
 
 
-class TestDefaultRules(unittest2.TestCase):
+class TestDefaultRules(unittest.TestCase):
 
     def tearDown(self):
         utils.reset_default_rules()

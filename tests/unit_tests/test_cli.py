@@ -4,7 +4,7 @@ import os.path
 import tempfile
 from unittest import mock
 
-import unittest2
+import unittest
 import xmlunittest
 import yaml
 from click import ClickException
@@ -14,7 +14,7 @@ from drheader import cli
 from drheader.cli_utils import file_junit_report
 
 
-class TestCli(unittest2.TestCase):
+class TestCli(unittest.TestCase):
 
     def setUp(self):
         with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json')) as report_file:
@@ -150,7 +150,7 @@ class TestCli(unittest2.TestCase):
         self.assertIn("Error: 'url' is a required property", result.output)
 
 
-class TestCliUtils(unittest2.TestCase, xmlunittest.XmlTestMixin):
+class TestCliUtils(unittest.TestCase, xmlunittest.XmlTestMixin):
 
     def setUp(self):
         with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as f:

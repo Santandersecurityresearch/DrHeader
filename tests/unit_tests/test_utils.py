@@ -6,13 +6,13 @@
 import os
 
 import responses
-import unittest2
+import unittest
 import yaml
 
 from drheader import utils
 
 
-class TestUtils(unittest2.TestCase):
+class TestUtils(unittest.TestCase):
 
     def setUp(self):
         with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as f:

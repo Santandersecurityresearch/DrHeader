@@ -1,12 +1,12 @@
 import os
 
-import unittest2
+import unittest
 import yaml
 
 from tests.integration_tests import utils
 
 
-class TestDrHeader(unittest2.TestCase):
+class TestDrHeader(unittest.TestCase):
 
     def tearDown(self):
         utils.reset_default_rules()
