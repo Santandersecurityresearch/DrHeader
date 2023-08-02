@@ -1,8 +1,8 @@
 bump2version==1.0.1
 wheel==0.38.1
-watchdog==2.1.7
+watchdog==3.0.0
 tox==4.6.4
-coverage==6.3.2
+coverage==7.2.7
 Sphinx==4.3.0
 m2r2==0.3.2
 twine==3.8.0
@@ -13,4 +13,4 @@ validators>=0.14.0
 unittest2==1.1.0
 xmlunittest==0.5.0
 junit-xml==1.9
-responses==0.20.0
+responses==0.23.3
