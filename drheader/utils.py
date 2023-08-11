@@ -80,7 +80,7 @@ def load_rules(rule_file=None, merge=False):
 
 def get_rules_from_uri(uri):
     """Retrieves a rules file from a URL."""
-    download = requests.get(uri)
+    download = requests.get(uri, timeout=5)
     if not download.content:
         raise Exception('No content retrieved from {}'.format(uri))
     file = io.BytesIO(download.content)
