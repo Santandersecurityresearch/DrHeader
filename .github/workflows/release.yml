@@ -31,11 +31,11 @@ jobs:
       - name: Run lint scan
         run: tox run -e lint
 
+      - name: Run SAST scan
+        run: tox run -e sast
+
       - name: Run SCA scan
         run: tox run -e sca
-
-      - name: Bandit security scan
-        run: python -m bandit -r ./drheader
 
       - name: Make Wheel
         run: |
