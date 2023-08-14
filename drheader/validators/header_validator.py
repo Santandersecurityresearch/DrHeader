@@ -18,7 +18,7 @@ class HeaderValidator(base.ValidatorBase):
         """Initialises a HeaderValidator instance with headers."""
         self.headers = headers
 
-    def validate_exists(self, config, header, directive=None, cookie=None):
+    def exists(self, config, header, directive=None, cookie=None):
         """See base class."""
         if header not in self.headers:
             severity = config.get('severity', 'high')
@@ -38,14 +38,14 @@ class HeaderValidator(base.ValidatorBase):
             else:
                 return report.ReportItem(severity, error_type, header)
 
-    def validate_not_exists(self, config, header, directive=None, cookie=None):
+    def not_exists(self, config, header, directive=None, cookie=None):
         """See base class."""
         if header in self.headers:
             severity = config.get('severity', 'high')
             error_type = report.ErrorType.DISALLOWED
             return report.ReportItem(severity, error_type, header)
 
-    def validate_value(self, config, header, directive=None):
+    def value(self, config, header, directive=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'value', delimiter)
@@ -67,7 +67,7 @@ class HeaderValidator(base.ValidatorBase):
             return report.ReportItem(severity, error_type, header, value=header_value, expected=expected,
                                      delimiter=delimiter)
 
-    def validate_value_any_of(self, config, header, directive=None):
+    def value_any_of(self, config, header, directive=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         accepted = base.get_expected_values(config, 'value-any-of', delimiter)
@@ -88,7 +88,7 @@ class HeaderValidator(base.ValidatorBase):
             return report.ReportItem(severity, error_type, header, value=header_value, expected=accepted,
                                      anomalies=anomalies, delimiter=delimiter)
 
-    def validate_value_one_of(self, config, header, directive=None):
+    def value_one_of(self, config, header, directive=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         accepted = base.get_expected_values(config, 'value-one-of', delimiter)
@@ -101,7 +101,7 @@ class HeaderValidator(base.ValidatorBase):
             error_type = report.ErrorType.VALUE_ONE
             return report.ReportItem(severity, error_type, header, value=header_value, expected=accepted)
 
-    def validate_must_avoid(self, config, header, directive=None, cookie=None):
+    def must_avoid(self, config, header, directive=None, cookie=None):
         """See base class."""
         if header.lower() in _POLICY_HEADERS:
             return self._validate_must_avoid_for_policy_header(config, header)
@@ -124,7 +124,7 @@ class HeaderValidator(base.ValidatorBase):
             return report.ReportItem(severity, error_type, header, cookie=cookie, value=header_value, avoid=disallowed,
                                      anomalies=anomalies)
 
-    def validate_must_contain(self, config, header, directive=None, cookie=None):
+    def must_contain(self, config, header, directive=None, cookie=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'must-contain', delimiter)
@@ -144,7 +144,7 @@ class HeaderValidator(base.ValidatorBase):
             return report.ReportItem(severity, error_type, header, cookie=cookie, value=header_value, expected=expected,
                                      anomalies=anomalies, delimiter=delimiter)
 
-    def validate_must_contain_one(self, config, header, directive=None, cookie=None):
+    def must_contain_one(self, config, header, directive=None, cookie=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'must-contain-one', delimiter)

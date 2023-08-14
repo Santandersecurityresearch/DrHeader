@@ -6,7 +6,7 @@ class ValidatorBase:
     """Base class for validators."""
 
     @abc.abstractmethod
-    def validate_exists(self, config, header, directive=None, cookie=None):
+    def exists(self, config, header, directive=None, cookie=None):
         """Validates that a header, directive or cookie exists in a set of headers.
 
         Args:
@@ -17,7 +17,7 @@ class ValidatorBase:
         """
 
     @abc.abstractmethod
-    def validate_not_exists(self, config, header, directive=None, cookie=None):
+    def not_exists(self, config, header, directive=None, cookie=None):
         """Validates that a header, directive or cookie does not exist in a set of headers.
 
         Args:
@@ -28,7 +28,7 @@ class ValidatorBase:
         """
 
     @abc.abstractmethod
-    def validate_value(self, config, header, directive=None):
+    def value(self, config, header, directive=None):
         """Validates that a header or directive matches a single expected value.
 
         Args:
@@ -38,7 +38,7 @@ class ValidatorBase:
         """
 
     @abc.abstractmethod
-    def validate_value_any_of(self, config, header, directive=None):
+    def value_any_of(self, config, header, directive=None):
         """Validates that a header or directive matches one or more of a list of expected values.
 
         Args:
@@ -48,7 +48,7 @@ class ValidatorBase:
         """
 
     @abc.abstractmethod
-    def validate_value_one_of(self, config, header, directive=None):
+    def value_one_of(self, config, header, directive=None):
         """Validates that a header or directive matches one of a list of expected values.
 
         Args:
@@ -58,7 +58,7 @@ class ValidatorBase:
         """
 
     @abc.abstractmethod
-    def validate_must_avoid(self, config, header, directive=None, cookie=None):
+    def must_avoid(self, config, header, directive=None, cookie=None):
         """Validates that a header, directive or cookie does not contain any of a list of disallowed values.
 
         Args:
@@ -69,7 +69,7 @@ class ValidatorBase:
         """
 
     @abc.abstractmethod
-    def validate_must_contain(self, config, header, directive=None, cookie=None):
+    def must_contain(self, config, header, directive=None, cookie=None):
         """Validates that a header, directive or cookie contains all of a list of expected values.
 
         Args:
@@ -80,7 +80,7 @@ class ValidatorBase:
         """
 
     @abc.abstractmethod
-    def validate_must_contain_one(self, config, header, directive=None, cookie=None):
+    def must_contain_one(self, config, header, directive=None, cookie=None):
         """Validates that a header, directive or cookie contains one or more of a list of expected values.
 
         Args:

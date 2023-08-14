@@ -39,7 +39,7 @@ class TestHeaderValidator(TestBase):
         self.validator.headers['referrer-policy'] = 'strict-origin-when-cross-origin, no-referrer'
         parse_policy_mock.return_value = ['strict-origin-when-cross-origin', 'no-referrer']
 
-        response = self.validator.validate_value(config, 'referrer-policy')
+        response = self.validator.value(config, 'referrer-policy')
         expected = report.ReportItem('high', report.ErrorType.VALUE, 'referrer-policy', value='strict-origin-when-cross-origin, no-referrer', expected=['no-referrer', 'strict-origin-when-cross-origin'], delimiter=',')
         self.assertEqual(expected, response, msg='The report items are not equal:\n')
 
@@ -53,7 +53,7 @@ class TestHeaderValidator(TestBase):
         self.validator.headers['set-cookie'] = ['session=657488329; samesite=lax', 'tracker=849338398; samesite=lax']
         parse_policy_mock.return_value = ['session=657488329', 'session', 'samesite=lax', 'samesite']
 
-        response = self.validator.validate_must_avoid(config, 'set-cookie', cookie='session')
+        response = self.validator.must_avoid(config, 'set-cookie', cookie='session')
         expected = report.ReportItem('high', report.ErrorType.AVOID, 'set-cookie', cookie='session', value='session=657488329; samesite=lax', avoid=['samesite=lax'], anomalies=['samesite=lax'])
         self.assertEqual(expected, response, msg='The report items are not equal:\n')
 
@@ -67,7 +67,7 @@ class TestHeaderValidator(TestBase):
         self.validator.headers['set-cookie'] = ['session=657488329; httponly', 'tracker=849338398; httponly']
         parse_policy_mock.return_value = ['session=657488329', 'session', 'httponly']
 
-        response = self.validator.validate_must_contain(config, 'set-cookie', cookie='session')
+        response = self.validator.must_contain(config, 'set-cookie', cookie='session')
         expected = report.ReportItem('high', report.ErrorType.CONTAIN, 'set-cookie', cookie='session', value='session=657488329; httponly', expected=['httponly', 'secure'], delimiter=';', anomalies=['secure'])
         self.assertEqual(expected, response, msg='The report items are not equal:\n')
 
@@ -81,7 +81,7 @@ class TestHeaderValidator(TestBase):
         self.validator.headers['set-cookie'] = ['session=657488329', 'tracker=849338398']
         parse_policy_mock.return_value = ['session=657488329', 'session']
 
-        response = self.validator.validate_must_contain_one(config, 'set-cookie', cookie='session')
+        response = self.validator.must_contain_one(config, 'set-cookie', cookie='session')
         expected = report.ReportItem('high', report.ErrorType.CONTAIN_ONE, 'set-cookie', cookie='session', value='session=657488329', expected=['expires', 'max-age'])
         self.assertEqual(expected, response, msg='The report items are not equal:\n')
 
@@ -100,7 +100,7 @@ class TestHeaderValidator(TestBase):
             'block-all-mixed-content'
         ]
 
-        response = self.validator.validate_must_avoid(config, 'content-security-policy')
+        response = self.validator.must_avoid(config, 'content-security-policy')
         expected = report.ReportItem('high', report.ErrorType.AVOID, 'content-security-policy', value="default-src 'none'; block-all-mixed-content", avoid=['block-all-mixed-content'], anomalies=['block-all-mixed-content'])
         self.assertEqual(expected, response[0], msg='The report items are not equal:\n')
 
@@ -120,7 +120,7 @@ class TestHeaderValidator(TestBase):
             utils.KeyValueDirective(key='script-src', value=['https://example.com'], raw_value='https://example.com')
         ]
 
-        response = self.validator.validate_must_avoid(config, 'content-security-policy')
+        response = self.validator.must_avoid(config, 'content-security-policy')
         expected = report.ReportItem('high', report.ErrorType.AVOID, 'content-security-policy', value="default-src 'none'; script-src https://example.com", avoid=['script-src'], anomalies=['script-src'])
         self.assertEqual(expected, response[0], msg='The report items are not equal:\n')
 
@@ -140,7 +140,7 @@ class TestHeaderValidator(TestBase):
             utils.KeyValueDirective(key='script-src', value=['unsafe-inline'], raw_value="'unsafe-inline'")
         ]
 
-        response = self.validator.validate_must_avoid(config, 'content-security-policy')
+        response = self.validator.must_avoid(config, 'content-security-policy')
         expected = report.ReportItem('high', report.ErrorType.AVOID, 'content-security-policy', directive='script-src', value="'unsafe-inline'", avoid=['unsafe-inline'], anomalies=['unsafe-inline'])
         self.assertEqual(expected, response[0], msg='The report items are not equal:\n')
 
@@ -160,6 +160,6 @@ class TestHeaderValidator(TestBase):
             utils.KeyValueDirective(key='object-src', value=['unsafe-inline'], raw_value="'unsafe-inline'")
         ]
 
-        response = self.validator.validate_must_avoid(config, 'content-security-policy')
+        response = self.validator.must_avoid(config, 'content-security-policy')
         self.assertEqual('script-src', response[0].directive)
         self.assertEqual('object-src', response[1].directive)

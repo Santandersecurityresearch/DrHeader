@@ -119,7 +119,7 @@ class Drheader:
         is_required = str(config['required']).strip().lower()
 
         if is_required == 'false':
-            report_item = validator.validate_not_exists(config, header, directive=directive, cookie=cookie)
+            report_item = validator.not_exists(config, header, directive=directive, cookie=cookie)
             self._add_to_report_if_exists(report_item)
         else:
             exists = self._validate_exists(is_required, config, validator, header, directive, cookie)
@@ -129,7 +129,7 @@ class Drheader:
 
     def _validate_exists(self, is_required, config, validator, header, directive, cookie):
         if is_required == 'true':
-            report_item = validator.validate_exists(config, header, directive=directive, cookie=cookie)
+            report_item = validator.exists(config, header, directive=directive, cookie=cookie)
             self._add_to_report_if_exists(report_item)
             return bool(not report_item)
         elif cookie:
@@ -141,24 +141,24 @@ class Drheader:
 
     def _validate_enforced_value(self, config, validator, header, directive):
         if 'value' in config:
-            report_item = validator.validate_value(config, header, directive=directive)
+            report_item = validator.value(config, header, directive=directive)
             self._add_to_report_if_exists(report_item)
         elif 'value-any-of' in config:
-            report_item = validator.validate_value_any_of(config, header, directive=directive)
+            report_item = validator.value_any_of(config, header, directive=directive)
             self._add_to_report_if_exists(report_item)
         elif 'value-one-of' in config:
-            report_item = validator.validate_value_one_of(config, header, directive=directive)
+            report_item = validator.value_one_of(config, header, directive=directive)
             self._add_to_report_if_exists(report_item)
 
     def _validate_avoid_and_contain_values(self, config, validator, header, directive, cookie):
         if 'must-avoid' in config:
-            report_item = validator.validate_must_avoid(config, header, directive=directive, cookie=cookie)
+            report_item = validator.must_avoid(config, header, directive=directive, cookie=cookie)
             self._add_to_report_if_exists(report_item)
         if 'must-contain' in config:
-            report_item = validator.validate_must_contain(config, header, directive=directive, cookie=cookie)
+            report_item = validator.must_contain(config, header, directive=directive, cookie=cookie)
             self._add_to_report_if_exists(report_item)
         if 'must-contain-one' in config:
-            report_item = validator.validate_must_contain_one(config, header, directive=directive, cookie=cookie)
+            report_item = validator.must_contain_one(config, header, directive=directive, cookie=cookie)
             self._add_to_report_if_exists(report_item)
 
     def _add_to_report_if_exists(self, report_item):

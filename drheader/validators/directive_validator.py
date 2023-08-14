@@ -16,7 +16,7 @@ class DirectiveValidator(base.ValidatorBase):
         """Initialises a DirectiveValidator instance with headers."""
         self.headers = headers
 
-    def validate_exists(self, config, header, directive=None, cookie=None):
+    def exists(self, config, header, directive=None, cookie=None):
         """See base class."""
         directives = utils.parse_policy(self.headers[header], **config['delimiters'], keys_only=True)
         directives = {str(item).lower() for item in directives}
@@ -41,7 +41,7 @@ class DirectiveValidator(base.ValidatorBase):
             else:
                 return report.ReportItem(severity, error_type, header, directive=directive)
 
-    def validate_not_exists(self, config, header, directive=None, cookie=None):
+    def not_exists(self, config, header, directive=None, cookie=None):
         """See base class."""
         directives = utils.parse_policy(self.headers[header], **config['delimiters'], keys_only=True)
         directives = {str(item).lower() for item in directives}
@@ -51,7 +51,7 @@ class DirectiveValidator(base.ValidatorBase):
             error_type = report.ErrorType.DISALLOWED
             return report.ReportItem(severity, error_type, header, directive=directive)
 
-    def validate_value(self, config, header, directive=None):
+    def value(self, config, header, directive=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'value', delimiter)
@@ -66,7 +66,7 @@ class DirectiveValidator(base.ValidatorBase):
             return report.ReportItem(severity, error_type, header, directive=directive, value=kvd.raw_value,
                                      expected=expected, delimiter=delimiter)
 
-    def validate_value_any_of(self, config, header, directive=None):
+    def value_any_of(self, config, header, directive=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         accepted = base.get_expected_values(config, 'value-any-of', delimiter)
@@ -87,7 +87,7 @@ class DirectiveValidator(base.ValidatorBase):
             return report.ReportItem(severity, error_type, header, directive=directive, value=kvd.raw_value,
                                      expected=accepted, anomalies=anomalies, delimiter=delimiter)
 
-    def validate_value_one_of(self, config, header, directive=None):
+    def value_one_of(self, config, header, directive=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         accepted = base.get_expected_values(config, 'value-one-of', delimiter)
@@ -102,7 +102,7 @@ class DirectiveValidator(base.ValidatorBase):
             return report.ReportItem(severity, error_type, header, directive=directive, value=kvd.raw_value,
                                      expected=accepted)
 
-    def validate_must_avoid(self, config, header, directive=None, cookie=None):
+    def must_avoid(self, config, header, directive=None, cookie=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         disallowed = base.get_expected_values(config, 'must-avoid', delimiter)
@@ -122,7 +122,7 @@ class DirectiveValidator(base.ValidatorBase):
             return report.ReportItem(severity, error_type, header, directive=directive, value=kvd.raw_value,
                                      avoid=disallowed, anomalies=anomalies)
 
-    def validate_must_contain(self, config, header, directive=None, cookie=None):
+    def must_contain(self, config, header, directive=None, cookie=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'must-contain', delimiter)
@@ -142,7 +142,7 @@ class DirectiveValidator(base.ValidatorBase):
             return report.ReportItem(severity, error_type, header, directive=directive, value=kvd.raw_value,
                                      expected=expected, anomalies=anomalies, delimiter=delimiter)
 
-    def validate_must_contain_one(self, config, header, directive=None, cookie=None):
+    def must_contain_one(self, config, header, directive=None, cookie=None):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'must-contain-one', delimiter)
