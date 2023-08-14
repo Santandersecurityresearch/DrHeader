@@ -46,7 +46,7 @@ class HeaderValidator(base.ValidatorBase):
             error_type = ErrorType.DISALLOWED
             return ReportItem(severity, error_type, header)
 
-    def value(self, config, header, directive=None):
+    def value(self, config, header, **kwargs):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'value', delimiter)
@@ -67,7 +67,7 @@ class HeaderValidator(base.ValidatorBase):
             error_type = ErrorType.VALUE
             return ReportItem(severity, error_type, header, value=header_value, expected=expected, delimiter=delimiter)
 
-    def value_any_of(self, config, header, directive=None):
+    def value_any_of(self, config, header, **kwargs):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         accepted = base.get_expected_values(config, 'value-any-of', delimiter)
@@ -87,7 +87,7 @@ class HeaderValidator(base.ValidatorBase):
             error_type = ErrorType.VALUE_ANY
             return ReportItem(severity, error_type, header, value=header_value, expected=accepted, anomalies=anomalies, delimiter=delimiter)  # noqa:E501
 
-    def value_one_of(self, config, header, directive=None):
+    def value_one_of(self, config, header, **kwargs):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         accepted = base.get_expected_values(config, 'value-one-of', delimiter)

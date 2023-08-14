@@ -3,10 +3,10 @@
 import io
 import logging
 import os
-import validators
 from typing import NamedTuple
 
 import requests
+import validators
 import yaml
 from requests import structures
 

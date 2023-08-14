@@ -108,13 +108,23 @@ class Drheader:
         return self.reporter.report
 
     def _validate_rules(self, config, validator, header, **kwargs):
+        """Validates rules for a single header, directive or cookie.
+
+        Args:
+            config (dict): The ruleset against which to validate.
+            validator (ValidatorBase): The validator instance to perform the validations.
+            header (str): The header to validate.
+
+        Keyword Args:
+            cookie (str): A named cookie in {header} to validate.
+            directive (str): A named directive in {header} to validate.
+        """
         config['delimiters'] = _DELIMITERS.get(header)
         required = str(config['required']).strip().lower()
 
         if required == 'false':
             if report_item := validator.not_exists(config, header, **kwargs):
                 self._add_to_report(report_item)
-            return
         elif required == 'true':
             if report_item := validator.exists(config, header, **kwargs):
                 self._add_to_report(report_item)
