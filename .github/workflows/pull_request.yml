@@ -21,10 +21,12 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements_dev.txt
 
-      - name: Test with pytest
-        run: python -m pytest --junitxml ${{ matrix.python-version }}.results.xml
+      - name: Run unit tests
+        env:
+            version: ${{ matrix.python-version }}
+        run: tox run -e py$version -- --junitxml $version.results.xml
 
-      - name: Upload Test results
+      - name: Upload test results
         uses: actions/upload-artifact@master
         with:
            name: Results - ${{ matrix.python-version }}
