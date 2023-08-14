@@ -1,13 +1,15 @@
 """Main module and entry point for analysis."""
 import json
+import logging
 import os
 
-import requests
-import validators
-from requests import structures
+from requests.structures import CaseInsensitiveDict
 
-from drheader import report, utils
-from drheader.validators import cookie_validator, directive_validator, header_validator
+from drheader import utils
+from drheader.report import Reporter
+from drheader.validators.cookie_validator import CookieValidator
+from drheader.validators.directive_validator import DirectiveValidator
+from drheader.validators.header_validator import HeaderValidator
 
 _CROSS_ORIGIN_HEADERS = ['cross-origin-embedder-policy', 'cross-origin-opener-policy']
 
@@ -45,13 +47,13 @@ class Drheader:
             if not url:
                 raise ValueError("Nothing provided for analysis. Either 'headers' or 'url' must be defined")
             else:
-                headers = _get_headers_from_url(url, method, params, request_headers, verify)
+                headers = utils.get_headers_from_url(url, method, params, request_headers, verify)
         elif isinstance(headers, str):
             headers = json.loads(headers)
 
-        self.cookies = structures.CaseInsensitiveDict()
-        self.headers = structures.CaseInsensitiveDict(headers)
-        self.reporter = report.Reporter()
+        self.cookies = CaseInsensitiveDict()
+        self.headers = CaseInsensitiveDict(headers)
+        self.reporter = Reporter()
 
         for cookie in self.headers.get('set-cookie', []):
             cookie = cookie.split('=', 1)
@@ -82,102 +84,91 @@ class Drheader:
         else:
             rules = utils.translate_to_case_insensitive_dict(rules)
 
-        h_validator = header_validator.HeaderValidator(self.headers)
-        d_validator = directive_validator.DirectiveValidator(self.headers)
-        c_validator = cookie_validator.CookieValidator(self.cookies)
+        header_validator = HeaderValidator(self.headers)
+        directive_validator = DirectiveValidator(self.headers)
+        cookie_validator = CookieValidator(self.cookies)
 
-        for header, config in rules.items():
+        for header, rule_config in rules.items():
             if header.lower() in _CROSS_ORIGIN_HEADERS and not cross_origin_isolated:
+                logging.info(f"Cross-origin isolation validations are not enabled. Skipping header '{header}'")
                 continue
-            else:
-                self._analyze_header(config, h_validator, header)
-                if 'directives' in config and header in self.headers:
-                    self._analyze_directives(config, d_validator, header)
-                if 'cookies' in config and header.lower() == 'set-cookie':
-                    self._analyze_cookies(config, c_validator)
+
+            if header.lower() != 'set-cookie':
+                self._validate_rules(rule_config, header_validator, header)
+            elif header in self.headers:  # Validates global rules for cookies e.g. all cookies must contain 'secure'
+                for cookie in self.cookies:
+                    self._validate_rules(rule_config, cookie_validator, header, cookie=cookie)
+
+            if 'directives' in rule_config and header in self.headers:
+                for directive, directive_config in rule_config['directives'].items():
+                    self._validate_rules(directive_config, directive_validator, header, directive=directive)
+            if 'cookies' in rule_config and header.lower() == 'set-cookie':  # Validates individual rules for cookies e.g. cookie session_id must contain 'samesite=strict'  # noqa:E501
+                for cookie, cookie_config in rule_config['cookies'].items():
+                    self._validate_rules(cookie_config, cookie_validator, header, cookie=cookie)
         return self.reporter.report
 
-    def _analyze_header(self, config, validator, header):
-        if header.lower() != 'set-cookie':
-            self._validate_rules(config, validator, header)
-        elif header in self.headers:
-            for cookie in self.cookies:
-                self._validate_rules(config, validator, header, cookie=cookie)
+    def _validate_rules(self, config, validator, header, **kwargs):
+        """Validates rules for a single header, directive or cookie.
 
-    def _analyze_directives(self, config, validator, header):
-        for directive, config in config['directives'].items():
-            self._validate_rules(config, validator, header, directive=directive)
+        Args:
+            config (dict): The ruleset against which to validate.
+            validator (ValidatorBase): The validator instance to perform the validations.
+            header (str): The header to validate.
 
-    def _analyze_cookies(self, config, validator):
-        for cookie, config in config['cookies'].items():
-            self._validate_rules(config, validator, header='Set-Cookie', cookie=cookie)
+        Keyword Args:
+            cookie (str): A named cookie in {header} to validate.
+            directive (str): A named directive in {header} to validate.
+        """
+        config['delimiters'] = _DELIMITERS.get(header)
+        required = str(config['required']).strip().lower()
 
-    def _validate_rules(self, config, validator, header, directive=None, cookie=None):
-        if header in _DELIMITERS:
-            config['delimiters'] = _DELIMITERS[header]
-
-        is_required = str(config['required']).strip().lower()
-
-        if is_required == 'false':
-            report_item = validator.not_exists(config, header, directive=directive, cookie=cookie)
-            self._add_to_report_if_exists(report_item)
+        if required == 'false':
+            if report_item := validator.not_exists(config, header, **kwargs):
+                self._add_to_report(report_item)
+        elif required == 'true':
+            if report_item := validator.exists(config, header, **kwargs):
+                self._add_to_report(report_item)
+            else:
+                self._validate_enforced_value(config, validator, header, **kwargs)
+                self._validate_avoid_and_contain_values(config, validator, header, **kwargs)
         else:
-            exists = self._validate_exists(is_required, config, validator, header, directive, cookie)
-            if exists:
-                self._validate_enforced_value(config, validator, header, directive)
-                self._validate_avoid_and_contain_values(config, validator, header, directive, cookie)
+            if (cookie := kwargs.get('cookie')) and cookie in self.cookies:
+                self._validate_enforced_value(config, validator, header, cookie=cookie)
+                self._validate_avoid_and_contain_values(config, validator, header, cookie=cookie)
+            elif directive := kwargs.get('directive'):
+                directives = utils.parse_policy(self.headers[header], **_DELIMITERS[header], keys_only=True)
+                if directive in directives:
+                    self._validate_enforced_value(config, validator, header, directive=directive)
+                    self._validate_avoid_and_contain_values(config, validator, header, directive=directive)
+            elif header in self.headers:
+                self._validate_enforced_value(config, validator, header)
+                self._validate_avoid_and_contain_values(config, validator, header)
 
-    def _validate_exists(self, is_required, config, validator, header, directive, cookie):
-        if is_required == 'true':
-            report_item = validator.exists(config, header, directive=directive, cookie=cookie)
-            self._add_to_report_if_exists(report_item)
-            return bool(not report_item)
-        elif cookie:
-            return cookie in self.cookies
-        elif directive:
-            return directive in utils.parse_policy(self.headers[header], **_DELIMITERS[header], keys_only=True)
-        elif header:
-            return header in self.headers
-
-    def _validate_enforced_value(self, config, validator, header, directive):
+    def _validate_enforced_value(self, config, validator, header, **kwargs):
         if 'value' in config:
-            report_item = validator.value(config, header, directive=directive)
-            self._add_to_report_if_exists(report_item)
+            if report_item := validator.value(config, header, **kwargs):
+                self._add_to_report(report_item)
         elif 'value-any-of' in config:
-            report_item = validator.value_any_of(config, header, directive=directive)
-            self._add_to_report_if_exists(report_item)
+            if report_item := validator.value_any_of(config, header, **kwargs):
+                self._add_to_report(report_item)
         elif 'value-one-of' in config:
-            report_item = validator.value_one_of(config, header, directive=directive)
-            self._add_to_report_if_exists(report_item)
+            if report_item := validator.value_one_of(config, header, **kwargs):
+                self._add_to_report(report_item)
 
-    def _validate_avoid_and_contain_values(self, config, validator, header, directive, cookie):
+    def _validate_avoid_and_contain_values(self, config, validator, header, **kwargs):
         if 'must-avoid' in config:
-            report_item = validator.must_avoid(config, header, directive=directive, cookie=cookie)
-            self._add_to_report_if_exists(report_item)
+            if report_item := validator.must_avoid(config, header, **kwargs):
+                self._add_to_report(report_item)
         if 'must-contain' in config:
-            report_item = validator.must_contain(config, header, directive=directive, cookie=cookie)
-            self._add_to_report_if_exists(report_item)
+            if report_item := validator.must_contain(config, header, **kwargs):
+                self._add_to_report(report_item)
         if 'must-contain-one' in config:
-            report_item = validator.must_contain_one(config, header, directive=directive, cookie=cookie)
-            self._add_to_report_if_exists(report_item)
+            if report_item := validator.must_contain_one(config, header, **kwargs):
+                self._add_to_report(report_item)
 
-    def _add_to_report_if_exists(self, report_item):
-        if report_item:
-            try:
-                self.reporter.add_item(report_item)
-            except AttributeError:
-                for item in report_item:
-                    self.reporter.add_item(item)
-
-
-def _get_headers_from_url(url, method, params, headers, verify):
-    if not validators.url(url):
-        raise ValueError(f"Cannot retrieve headers from '{url}'. The URL is malformed")
-
-    request_object = getattr(requests, method.lower())
-    response = request_object(url, data=params, headers=headers, verify=verify)
-    response_headers = response.headers
-
-    if len(response.raw.headers.getlist('Set-Cookie')) > 0:
-        response_headers['set-cookie'] = response.raw.headers.getlist('Set-Cookie')
-    return response_headers
+    def _add_to_report(self, report_item):
+        try:
+            self.reporter.add_item(report_item)
+        except AttributeError:  # For must-avoid rules on policy headers (CSP, Permissions-Policy)
+            for item in report_item:  # A separate report item is created for each directive that violates the must-avoid rule e.g. multiple directives containing 'unsafe-inline'  # noqa:E501
+                self.reporter.add_item(item)

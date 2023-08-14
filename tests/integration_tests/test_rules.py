@@ -171,7 +171,7 @@ class TestDefaultRules(unittest.TestCase):
             'rule': 'Set-Cookie - session_id',
             'message': 'Must-Contain directive missed',
             'severity': 'high',
-            'value': 'session_id=585733723; HttpOnly; SameSite=Strict',
+            'value': '585733723; HttpOnly; SameSite=Strict',
             'expected': ['HttpOnly', 'Secure'],
             'delimiter': ';',
             'anomalies': ['Secure']
@@ -186,7 +186,7 @@ class TestDefaultRules(unittest.TestCase):
             'rule': 'Set-Cookie - session_id',
             'message': 'Must-Contain directive missed',
             'severity': 'high',
-            'value': 'session_id=585733723; Secure; SameSite=Strict',
+            'value': '585733723; Secure; SameSite=Strict',
             'expected': ['HttpOnly', 'Secure'],
             'delimiter': ';',
             'anomalies': ['HttpOnly']

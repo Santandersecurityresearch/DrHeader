@@ -6,6 +6,7 @@ import os
 from typing import NamedTuple
 
 import requests
+import validators
 import yaml
 from requests import structures
 
@@ -16,36 +17,35 @@ class KeyValueDirective(NamedTuple):
     raw_value: str = None
 
 
-def parse_policy(policy, item_delimiter=None, key_delimiter=None, value_delimiter=None, strip=None, keys_only=False):
+def parse_policy(policy, item_delimiter=None, key_value_delimiter=None, value_delimiter=None, strip_chars=None, keys_only=False):  # noqa: E501
     """Parses a policy string into a list of individual directives.
 
     Args:
         policy (str): The policy to be parsed.
         item_delimiter (str): (optional) The character that delimits individual directives.
-        key_delimiter (str): (optional) The character that delimits keys and values in key-value directives.
+        key_value_delimiter (str): (optional) The character that delimits keys and values in key-value directives.
         value_delimiter (str): (optional) The character that delimits individual values in key-value directives.
-        strip (str): (optional) A string of characters to strip from directive values.
+        strip_chars (str): (optional) A string of characters to strip from directive values.
         keys_only (bool): (optional) A flag to return only keys from key-value directives. Default is False.
 
     Returns:
         A list of directives.
     """
     if not item_delimiter:
-        return [policy.strip(strip)]
-    elif not key_delimiter:
-        return [item.strip(strip) for item in policy.strip().split(item_delimiter)]
-    else:
-        policy_items = [item for item in policy.strip().split(item_delimiter)]
-        directives = []
+        return [policy.strip(strip_chars)]
+    if not key_value_delimiter:
+        return [item.strip(strip_chars) for item in policy.strip().split(item_delimiter)]
 
-    for item in policy_items:
+    directives = []
+
+    for item in policy.strip().split(item_delimiter):
         directives.append(item.strip())
-        split_item = item.strip(key_delimiter).split(key_delimiter, 1)
+        split_item = item.strip(key_value_delimiter).split(key_value_delimiter, 1)
         if len(split_item) == 2:
             if keys_only:
                 directives.append(split_item[0].strip())
             else:
-                key_value_directive = _extract_key_value_directive(split_item, value_delimiter, strip)
+                key_value_directive = _extract_key_value_directive(split_item, value_delimiter, strip_chars)
                 directives.append(key_value_directive)
     return directives
 
@@ -78,6 +78,19 @@ def load_rules(rule_file=None, merge=False):
     return rules['Headers']
 
 
+def get_headers_from_url(url, method, params, headers, verify):
+    if not validators.url(url):
+        raise ValueError(f"Cannot retrieve headers from '{url}'. The URL is malformed")
+
+    request_object = getattr(requests, method.lower())
+    response = request_object(url, data=params, headers=headers, verify=verify)
+    response_headers = response.headers
+
+    if len(response.raw.headers.getlist('Set-Cookie')) > 0:
+        response_headers['set-cookie'] = response.raw.headers.getlist('Set-Cookie')
+    return response_headers
+
+
 def get_rules_from_uri(uri):
     """Retrieves a rules file from a URL."""
     download = requests.get(uri, timeout=5)
@@ -95,12 +108,12 @@ def translate_to_case_insensitive_dict(dict_to_translate):
     return structures.CaseInsensitiveDict(dict_to_translate)
 
 
-def _extract_key_value_directive(directive, value_delimiter, strip):
+def _extract_key_value_directive(directive, value_delimiter, strip_chars):
     if value_delimiter:
         value_items = list(filter(lambda s: s.strip(), directive[1].split(value_delimiter)))
-        value = [item.strip(strip) for item in value_items]
+        value = [item.strip(strip_chars) for item in value_items]
     else:
-        value = [directive[1].strip(strip)]
+        value = [directive[1].strip(strip_chars)]
     return KeyValueDirective(directive[0].strip(), value, directive[1])
 
 

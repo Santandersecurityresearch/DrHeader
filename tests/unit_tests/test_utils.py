@@ -24,39 +24,39 @@ class TestUtils(unittest.TestCase):
 
     def test_parse_policy__should_extract_standalone_directive(self):
         policy = "default-src 'none'; upgrade-insecure-requests"
-        directives_list = utils.parse_policy(policy, ';', key_delimiter=' ', value_delimiter=' ')
+        directives_list = utils.parse_policy(policy, ';', key_value_delimiter=' ', value_delimiter=' ')
 
         self.assertIn('upgrade-insecure-requests', directives_list)
 
     def test_parse_policy__should_extract_key_value_directive(self):
         policy = "default-src 'none'; upgrade-insecure-requests"
-        directives_list = utils.parse_policy(policy, ';', key_delimiter=' ', value_delimiter=' ')
+        directives_list = utils.parse_policy(policy, ';', key_value_delimiter=' ', value_delimiter=' ')
 
         expected = utils.KeyValueDirective('default-src', ["'none'"], "'none'")
         self.assertIn(expected, directives_list)
 
     def test_parse_policy__should_extract_raw_key_value_directive(self):
         policy = "default-src 'none'; upgrade-insecure-requests"
-        directives_list = utils.parse_policy(policy, ';', key_delimiter=' ', value_delimiter=' ')
+        directives_list = utils.parse_policy(policy, ';', key_value_delimiter=' ', value_delimiter=' ')
 
         self.assertIn("default-src 'none'", directives_list)
 
     def test_parse_policy__should_extract_all_values_for_key_value_directive_with_multiple_values(self):
         policy = "default-src 'none'; script-src https: 'unsafe-inline'"
-        directives_list = utils.parse_policy(policy, ';', key_delimiter=' ', value_delimiter=' ')
+        directives_list = utils.parse_policy(policy, ';', key_value_delimiter=' ', value_delimiter=' ')
 
         expected = utils.KeyValueDirective('script-src', ['https:', "'unsafe-inline'"], "https: 'unsafe-inline'")
         self.assertIn(expected, directives_list)
 
     def test_parse_policy__should_extract_keys_from_key_value_directives_when_keys_only_is_true(self):
         policy = "default-src 'none'"
-        directives_list = utils.parse_policy(policy, ';', key_delimiter=' ', value_delimiter=' ', keys_only=True)
+        directives_list = utils.parse_policy(policy, ';', key_value_delimiter=' ', value_delimiter=' ', keys_only=True)
 
         self.assertIn('default-src', directives_list)
 
     def test_parse_policy__should_remove_strip_characters_from_directive_values(self):
         policy = "default-src 'none'; script-src 'unsafe-inline'"
-        directives_list = utils.parse_policy(policy, ';', key_delimiter=' ', value_delimiter=' ', strip='\' ')
+        directives_list = utils.parse_policy(policy, ';', key_value_delimiter=' ', value_delimiter=' ', strip_chars='\' ')
 
         expected = utils.KeyValueDirective('default-src', ['none'], "'none'")
         self.assertIn(expected, directives_list)

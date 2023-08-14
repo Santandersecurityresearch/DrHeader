@@ -1,30 +1,6 @@
 """Primary module for report generation and storage."""
-import enum
+from enum import Enum
 from typing import NamedTuple
-
-
-class ErrorType(enum.Enum):
-    AVOID = 'Must-Avoid directive included'
-    CONTAIN = 'Must-Contain directive missed'
-    CONTAIN_ONE = 'Must-Contain-One directive missed. At least one of the expected items was expected'
-    DISALLOWED = '{} should not be returned'
-    REQUIRED = '{} not included in response'
-    VALUE = 'Value does not match security policy'
-    VALUE_ANY = 'Value does not match security policy. At least one of the expected items was expected'
-    VALUE_ONE = 'Value does not match security policy. Exactly one of the expected items was expected'
-
-
-class ReportItem(NamedTuple):
-    severity: str
-    error_type: ErrorType
-    header: str
-    directive: str = None
-    cookie: str = None
-    value: str = None
-    avoid: list = None
-    expected: list = None
-    anomalies: list = None
-    delimiter: str = None
 
 
 class Reporter:
@@ -68,3 +44,27 @@ class Reporter:
         if item.anomalies:
             finding['anomalies'] = item.anomalies
         self.report.append(finding)
+
+
+class ErrorType(Enum):
+    AVOID = 'Must-Avoid directive included'
+    CONTAIN = 'Must-Contain directive missed'
+    CONTAIN_ONE = 'Must-Contain-One directive missed. At least one of the expected items was expected'
+    DISALLOWED = '{} should not be returned'
+    REQUIRED = '{} not included in response'
+    VALUE = 'Value does not match security policy'
+    VALUE_ANY = 'Value does not match security policy. At least one of the expected items was expected'
+    VALUE_ONE = 'Value does not match security policy. Exactly one of the expected items was expected'
+
+
+class ReportItem(NamedTuple):
+    severity: str
+    error_type: ErrorType
+    header: str
+    directive: str = None
+    cookie: str = None
+    value: str = None
+    avoid: list = None
+    expected: list = None
+    anomalies: list = None
+    delimiter: str = None
