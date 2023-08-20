@@ -26,7 +26,7 @@ class Drheader:
         reporter (Reporter): Reporter instance that generates and holds the final report.
     """
 
-    def __init__(self, headers=None, url=None, method='get', params=None, request_headers=None, verify=True):
+    def __init__(self, headers=None, url=None, **kwargs):
         """Initialises a Drheader instance.
 
         Either headers or url must be defined. If both are defined, the value passed in headers will take priority. If
@@ -35,10 +35,12 @@ class Drheader:
         Args:
             headers (dict | str): (optional) The headers to analyse. Must be valid JSON if passed as a string.
             url (str): (optional) The URL from which to retrieve the headers.
-            method (str): (optional) The HTTP verb to use when retrieving the headers. Default is 'get'.
-            params (dict): (optional) Any request parameters to send when retrieving the headers.
-            request_headers (dict): (optional) Any request headers to send when retrieving the headers.
-            verify (bool): (optional) A flag to verify the server's TLS certificate. Default is True.
+
+        Keyword Args:
+            method (str): The HTTP verb to use when retrieving the headers. Default is 'get'.
+            params (dict): Any request parameters to send when retrieving the headers.
+            request_headers (dict): Any request headers to send when retrieving the headers.
+            verify (bool): A flag to verify the server's TLS certificate. Default is True.
 
         Raises:
             ValueError: If neither headers nor url is provided, or if url is not a valid URL.
@@ -47,7 +49,7 @@ class Drheader:
             if not url:
                 raise ValueError("Nothing provided for analysis. Either 'headers' or 'url' must be defined")
             else:
-                headers = utils.get_headers_from_url(url, method, params, request_headers, verify)
+                headers = utils.get_headers_from_url(url, **kwargs)
         elif isinstance(headers, str):
             headers = json.loads(headers)
 

@@ -78,12 +78,12 @@ def load_rules(rule_file=None, merge=False):
     return rules['Headers']
 
 
-def get_headers_from_url(url, method, params, headers, verify):
+def get_headers_from_url(url, method='get', params=None, request_headers=None, verify=True):
     if not validators.url(url):
         raise ValueError(f"Cannot retrieve headers from '{url}'. The URL is malformed")
 
     request_object = getattr(requests, method.lower())
-    response = request_object(url, data=params, headers=headers, verify=verify)
+    response = request_object(url, data=params, headers=request_headers, verify=verify)
     response_headers = response.headers
 
     if len(response.raw.headers.getlist('Set-Cookie')) > 0:
