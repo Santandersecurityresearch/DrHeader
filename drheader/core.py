@@ -110,17 +110,7 @@ class Drheader:
         return self.reporter.report
 
     def _validate_rules(self, config, validator, header, **kwargs):
-        """Validates rules for a single header, directive or cookie.
-
-        Args:
-            config (dict): The ruleset against which to validate.
-            validator (ValidatorBase): The validator instance to perform the validations.
-            header (str): The header to validate.
-
-        Keyword Args:
-            cookie (str): A named cookie in {header} to validate.
-            directive (str): A named directive in {header} to validate.
-        """
+        """Validates rules for a single header, directive or cookie."""
         config['delimiters'] = _DELIMITERS.get(header)
         required = str(config['required']).strip().lower()
 
@@ -131,22 +121,19 @@ class Drheader:
             if report_item := validator.exists(config, header, **kwargs):
                 self._add_to_report(report_item)
             else:
-                self._validate_enforced_value(config, validator, header, **kwargs)
-                self._validate_avoid_and_contain_values(config, validator, header, **kwargs)
-        else:
+                self._validate_value_rules(config, validator, header, **kwargs)
+        elif required == 'optional':
             if (cookie := kwargs.get('cookie')) and cookie in self.cookies:
-                self._validate_enforced_value(config, validator, header, cookie=cookie)
-                self._validate_avoid_and_contain_values(config, validator, header, cookie=cookie)
+                self._validate_value_rules(config, validator, header, cookie=cookie)
             elif directive := kwargs.get('directive'):
                 directives = utils.parse_policy(self.headers[header], **_DELIMITERS[header], keys_only=True)
                 if directive in directives:
-                    self._validate_enforced_value(config, validator, header, directive=directive)
-                    self._validate_avoid_and_contain_values(config, validator, header, directive=directive)
+                    self._validate_value_rules(config, validator, header, directive=directive)
             elif header in self.headers:
-                self._validate_enforced_value(config, validator, header)
-                self._validate_avoid_and_contain_values(config, validator, header)
+                self._validate_value_rules(config, validator, header)
 
-    def _validate_enforced_value(self, config, validator, header, **kwargs):
+    def _validate_value_rules(self, config, validator, header, **kwargs):
+        """Validates rules for a single header, directive or cookie."""
         if 'value' in config:
             if report_item := validator.value(config, header, **kwargs):
                 self._add_to_report(report_item)
@@ -156,8 +143,6 @@ class Drheader:
         elif 'value-one-of' in config:
             if report_item := validator.value_one_of(config, header, **kwargs):
                 self._add_to_report(report_item)
-
-    def _validate_avoid_and_contain_values(self, config, validator, header, **kwargs):
         if 'must-avoid' in config:
             if report_item := validator.must_avoid(config, header, **kwargs):
                 self._add_to_report(report_item)
@@ -169,6 +154,7 @@ class Drheader:
                 self._add_to_report(report_item)
 
     def _add_to_report(self, report_item):
+        """Adds a finding or list of findings to the final report."""
         try:
             self.reporter.add_item(report_item)
         except AttributeError:  # For must-avoid rules on policy headers (CSP, Permissions-Policy)
