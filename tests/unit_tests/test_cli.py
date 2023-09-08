@@ -8,7 +8,7 @@ import yaml
 from click.testing import CliRunner
 from xmlunittest import XmlTestMixin
 
-from drheader import cli, cli_utils
+from drheader.cli import cli, utils
 
 
 # noinspection PyTypeChecker
@@ -20,7 +20,7 @@ class TestCli(TestCase):
         with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as rules:
             self.rules = yaml.safe_load(rules)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_compare_single__should_return_exit_code_0_on_clean_report(self, drheader_mock):
         file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_ko.json')
         drheader_mock.return_value.analyze.return_value = []
@@ -28,7 +28,7 @@ class TestCli(TestCase):
         response = CliRunner().invoke(cli.main, ['compare', 'single', file_path])
         self.assertEqual(0, response.exit_code)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_compare_single__should_return_exit_code_70_on_rule_violation(self, drheader_mock):
         file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_ko.json')
         drheader_mock.return_value.analyze.return_value = self.report
@@ -36,21 +36,21 @@ class TestCli(TestCase):
         response = CliRunner().invoke(cli.main, ['compare', 'single', file_path])
         self.assertEqual(70, response.exit_code)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_compare_single__should_disable_cross_origin_isolation_by_default(self, drheader_mock):
         file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_ko.json')
 
         CliRunner().invoke(cli.main, ['compare', 'single', file_path])
         drheader_mock.return_value.analyze.assert_called_once_with(rules=mock.ANY, cross_origin_isolated=False)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_compare_single__should_enable_cross_origin_isolation(self, drheader_mock):
         file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_ko.json')
 
         CliRunner().invoke(cli.main, ['compare', 'single', '--cross-origin-isolated', file_path])
         drheader_mock.return_value.analyze.assert_called_once_with(rules=mock.ANY, cross_origin_isolated=True)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_compare_single__should_output_json(self, drheader_mock):
         file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_ko.json')
         drheader_mock.return_value.analyze.return_value = self.report
@@ -58,7 +58,7 @@ class TestCli(TestCase):
         response = CliRunner().invoke(cli.main, ['compare', 'single', '--output', 'json', file_path])
         self.assertEqual(self.report, json.loads(response.output))
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_compare_bulk__should_return_exit_code_0_on_clean_report(self, drheader_mock):
         file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_bulk_ko.json')
         drheader_mock.return_value.analyze.return_value = []
@@ -66,7 +66,7 @@ class TestCli(TestCase):
         response = CliRunner().invoke(cli.main, ['compare', 'bulk', file_path])
         self.assertEqual(0, response.exit_code)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_compare_bulk__should_return_exit_code_70_on_rule_violation(self, drheader_mock):
         file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_bulk_ko.json')
         drheader_mock.return_value.analyze.return_value = self.report
@@ -74,7 +74,7 @@ class TestCli(TestCase):
         response = CliRunner().invoke(cli.main, ['compare', 'bulk', file_path])
         self.assertEqual(70, response.exit_code)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_compare_bulk__should_output_json(self, drheader_mock):
         file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_bulk_ko.json')
         drheader_mock.return_value.analyze.return_value = self.report
@@ -82,45 +82,45 @@ class TestCli(TestCase):
         response = CliRunner().invoke(cli.main, ['compare', 'bulk', '--output', 'json', file_path])
         self.assertEqual(self.report, json.loads(response.output)[0]['report'])
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_single__should_return_exit_code_0_on_clean_report(self, drheader_mock):
         drheader_mock.return_value.analyze.return_value = []
 
         response = CliRunner().invoke(cli.main, ['scan', 'single', 'https://example.com'])
         self.assertEqual(0, response.exit_code)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_single__should_return_exit_code_70_on_rule_violation(self, drheader_mock):
         drheader_mock.return_value.analyze.return_value = self.report
 
         response = CliRunner().invoke(cli.main, ['scan', 'single', 'https://example.com'])
         self.assertEqual(70, response.exit_code)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_single__should_return_error_on_invalid_target_url(self, drheader_mock):
         response = CliRunner().invoke(cli.main, ['scan', 'single', 'https://example'])
 
         self.assertIn("'https://example' is not a valid URL", response.output)
         drheader_mock.assert_not_called()
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_single__should_disable_cross_origin_isolation_by_default(self, drheader_mock):
         CliRunner().invoke(cli.main, ['scan', 'single', 'https://example.com'])
         drheader_mock.return_value.analyze.assert_called_once_with(rules=mock.ANY, cross_origin_isolated=False)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_single__should_enable_cross_origin_isolation(self, drheader_mock):
         CliRunner().invoke(cli.main, ['scan', 'single', '--cross-origin-isolated', 'https://example.com'])
         drheader_mock.return_value.analyze.assert_called_once_with(rules=mock.ANY, cross_origin_isolated=True)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_single__should_output_json(self, drheader_mock):
         drheader_mock.return_value.analyze.return_value = self.report
 
         response = CliRunner().invoke(cli.main, ['scan', 'single', '--output', 'json', 'https://example.com'])
         self.assertEqual(self.report, json.loads(response.output))
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_bulk__should_return_exit_code_0_on_clean_report(self, drheader_mock):
         drheader_mock.return_value.analyze.return_value = []
 
@@ -131,7 +131,7 @@ class TestCli(TestCase):
 
         self.assertEqual(0, response.exit_code)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_bulk__should_return_exit_code_70_on_rule_violation(self, drheader_mock):
         drheader_mock.return_value.analyze.return_value = self.report
 
@@ -142,7 +142,7 @@ class TestCli(TestCase):
 
         self.assertEqual(70, response.exit_code)
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_bulk__should_handle_json_file_type(self, drheader_mock):
         drheader_mock.return_value.analyze.return_value = self.report
 
@@ -156,7 +156,7 @@ class TestCli(TestCase):
             mock.call(url='https://example2.com', params=mock.ANY, verify=mock.ANY)
         ])
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_bulk__should_handle_txt_file_type(self, drheader_mock):
         drheader_mock.return_value.analyze.return_value = self.report
 
@@ -170,7 +170,7 @@ class TestCli(TestCase):
             mock.call(url='https://example2.com', params=mock.ANY, verify=mock.ANY)
         ])
 
-    @mock.patch('drheader.cli.Drheader')
+    @mock.patch('drheader.cli.cli.Drheader')
     def test_scan_bulk__should_output_json(self, drheader_mock):
         drheader_mock.return_value.analyze.return_value = self.report
 
@@ -190,12 +190,12 @@ class TestUtils(TestCase, XmlTestMixin):
         with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as rules:
             self.rules = yaml.safe_load(rules)
 
-        cli_utils.file_junit_report(self.rules, self.report)
+        utils.file_junit_report(self.rules, self.report)
         with open('reports/junit.xml') as junit_report:
             self.junit_xml = junit_report.read()
 
     def test_get_rules__should_return_default_rules_when_no_rules_provided(self):
-        rules = cli_utils.get_rules()
+        rules = utils.get_rules()
         self.assertEqual(self.rules, rules)
 
     def test_file_junit_report__should_generate_xml_report(self):
@@ -204,7 +204,7 @@ class TestUtils(TestCase, XmlTestMixin):
     def test_file_junit_report__should_create_test_case_for_all_rules(self):
         assert len(self.rules) > 0
 
-        cli_utils.file_junit_report(self.rules, [])
+        utils.file_junit_report(self.rules, [])
         with open('reports/junit.xml') as junit_report:
             junit_xml = junit_report.read()
 

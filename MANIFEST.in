@@ -4,8 +4,8 @@ include LICENSE
 include README.md
 include RULES.md
 include drheader/*.yml
-include drheader/resources/*
 
+recursive-include drheader/resources *
 recursive-include tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]

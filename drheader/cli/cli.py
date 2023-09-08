@@ -10,7 +10,8 @@ import validators
 from click import ClickException, ParamType
 from jsonschema import FormatChecker
 
-from drheader import cli_utils, Drheader, __version__
+from drheader import Drheader, __version__
+from drheader.cli import utils
 
 
 class URLParamType(ParamType):
@@ -58,7 +59,7 @@ def compare():
 @click.option('--rules-uri', type=str, help='Use a custom ruleset, downloaded from URI')
 def single(file, cross_origin_isolated, debug, junit, merge, output, rules_file, rules_uri):
     scanner = Drheader(headers=json.loads(file.read()))
-    rules = cli_utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
+    rules = utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
     report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
 
     if output == 'json':
@@ -69,9 +70,9 @@ def single(file, cross_origin_isolated, debug, junit, merge, output, rules_file,
             click.echo('No issues found!')
         else:
             click.echo(f'{len(report)} issues found')
-            click.echo(cli_utils.tabulate_report(report))
+            click.echo(utils.tabulate_report(report))
     if junit:
-        cli_utils.file_junit_report(rules, report)
+        utils.file_junit_report(rules, report)
 
     sys.exit(os.EX_SOFTWARE if report else os.EX_OK)
 
@@ -86,12 +87,12 @@ def single(file, cross_origin_isolated, debug, junit, merge, output, rules_file,
 @click.option('--rules-uri', type=str, help='Use a custom ruleset, downloaded from URI')
 def bulk(file, cross_origin_isolated, debug, merge, output, rules_file, rules_uri):
     data = json.loads(file.read())
-    with open(os.path.join(os.path.dirname(__file__), 'resources/bulk_compare_schema.json')) as schema:
+    with open(os.path.join(os.path.dirname(__file__), '../resources/cli/bulk_compare_schema.json')) as schema:
         schema = json.load(schema)
         jsonschema.validate(instance=data, schema=schema, format_checker=FormatChecker())
 
     audit = []
-    rules = cli_utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
+    rules = utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
     for target in data:
         scanner = Drheader(headers=target['headers'])
         report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
@@ -106,7 +107,7 @@ def bulk(file, cross_origin_isolated, debug, merge, output, rules_file, rules_ur
                 click.echo(f"{target['url']}: No issues found!")
             else:
                 click.echo(f"{target['url']}: {len(target['report'])} issues found")
-                click.echo(cli_utils.tabulate_report(target['report']))
+                click.echo(utils.tabulate_report(target['report']))
 
     sys.exit(os.EX_SOFTWARE if any(target['report'] for target in audit) else os.EX_OK)
 
@@ -123,7 +124,7 @@ def bulk(file, cross_origin_isolated, debug, merge, output, rules_file, rules_ur
 @click.pass_context
 def single(ctx, target_url, cross_origin_isolated, debug, junit, merge, output, rules_file, rules_uri):  # noqa: F811
     scanner = Drheader(url=target_url, verify=ctx.obj['verify'])
-    rules = cli_utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
+    rules = utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
     report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
 
     if output == 'json':
@@ -134,9 +135,9 @@ def single(ctx, target_url, cross_origin_isolated, debug, junit, merge, output, 
             click.echo('No issues found!')
         else:
             click.echo(f"{target_url}: {len(report)} issues found")
-            click.echo(cli_utils.tabulate_report(report))
+            click.echo(utils.tabulate_report(report))
     if junit:
-        cli_utils.file_junit_report(rules, report)
+        utils.file_junit_report(rules, report)
 
     sys.exit(os.EX_SOFTWARE if report else os.EX_OK)
 
@@ -160,12 +161,12 @@ def bulk(ctx, file, cross_origin_isolated, debug, file_format, merge, output, ru
             urls.append({'url': url})
     else:
         urls = json.loads(file.read())
-        with open(os.path.join(os.path.dirname(__file__), 'resources/bulk_scan_schema.json')) as schema:
+        with open(os.path.join(os.path.dirname(__file__), '../resources/cli/bulk_scan_schema.json')) as schema:
             schema = json.load(schema)
             jsonschema.validate(instance=urls, schema=schema, format_checker=FormatChecker())
 
     audit = []
-    rules = cli_utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
+    rules = utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
     for target in urls:
         scanner = Drheader(url=target['url'], params=target.get('params'), verify=ctx.obj['verify'])
         report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
@@ -180,7 +181,7 @@ def bulk(ctx, file, cross_origin_isolated, debug, file_format, merge, output, ru
                 click.echo(f"{target['url']}: No issues found!")
             else:
                 click.echo(f"{target['url']}: {len(target['report'])} issues found")
-                click.echo(cli_utils.tabulate_report(target['report']))
+                click.echo(utils.tabulate_report(target['report']))
 
     sys.exit(os.EX_SOFTWARE if any(target['report'] for target in audit) else os.EX_OK)
 

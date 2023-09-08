@@ -38,7 +38,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'drheader=drheader.cli:main',
+            'drheader=drheader.cli.cli:main',
         ],
     },
     install_requires=requirements,
@@ -50,7 +50,7 @@ setup(
     keywords='drheader',
     author='Santander UK Security Engineering',
     name='drheader',
-    packages=['drheader', 'drheader/validators'],
+    packages=['drheader', 'drheader/cli', 'drheader/validators'],
     test_suite='tests',
     url='https://github.com/santandersecurityresearch/drheader',
     version='1.7.0',
