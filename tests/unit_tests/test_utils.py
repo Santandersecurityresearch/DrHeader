@@ -15,12 +15,12 @@ from drheader import utils
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as f:
-            self.default_rules = yaml.safe_load(f.read())
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml')) as f:
-            self.custom_rules = yaml.safe_load(f.read())
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules_merged.yml')) as f:
-            self.custom_rules_merged = yaml.safe_load(f.read())
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as default_rules:
+            self.default_rules = yaml.safe_load(default_rules.read())
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml')) as custom_rules:
+            self.custom_rules = yaml.safe_load(custom_rules.read())
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules_merged.yml')) as custom_rules_merged:
+            self.custom_rules_merged = yaml.safe_load(custom_rules_merged.read())
 
     def test_parse_policy__should_extract_standalone_directive(self):
         policy = "default-src 'none'; upgrade-insecure-requests"
@@ -68,37 +68,24 @@ class TestUtils(unittest.TestCase):
         expected = utils.KeyValueDirective('script-src', ["'self'", "'unsafe-inline'"], "  'self'   'unsafe-inline'")
         self.assertIn(expected, directives_list)
 
-    def test_load_rules_should_load_default_rules_when_no_rules_file_is_provided(self):
-        rules = utils.load_rules()
-        self.assertEqual(rules, self.default_rules['Headers'])
+    def test_load_rules__merge_enabled__should_merge_custom_rules_with_default_rules(self):
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml')) as custom_rules:
+            response = utils.load_rules(rules_file=custom_rules, merge_default=True)
 
-    def test_load_rules_should_load_custom_rules_when_a_rules_file_is_provided(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml')) as f:
-            rules = utils.load_rules(f)
-
-        self.assertEqual(rules, self.custom_rules['Headers'])
-
-    def test_load_rules_should_merge_custom_rules_with_default_rules_when_merge_flag_is_true(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/custom_rules.yml')) as f:
-            rules = utils.load_rules(f, True)
-
-        self.assertEqual(rules, self.custom_rules_merged['Headers'])
+        self.assertEqual(response, self.custom_rules_merged)
 
     @responses.activate
-    def test_get_rules_from_uri_should_return_rules_from_a_valid_uri(self):
+    def test_load_rules__valid_rules_uri__should_load_rules_from_uri(self):
         uri = 'http://localhost:8080/custom.yml'
         responses.add(responses.GET, uri, json=self.custom_rules, status=200)
 
-        rules_file = utils.get_rules_from_uri(uri)
-        rules = yaml.safe_load(rules_file.read())
+        rules = utils.load_rules(rules_uri=uri)
         self.assertEqual(rules, self.custom_rules)
 
     @responses.activate
-    def test_get_rules_from_uri_should_raise_an_error_when_no_content_is_found(self):
+    def test_load_rules__no_content_from_uri__should_raise_an_error(self):
         uri = 'http://mydomain.com/custom.yml'
         responses.add(responses.GET, uri, status=404)
 
-        with self.assertRaises(Exception) as e:
+        with self.assertRaises(Exception):
             utils.get_rules_from_uri(uri)
-
-        self.assertEqual('No content retrieved from {}'.format(uri), str(e.exception))

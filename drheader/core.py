@@ -3,6 +3,8 @@ import json
 import logging
 import os
 
+import requests
+import validators
 from requests.structures import CaseInsensitiveDict
 
 from drheader import utils
@@ -14,7 +16,7 @@ from drheader.validators.header_validator import HeaderValidator
 _CROSS_ORIGIN_HEADERS = ['cross-origin-embedder-policy', 'cross-origin-opener-policy']
 
 with open(os.path.join(os.path.dirname(__file__), 'resources/delimiters.json')) as delimiters:
-    _DELIMITERS = utils.translate_to_case_insensitive_dict(json.load(delimiters))
+    _DELIMITERS = CaseInsensitiveDict(json.load(delimiters))
 
 
 class Drheader:
@@ -49,7 +51,7 @@ class Drheader:
             if not url:
                 raise ValueError("Nothing provided for analysis. Either 'headers' or 'url' must be defined")
             else:
-                headers = utils.get_headers_from_url(url, **kwargs)
+                headers = _get_headers_from_url(url, **kwargs)
         elif isinstance(headers, str):
             headers = json.loads(headers)
 
@@ -82,15 +84,15 @@ class Drheader:
             }
         """
         if not rules:
-            rules = utils.translate_to_case_insensitive_dict(utils.load_rules())
+            rules = _translate_to_case_insensitive_dict(utils.default_rules())
         else:
-            rules = utils.translate_to_case_insensitive_dict(rules)
+            rules = _translate_to_case_insensitive_dict(rules)
 
         header_validator = HeaderValidator(self.headers)
         directive_validator = DirectiveValidator(self.headers)
         cookie_validator = CookieValidator(self.cookies)
 
-        for header, rule_config in rules.items():
+        for header, rule_config in rules['Headers'].items():
             if header.lower() in _CROSS_ORIGIN_HEADERS and not cross_origin_isolated:
                 logging.info(f"Cross-origin isolation validations are not enabled. Skipping header '{header}'")
                 continue
@@ -114,23 +116,24 @@ class Drheader:
         config['delimiters'] = _DELIMITERS.get(header)
         required = str(config['required']).strip().lower()
 
-        if required == 'false':
-            if report_item := validator.not_exists(config, header, **kwargs):
-                self._add_to_report(report_item)
-        elif required == 'true':
+        if required == 'true':
             if report_item := validator.exists(config, header, **kwargs):
                 self._add_to_report(report_item)
             else:
                 self._validate_value_rules(config, validator, header, **kwargs)
+        elif required == 'false':
+            if report_item := validator.not_exists(config, header, **kwargs):
+                self._add_to_report(report_item)
         elif required == 'optional':
-            if (cookie := kwargs.get('cookie')) and cookie in self.cookies:
-                self._validate_value_rules(config, validator, header, cookie=cookie)
+            if cookie := kwargs.get('cookie'):
+                is_present = cookie in self.cookies
             elif directive := kwargs.get('directive'):
-                directives = utils.parse_policy(self.headers[header], **_DELIMITERS[header], keys_only=True)
-                if directive in directives:
-                    self._validate_value_rules(config, validator, header, directive=directive)
-            elif header in self.headers:
-                self._validate_value_rules(config, validator, header)
+                is_present = directive in utils.parse_policy(self.headers[header], **_DELIMITERS[header], keys_only=True)  # noqa: E501
+            else:
+                is_present = header in self.headers
+
+            if is_present:
+                self._validate_value_rules(config, validator, header, **kwargs)
 
     def _validate_value_rules(self, config, validator, header, **kwargs):
         """Validates rules for a single header, directive or cookie."""
@@ -143,6 +146,7 @@ class Drheader:
         elif 'value-one-of' in config:
             if report_item := validator.value_one_of(config, header, **kwargs):
                 self._add_to_report(report_item)
+
         if 'must-avoid' in config:
             if report_item := validator.must_avoid(config, header, **kwargs):
                 self._add_to_report(report_item)
@@ -160,3 +164,26 @@ class Drheader:
         except AttributeError:  # For must-avoid rules on policy headers (CSP, Permissions-Policy)
             for item in report_item:  # A separate report item is created for each directive that violates the must-avoid rule e.g. multiple directives containing 'unsafe-inline'  # noqa:E501
                 self.reporter.add_item(item)
+
+
+def _get_headers_from_url(url, method='get', params=None, request_headers=None, verify=True):
+    """Retrieves headers from a URL."""
+    if not url.startswith('http'):
+        raise ValueError('Ensure you have entered a full URL including the scheme (http/https)')
+    if not validators.url(url):
+        raise ValueError(f'Cannot retrieve headers from "{url}". The URL is malformed')
+
+    request_object = getattr(requests, method.lower())
+    response = request_object(url, data=params, headers=request_headers, verify=verify)
+
+    response_headers = response.headers
+    response_headers['set-cookie'] = response.raw.headers.getlist('Set-Cookie')
+    return response_headers
+
+
+def _translate_to_case_insensitive_dict(dict_to_translate):
+    """Recursively transforms a dict into a case-insensitive dict."""
+    for key, value in dict_to_translate.items():
+        if isinstance(value, dict):
+            dict_to_translate[key] = _translate_to_case_insensitive_dict(value)
+    return CaseInsensitiveDict(dict_to_translate)

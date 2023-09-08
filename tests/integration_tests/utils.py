@@ -26,7 +26,7 @@ def delete_headers(*args):
 
 def process_test(headers=None, url=None, cross_origin_isolated=False):
     with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as rules:
-        rules = yaml.safe_load(rules.read())['Headers']
+        rules = yaml.safe_load(rules.read())
 
     drheader = core.Drheader(headers=headers, url=url)
     return drheader.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
