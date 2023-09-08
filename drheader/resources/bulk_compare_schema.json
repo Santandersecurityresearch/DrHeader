@@ -1,0 +1,22 @@
+{
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "url": {
+                "type": "string",
+                "format": "uri"
+            },
+            "headers": {
+                "type": "object"
+            },
+            "status_code": {
+                "type": "integer"
+            }
+        },
+        "required": [
+            "headers",
+            "url"
+        ]
+    }
+}

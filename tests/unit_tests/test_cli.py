@@ -2,187 +2,235 @@ import json
 import os
 import os.path
 import tempfile
-from unittest import mock
+from unittest import mock, TestCase
 
-import unittest
-import xmlunittest
 import yaml
-from click import ClickException
 from click.testing import CliRunner
+from xmlunittest import XmlTestMixin
 
-from drheader import cli
-from drheader.cli_utils import file_junit_report
-
-
-class TestCli(unittest.TestCase):
-
-    def setUp(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json')) as report_file:
-            self.mock_report = json.load(report_file)
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as rules_file:
-            self.mock_rules = yaml.safe_load(rules_file)
-
-    @mock.patch('drheader.cli.load_rules')
-    @mock.patch('drheader.cli.Drheader')
-    def test_compare_should_analyse_headers(self, drheader_mock, load_rules_mock):
-        drheader_instance = drheader_mock.return_value
-        drheader_instance.reporter.report = self.mock_report
-        load_rules_mock.return_value = self.mock_rules
-
-        with tempfile.NamedTemporaryFile() as tmp:
-            tmp.write(b'[{"url": "https://test1.com", "headers": {"X-XSS-Protection": "1; mode=block"}},'
-                      b'{"url": "https://test2.com", "headers": {"X-Frame-Options": "DENY"}}]')
-            tmp.seek(0)
-            runner = CliRunner()
-            runner.invoke(cli.main, ['compare', tmp.name])
-
-        self.assertEqual(drheader_mock.call_args_list, [
-            mock.call(url='https://test1.com', headers={'X-XSS-Protection': '1; mode=block'}),
-            mock.call(url='https://test2.com', headers={'X-Frame-Options': 'DENY'})
-        ])
-
-    @mock.patch('drheader.cli.load_rules')
-    @mock.patch('drheader.cli.Drheader')
-    def test_compare_invalid_format_should_raise_exception_and_exit(self, drheader_mock, load_rules_mock):
-        drheader_instance = drheader_mock.return_value
-        drheader_instance.reporter.report = self.mock_report
-        load_rules_mock.return_value = self.mock_rules
-
-        with tempfile.NamedTemporaryFile() as tmp:
-            tmp.write(b'[{"url": "https://test1.com", "http_headers": {"X-XSS-Protection": "1; mode=block"}}]')
-            tmp.seek(0)
-            runner = CliRunner()
-            result = runner.invoke(cli.main, ['compare', tmp.name])
-
-        self.assertEqual(ClickException.exit_code, result.exit_code)
-        self.assertIn("Error: 'headers' is a required property", result.output)
-
-    @mock.patch('drheader.cli.load_rules')
-    @mock.patch('drheader.cli.Drheader')
-    def test_scan_single_should_analyse_target_url(self, drheader_mock, load_rules_mock):
-        drheader_instance = drheader_mock.return_value
-        drheader_instance.reporter.report = self.mock_report
-        load_rules_mock.return_value = self.mock_rules
-
-        runner = CliRunner()
-        runner.invoke(cli.main, ['scan', 'single', 'https://www.google.com'])
-
-        drheader_mock.assert_called_once_with(url='https://www.google.com', verify=mock.ANY)
-
-    @mock.patch('drheader.cli.load_rules')
-    @mock.patch('drheader.cli.Drheader')
-    def test_scan_single_with_json_flag_should_output_json(self, drheader_mock, load_rules_mock):
-        drheader_instance = drheader_mock.return_value
-        drheader_instance.reporter.report = self.mock_report
-        load_rules_mock.return_value = self.mock_rules
-
-        runner = CliRunner()
-        result = runner.invoke(cli.main, ['scan', 'single', 'https://www.google.com', '--json'])
-
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json')) as report_file:
-            self.assertEqual(json.load(report_file), json.loads(result.output))
-
-    @mock.patch('drheader.cli.file_junit_report')
-    @mock.patch('drheader.cli.load_rules')
-    @mock.patch('drheader.cli.Drheader')
-    def test_scan_single_with_junit_flag_should_write_junit_report(self, drheader_mock, load_rules_mock, junit_mock):
-        drheader_instance = drheader_mock.return_value
-        drheader_instance.reporter.report = self.mock_report
-        load_rules_mock.return_value = self.mock_rules
-
-        runner = CliRunner()
-        runner.invoke(cli.main, ['scan', 'single', 'https://www.google.com', '--junit'])
-
-        junit_mock.assert_called_once_with(self.mock_rules, self.mock_report)
-
-    @mock.patch('drheader.cli.load_rules')
-    @mock.patch('drheader.cli.Drheader')
-    def test_scan_bulk_should_read_json_file(self, drheader_mock, load_rules_mock):
-        drheader_instance = drheader_mock.return_value
-        drheader_instance.reporter.report = self.mock_report
-        load_rules_mock.return_value = self.mock_rules
-
-        with tempfile.NamedTemporaryFile() as tmp:
-            tmp.write(b'[{"url": "https://test1.com"}, {"url": "https://test2.com"}, {"url": "https://test3.com"}]')
-            tmp.seek(0)
-            runner = CliRunner()
-            runner.invoke(cli.main, ['scan', 'bulk', tmp.name])
-
-        self.assertEqual(drheader_mock.call_args_list, [
-            mock.call(url='https://test1.com', params=mock.ANY, verify=mock.ANY),
-            mock.call(url='https://test2.com', params=mock.ANY, verify=mock.ANY),
-            mock.call(url='https://test3.com', params=mock.ANY, verify=mock.ANY),
-        ])
-
-    @mock.patch('drheader.cli.load_rules')
-    @mock.patch('drheader.cli.Drheader')
-    def test_scan_bulk_should_read_txt_file(self, drheader_mock, load_rules_mock):
-        drheader_instance = drheader_mock.return_value
-        drheader_instance.reporter.report = self.mock_report
-        load_rules_mock.return_value = self.mock_rules
-
-        with tempfile.NamedTemporaryFile() as tmp:
-            tmp.write(b'https://test1.com\nhttps://test2.com\nhttps://test3.com')
-            tmp.seek(0)
-            runner = CliRunner()
-            runner.invoke(cli.main, ['scan', 'bulk', '-ff', 'txt', tmp.name])
-
-        self.assertEqual(drheader_mock.call_args_list, [
-            mock.call(url='https://test1.com', params=mock.ANY, verify=mock.ANY),
-            mock.call(url='https://test2.com', params=mock.ANY, verify=mock.ANY),
-            mock.call(url='https://test3.com', params=mock.ANY, verify=mock.ANY),
-        ])
-
-    @mock.patch('drheader.cli.load_rules')
-    @mock.patch('drheader.cli.Drheader')
-    def test_scan_bulk_invalid_format_should_raise_exception_and_exit(self, drheader_mock, load_rules_mock):
-        drheader_instance = drheader_mock.return_value
-        drheader_instance.reporter.report = self.mock_report
-        load_rules_mock.return_value = self.mock_rules
-
-        with tempfile.NamedTemporaryFile() as tmp:
-            tmp.write(b'[{"address": "https://test1.com"}, {"url": "https://test2.com"}]')
-            tmp.seek(0)
-            runner = CliRunner()
-            result = runner.invoke(cli.main, ['scan', 'bulk', tmp.name])
-
-        self.assertEqual(ClickException.exit_code, result.exit_code)
-        self.assertIn("Error: 'url' is a required property", result.output)
+from drheader import cli, cli_utils
 
 
-class TestCliUtils(unittest.TestCase, xmlunittest.XmlTestMixin):
+# noinspection PyTypeChecker
+class TestCli(TestCase):
 
     def setUp(self):
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as f:
-            self.rules = yaml.safe_load(f.read())['Headers']
-        with open(os.path.join(os.path.dirname(__file__), '../test_resources/example_report.json')) as f:
-            self.report = json.loads(f.read())
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/report.json')) as report:
+            self.report = json.load(report)
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as rules:
+            self.rules = yaml.safe_load(rules)
 
-        file_junit_report(self.rules, self.report)
-        with open('reports/junit.xml') as f:
-            self.xml = f.read()
+    @mock.patch('drheader.cli.Drheader')
+    def test_compare_single__should_return_exit_code_0_on_clean_report(self, drheader_mock):
+        file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_ko.json')
+        drheader_mock.return_value.analyze.return_value = []
 
-    def test_file_junit_report_writes_default_file(self):
-        self.assertXmlDocument(self.xml)
+        response = CliRunner().invoke(cli.main, ['compare', 'single', file_path])
+        self.assertEqual(0, response.exit_code)
 
-    def test_file_junit_report_contains_test_suites_node(self):
-        root = self.assertXmlDocument(self.xml)
-        self.assertXmlNode(root, tag='testsuites')
+    @mock.patch('drheader.cli.Drheader')
+    def test_compare_single__should_return_exit_code_70_on_rule_violation(self, drheader_mock):
+        file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_ko.json')
+        drheader_mock.return_value.analyze.return_value = self.report
 
-    def test_file_junit_report_contains_ten_failures_and_seventeen_cases(self):
-        root = self.assertXmlDocument(self.xml)
-        self.assertXmlHasAttribute(root, 'failures', expected_values='10')
-        self.assertXmlHasAttribute(root, 'tests', expected_values='19')
+        response = CliRunner().invoke(cli.main, ['compare', 'single', file_path])
+        self.assertEqual(70, response.exit_code)
 
-    def test_file_junit_report_contains_only_one_testsuite(self):
-        root = self.assertXmlDocument(self.xml)
-        self.assertXpathsOnlyOne(root, ('./testsuite', './testsuite[@name="DrHeader"]'))
+    @mock.patch('drheader.cli.Drheader')
+    def test_compare_single__should_disable_cross_origin_isolation_by_default(self, drheader_mock):
+        file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_ko.json')
 
-    def test_file_junit_report_contains_all_header_as_testcases(self):
-        root = self.assertXmlDocument(self.xml)
-        for item in self.rules:
-            self.assertXpathsExist(root, ('./testsuite/testcase', './testsuite/testcase[contains(@name,'+item+')]'))
+        CliRunner().invoke(cli.main, ['compare', 'single', file_path])
+        drheader_mock.return_value.analyze.assert_called_once_with(rules=mock.ANY, cross_origin_isolated=False)
 
-    def test_file_junit_report_contains_seventeen_testcases(self):
-        root = self.assertXmlDocument(self.xml)
-        self.assertEqual(root.xpath('count(./testsuite/testcase)'), 19)
+    @mock.patch('drheader.cli.Drheader')
+    def test_compare_single__should_enable_cross_origin_isolation(self, drheader_mock):
+        file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_ko.json')
+
+        CliRunner().invoke(cli.main, ['compare', 'single', '--cross-origin-isolated', file_path])
+        drheader_mock.return_value.analyze.assert_called_once_with(rules=mock.ANY, cross_origin_isolated=True)
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_compare_single__should_output_json(self, drheader_mock):
+        file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_ko.json')
+        drheader_mock.return_value.analyze.return_value = self.report
+
+        response = CliRunner().invoke(cli.main, ['compare', 'single', '--output', 'json', file_path])
+        self.assertEqual(self.report, json.loads(response.output))
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_compare_bulk__should_return_exit_code_0_on_clean_report(self, drheader_mock):
+        file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_bulk_ko.json')
+        drheader_mock.return_value.analyze.return_value = []
+
+        response = CliRunner().invoke(cli.main, ['compare', 'bulk', file_path])
+        self.assertEqual(0, response.exit_code)
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_compare_bulk__should_return_exit_code_70_on_rule_violation(self, drheader_mock):
+        file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_bulk_ko.json')
+        drheader_mock.return_value.analyze.return_value = self.report
+
+        response = CliRunner().invoke(cli.main, ['compare', 'bulk', file_path])
+        self.assertEqual(70, response.exit_code)
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_compare_bulk__should_output_json(self, drheader_mock):
+        file_path = os.path.join(os.path.dirname(__file__), '../test_resources/headers_bulk_ko.json')
+        drheader_mock.return_value.analyze.return_value = self.report
+
+        response = CliRunner().invoke(cli.main, ['compare', 'bulk', '--output', 'json', file_path])
+        self.assertEqual(self.report, json.loads(response.output)[0]['report'])
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_single__should_return_exit_code_0_on_clean_report(self, drheader_mock):
+        drheader_mock.return_value.analyze.return_value = []
+
+        response = CliRunner().invoke(cli.main, ['scan', 'single', 'https://example.com'])
+        self.assertEqual(0, response.exit_code)
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_single__should_return_exit_code_70_on_rule_violation(self, drheader_mock):
+        drheader_mock.return_value.analyze.return_value = self.report
+
+        response = CliRunner().invoke(cli.main, ['scan', 'single', 'https://example.com'])
+        self.assertEqual(70, response.exit_code)
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_single__should_return_error_on_invalid_target_url(self, drheader_mock):
+        response = CliRunner().invoke(cli.main, ['scan', 'single', 'https://example'])
+
+        self.assertIn("'https://example' is not a valid URL", response.output)
+        drheader_mock.assert_not_called()
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_single__should_disable_cross_origin_isolation_by_default(self, drheader_mock):
+        CliRunner().invoke(cli.main, ['scan', 'single', 'https://example.com'])
+        drheader_mock.return_value.analyze.assert_called_once_with(rules=mock.ANY, cross_origin_isolated=False)
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_single__should_enable_cross_origin_isolation(self, drheader_mock):
+        CliRunner().invoke(cli.main, ['scan', 'single', '--cross-origin-isolated', 'https://example.com'])
+        drheader_mock.return_value.analyze.assert_called_once_with(rules=mock.ANY, cross_origin_isolated=True)
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_single__should_output_json(self, drheader_mock):
+        drheader_mock.return_value.analyze.return_value = self.report
+
+        response = CliRunner().invoke(cli.main, ['scan', 'single', '--output', 'json', 'https://example.com'])
+        self.assertEqual(self.report, json.loads(response.output))
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_bulk__should_return_exit_code_0_on_clean_report(self, drheader_mock):
+        drheader_mock.return_value.analyze.return_value = []
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            tmp.write(b'[{"url": "https://example1.com"}, {"url": "https://example2.com"}]')
+            tmp.seek(0)
+            response = CliRunner().invoke(cli.main, ['scan', 'bulk', tmp.name])
+
+        self.assertEqual(0, response.exit_code)
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_bulk__should_return_exit_code_70_on_rule_violation(self, drheader_mock):
+        drheader_mock.return_value.analyze.return_value = self.report
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            tmp.write(b'[{"url": "https://example1.com"}, {"url": "https://example2.com"}]')
+            tmp.seek(0)
+            response = CliRunner().invoke(cli.main, ['scan', 'bulk', tmp.name])
+
+        self.assertEqual(70, response.exit_code)
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_bulk__should_handle_json_file_type(self, drheader_mock):
+        drheader_mock.return_value.analyze.return_value = self.report
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            tmp.write(b'[{"url": "https://example1.com"}, {"url": "https://example2.com"}]')
+            tmp.seek(0)
+            CliRunner().invoke(cli.main, ['scan', 'bulk', '-ff', 'json', tmp.name])
+
+        self.assertEqual(drheader_mock.call_args_list, [
+            mock.call(url='https://example1.com', params=mock.ANY, verify=mock.ANY),
+            mock.call(url='https://example2.com', params=mock.ANY, verify=mock.ANY)
+        ])
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_bulk__should_handle_txt_file_type(self, drheader_mock):
+        drheader_mock.return_value.analyze.return_value = self.report
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            tmp.write(b'https://example1.com\nhttps://example2.com')
+            tmp.seek(0)
+            CliRunner().invoke(cli.main, ['scan', 'bulk', '-ff', 'txt', tmp.name])
+
+        self.assertEqual(drheader_mock.call_args_list, [
+            mock.call(url='https://example1.com', params=mock.ANY, verify=mock.ANY),
+            mock.call(url='https://example2.com', params=mock.ANY, verify=mock.ANY)
+        ])
+
+    @mock.patch('drheader.cli.Drheader')
+    def test_scan_bulk__should_output_json(self, drheader_mock):
+        drheader_mock.return_value.analyze.return_value = self.report
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            tmp.write(b'[{"url": "https://example1.com"}, {"url": "https://example2.com"}]')
+            tmp.seek(0)
+            response = CliRunner().invoke(cli.main, ['scan', 'bulk', '--output', 'json', tmp.name])
+
+        self.assertEqual(self.report, json.loads(response.output)[0]['report'])
+
+
+class TestUtils(TestCase, XmlTestMixin):
+
+    def setUp(self):
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/report.json')) as report:
+            self.report = json.load(report)
+        with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml')) as rules:
+            self.rules = yaml.safe_load(rules)
+
+        cli_utils.file_junit_report(self.rules, self.report)
+        with open('reports/junit.xml') as junit_report:
+            self.junit_xml = junit_report.read()
+
+    def test_get_rules__should_return_default_rules_when_no_rules_provided(self):
+        rules = cli_utils.get_rules()
+        self.assertEqual(self.rules, rules)
+
+    def test_file_junit_report__should_generate_xml_report(self):
+        self.assertXmlDocument(self.junit_xml)
+
+    def test_file_junit_report__should_create_test_case_for_all_rules(self):
+        assert len(self.rules) > 0
+
+        cli_utils.file_junit_report(self.rules, [])
+        with open('reports/junit.xml') as junit_report:
+            junit_xml = junit_report.read()
+
+        xml_tree = self.assertXmlDocument(junit_xml)
+        self.assertEqual(len(self.rules['Headers']), xml_tree.xpath('count(./testsuite/testcase)'))
+
+    def test_file_junit_report__should_create_test_failure_for_all_report_items(self):
+        assert len(self.report) > 0
+
+        xml_tree = self.assertXmlDocument(self.junit_xml)
+        self.assertXmlHasAttribute(xml_tree, 'failures', expected_value=str(len(self.report)))
+
+    def test_file_junit_report__should_create_test_case_for_header(self):
+        assert any(item['rule'] == 'Cache-Control' for item in self.report)
+
+        xml_tree = self.assertXmlDocument(self.junit_xml)
+        self.assertXpathsExist(xml_tree, ['./testsuite/testcase[@name="Cache-Control"]'])
+
+    def test_file_junit_report__should_create_test_case_for_directive(self):
+        assert any(item['rule'] == 'Content-Security-Policy - default-src' for item in self.report)
+
+        xml_tree = self.assertXmlDocument(self.junit_xml)
+        self.assertXpathsExist(xml_tree, ['./testsuite/testcase[@name="Content-Security-Policy - default-src"]'])
+
+    def test_file_junit_report__should_create_test_case_for_cookie(self):
+        assert any(item['rule'] == 'Set-Cookie - session_id' for item in self.report)
+
+        xml_tree = self.assertXmlDocument(self.junit_xml)
+        self.assertXpathsExist(xml_tree, ['./testsuite/testcase[@name="Set-Cookie - session_id"]'])

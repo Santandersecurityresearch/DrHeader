@@ -1,0 +1,97 @@
+[
+    {
+        "rule": "Cache-Control",
+        "message": "Value does not match security policy",
+        "severity": "high",
+        "value": "public, must-revalidate",
+        "expected": [
+            "no-store",
+            "max-age=0"
+        ],
+        "delimiter": ","
+    },
+    {
+        "rule": "Content-Security-Policy - style-src",
+        "message": "Must-Avoid directive included",
+        "severity": "high",
+        "value": "'unsafe-inline'",
+        "avoid": [
+            "unsafe-inline",
+            "unsafe-eval"
+        ],
+        "anomalies": [
+            "unsafe-inline"
+        ]
+    },
+    {
+        "rule": "Content-Security-Policy - script-src",
+        "message": "Must-Avoid directive included",
+        "severity": "high",
+        "value": "'self' 'unsafe-eval'",
+        "avoid": [
+            "unsafe-inline",
+            "unsafe-eval"
+        ],
+        "anomalies": [
+            "unsafe-eval"
+        ]
+    },
+    {
+        "rule": "Content-Security-Policy - default-src",
+        "message": "Directive not included in response",
+        "severity": "high",
+        "expected": [
+            "none",
+            "self"
+        ]
+    },
+    {
+        "rule": "Referrer-Policy",
+        "message": "Value does not match security policy. Exactly one of the expected items was expected",
+        "severity": "high",
+        "value": "origin",
+        "expected": [
+            "strict-origin",
+            "strict-origin-when-cross-origin",
+            "no-referrer"
+        ]
+    },
+    {
+        "rule": "Server",
+        "message": "Header should not be returned",
+        "severity": "high"
+    },
+    {
+        "rule": "Set-Cookie - session_id",
+        "message": "Must-Contain directive missed",
+        "severity": "high",
+        "value": "2943020342; Max-Age=2592000; Domain=.example.com; Secure",
+        "expected": [
+            "HttpOnly",
+            "Secure"
+        ],
+        "delimiter": ";",
+        "anomalies": [
+            "HttpOnly"
+        ]
+    },
+    {
+        "rule": "Strict-Transport-Security",
+        "message": "Header not included in response",
+        "severity": "high",
+        "expected": [
+            "max-age=31536000",
+            "includeSubDomains"
+        ],
+        "delimiter": ";"
+    },
+    {
+        "rule": "X-XSS-Protection",
+        "message": "Value does not match security policy",
+        "severity": "high",
+        "value": "1; mode=block",
+        "expected": [
+            "0"
+        ]
+    }
+]
