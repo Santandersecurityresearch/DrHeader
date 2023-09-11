@@ -9,7 +9,7 @@ jobs:
           python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3.5.3
+        uses: actions/checkout@v4.0.0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -43,7 +43,7 @@ jobs:
 
       - name: Checkout origin branch if PR 'to-branch' is master
         if: github.base_ref == 'master'
-        uses: actions/checkout@v3.5.3
+        uses: actions/checkout@v4.0.0
         with:
           ref: ${{ github.head_ref }}
 
