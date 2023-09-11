@@ -93,7 +93,7 @@ print(report)
 
 #### Customize HTTP method and headers
 
-By default, the tool uses **GET** method when making a request, but you can change that by supplying the `method` argument like this:
+By default, the tool uses **HEAD** method when making a request, but you can change that by supplying the `method` argument like this:
 
 ```python
 # create drheader instance

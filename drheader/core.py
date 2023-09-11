@@ -161,7 +161,7 @@ class Drheader:
                 self.reporter.add_item(item)
 
 
-def _get_headers_from_url(url, method='get', **kwargs):
+def _get_headers_from_url(url, method='head', **kwargs):
     """Retrieves headers from a URL."""
     if method.strip().lower() not in _ALLOWED_HTTP_METHODS:
         raise ValueError(f"Cannot retrieve headers: '{method}' is not a recognised HTTP method")
