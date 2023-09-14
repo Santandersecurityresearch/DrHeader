@@ -1,17 +1,21 @@
 """Console script for drheader."""
-
+import ast
 import json
+import logging
 import os
 import sys
+from json import JSONDecodeError
 
 import click
 import jsonschema
 import validators
-from click import ClickException, ParamType
+from click import Choice, ClickException, File, ParamType
 from jsonschema import FormatChecker
 
 from drheader import Drheader, __version__
 from drheader.cli import utils
+
+_OUTPUT_TYPES = ['json', 'table']
 
 
 class URLParamType(ParamType):
@@ -20,27 +24,15 @@ class URLParamType(ParamType):
 
     def convert(self, value, param, ctx):
         if not value.startswith('http'):
-            scheme = click.prompt('Please select a scheme', type=click.Choice(['http', 'https']))
+            scheme = click.prompt('Please select a scheme', type=Choice(['http', 'https'], case_sensitive=False))
             value = f'{scheme}://{value}'
-        if not validators.url(value):
-            self.fail(f"'{value}' is not a valid URL")
         return value
 
 
-@click.group()
+@click.group(context_settings={'show_default': True})
 @click.version_option(__version__, '--version', '-v')
 def main():
     """Console script for drheader."""
-
-
-@main.group()
-@click.option('--no-verify', is_flag=True, help='Disable SSL verification')
-@click.option('--certs', type=click.Path(), help='Certificate bundle for SSL verification')
-@click.pass_context
-def scan(ctx, no_verify, certs):
-    """Scan endpoints with drheader."""
-    ctx.ensure_object(dict)
-    ctx.obj['verify'] = certs if certs else not no_verify
 
 
 @main.group()
@@ -48,16 +40,28 @@ def compare():
     """Compare headers with drheader."""
 
 
-@compare.command()
-@click.argument('file', type=click.File(), required=True)
+@main.group()
+def scan():
+    """Scan endpoints with drheader."""
+
+
+@compare.command(context_settings={
+    'default_map': {
+        'output': 'table'
+    }
+})
+@click.argument('file', type=File(), required=True)
 @click.option('--cross-origin-isolated', is_flag=True, help='Enable cross-origin isolation validations')
 @click.option('--debug', is_flag=True, help='Enable debug logging')
-@click.option('--junit', is_flag=True, help='Generate a JUnit report with the result of the scan')
+@click.option('--junit', is_flag=True, help='Generate a JUnit report')
 @click.option('--merge', is_flag=True, help='Merge a custom ruleset with the default rules')
-@click.option('--output', type=click.Choice(['json', 'table']), help='Report output format (default is table)')
-@click.option('--rules-file', type=click.File(), help='Use a custom ruleset, loaded from file')
-@click.option('--rules-uri', type=str, help='Use a custom ruleset, downloaded from URI')
+@click.option('--output', type=Choice(_OUTPUT_TYPES, case_sensitive=False), help='Report output format')
+@click.option('--rules-file', type=File(), help='Use a custom ruleset, loaded from file')
+@click.option('--rules-uri', metavar='URI', help='Use a custom ruleset, downloaded from URI')
 def single(file, cross_origin_isolated, debug, junit, merge, output, rules_file, rules_uri):
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+
     scanner = Drheader(headers=json.loads(file.read()))
     rules = utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
     report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
@@ -77,15 +81,22 @@ def single(file, cross_origin_isolated, debug, junit, merge, output, rules_file,
     sys.exit(os.EX_SOFTWARE if report else os.EX_OK)
 
 
-@compare.command()
-@click.argument('file', type=click.File(), required=True)
+@compare.command(context_settings={
+    'default_map': {
+        'output': 'table'
+    }
+})
+@click.argument('file', type=File(), required=True)
 @click.option('--cross-origin-isolated', is_flag=True, help='Enable cross-origin isolation validations')
 @click.option('--debug', is_flag=True, help='Enable debug logging')
 @click.option('--merge', is_flag=True, help='Merge a custom ruleset with the default rules')
-@click.option('--output', type=click.Choice(['json', 'table']), help='Report output format (default is table)')
-@click.option('--rules-file', type=click.File(), help='Use a custom ruleset, loaded from file')
-@click.option('--rules-uri', type=str, help='Use a custom ruleset, downloaded from URI')
+@click.option('--output', type=Choice(_OUTPUT_TYPES, case_sensitive=False), help='Report output format')
+@click.option('--rules-file', type=File(), help='Use a custom ruleset, loaded from file')
+@click.option('--rules-uri', metavar='URI', help='Use a custom ruleset, downloaded from URI')
 def bulk(file, cross_origin_isolated, debug, merge, output, rules_file, rules_uri):
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+
     data = json.loads(file.read())
     with open(os.path.join(os.path.dirname(__file__), '../resources/cli/bulk_compare_schema.json')) as schema:
         schema = json.load(schema)
@@ -112,18 +123,37 @@ def bulk(file, cross_origin_isolated, debug, merge, output, rules_file, rules_ur
     sys.exit(os.EX_SOFTWARE if any(target['report'] for target in audit) else os.EX_OK)
 
 
-@scan.command()
+@scan.command(context_settings={
+    'default_map': {
+        'output': 'table'
+    },
+    'ignore_unknown_options': True
+})
 @click.argument('target_url', type=URLParamType(), required=True)
+@click.argument('request_args', type=click.UNPROCESSED, nargs=-1)
 @click.option('--cross-origin-isolated', is_flag=True, help='Enable cross-origin isolation validations')
 @click.option('--debug', is_flag=True, help='Enable debug logging')
-@click.option('--junit', is_flag=True, help='Generate a JUnit report with the result of the scan')
+@click.option('--junit', is_flag=True, help='Generate a JUnit report')
 @click.option('--merge', is_flag=True, help='Merge a custom ruleset with the default rules')
-@click.option('--output', type=click.Choice(['json', 'table']), help='Report output format (default is table)')
-@click.option('--rules-file', type=click.File(), help='Use a custom ruleset, loaded from file')
-@click.option('--rules-uri', type=str, help='Use a custom ruleset, downloaded from URI')
-@click.pass_context
-def single(ctx, target_url, cross_origin_isolated, debug, junit, merge, output, rules_file, rules_uri):  # noqa: F811
-    scanner = Drheader(url=target_url, verify=ctx.obj['verify'])
+@click.option('--output', type=Choice(_OUTPUT_TYPES, case_sensitive=False), help='Report output format')
+@click.option('--rules-file', type=File(), help='Use a custom ruleset, loaded from file')
+@click.option('--rules-uri', metavar='URI', help='Use a custom ruleset, downloaded from URI')
+def single(target_url, request_args, cross_origin_isolated, debug, junit, merge, output, rules_file, rules_uri):  # noqa: E501, F811
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+
+    kwargs = {}
+    for i in range(0, len(request_args), 2):
+        key = request_args[i].strip('-').replace('-', '_')
+        try:
+            kwargs[key] = json.loads(request_args[i + 1])
+        except JSONDecodeError:
+            try:
+                kwargs[key] = ast.literal_eval(request_args[i + 1])  # This handles bytes and tuples
+            except (SyntaxError, ValueError):
+                kwargs[key] = request_args[i + 1]
+
+    scanner = Drheader(url=target_url, **kwargs)
     rules = utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
     report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
 
@@ -142,17 +172,24 @@ def single(ctx, target_url, cross_origin_isolated, debug, junit, merge, output, 
     sys.exit(os.EX_SOFTWARE if report else os.EX_OK)
 
 
-@scan.command()
-@click.argument('file', type=click.File(), required=True)
+@scan.command(context_settings={
+    'default_map': {
+        'file_format': 'json',
+        'output': 'table'
+    }
+})
+@click.argument('file', type=File(), required=True)
 @click.option('--cross-origin-isolated', is_flag=True, help='Enable cross-origin isolation validations')
 @click.option('--debug', is_flag=True, help='Enable debug logging')
-@click.option('--file-format', '-ff', type=click.Choice(['json', 'txt']), help='FILE input format (default is JSON)')
+@click.option('--file-format', '-ff', type=Choice(['json', 'txt'], case_sensitive=False), help='FILE input format')
 @click.option('--merge', is_flag=True, help='Merge a custom ruleset with the default rules')
-@click.option('--output', type=click.Choice(['json', 'table']), help='Report output format (default is table)')
-@click.option('--rules-file', type=click.File(), help='Use a custom ruleset, loaded from file')
-@click.option('--rules-uri', type=str, help='Use a custom ruleset, downloaded from URI')
-@click.pass_context
-def bulk(ctx, file, cross_origin_isolated, debug, file_format, merge, output, rules_file, rules_uri):  # noqa: F811
+@click.option('--output', type=Choice(_OUTPUT_TYPES, case_sensitive=False), help='Report output format')
+@click.option('--rules-file', type=File(), help='Use a custom ruleset, loaded from file')
+@click.option('--rules-uri', metavar='URI', help='Use a custom ruleset, downloaded from URI')
+def bulk(file, cross_origin_isolated, debug, file_format, merge, output, rules_file, rules_uri):  # noqa: F811
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+
     if file_format == 'txt':
         urls = []
         for url in list(filter(None, file.read().splitlines())):
@@ -168,7 +205,13 @@ def bulk(ctx, file, cross_origin_isolated, debug, file_format, merge, output, ru
     audit = []
     rules = utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
     for target in urls:
-        scanner = Drheader(url=target['url'], params=target.get('params'), verify=ctx.obj['verify'])
+        for key, value in target.items():
+            try:
+                target[key] = ast.literal_eval(value)  # This handles bytes and tuples
+            except (SyntaxError, ValueError):
+                target[key] = value
+
+        scanner = Drheader(**target)
         report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
         audit.append({'url': target['url'], 'report': report})
 
