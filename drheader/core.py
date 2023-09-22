@@ -142,15 +142,16 @@ class Drheader:
         elif 'value-one-of' in config:
             if report_item := validator.value_one_of(config, header, **kwargs):
                 self._add_to_report(report_item)
-        if 'must-avoid' in config:
-            if report_item := validator.must_avoid(config, header, **kwargs):
-                self._add_to_report(report_item)
-        if 'must-contain' in config:
-            if report_item := validator.must_contain(config, header, **kwargs):
-                self._add_to_report(report_item)
-        if 'must-contain-one' in config:
-            if report_item := validator.must_contain_one(config, header, **kwargs):
-                self._add_to_report(report_item)
+        else:
+            if 'must-avoid' in config:
+                if report_item := validator.must_avoid(config, header, **kwargs):
+                    self._add_to_report(report_item)
+            if 'must-contain' in config:
+                if report_item := validator.must_contain(config, header, **kwargs):
+                    self._add_to_report(report_item)
+            if 'must-contain-one' in config:
+                if report_item := validator.must_contain_one(config, header, **kwargs):
+                    self._add_to_report(report_item)
 
     def _add_to_report(self, report_item):
         """Adds a finding or list of findings to the final report."""
