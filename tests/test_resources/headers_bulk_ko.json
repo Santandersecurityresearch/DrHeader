@@ -1,6 +1,6 @@
 [
     {
-        "url": "https://example1.com",
+        "url": "https://example.com",
         "headers": {
             "Cache-Control": "public, must-revalidate",
             "Content-Security-Policy": "script-src 'self' 'unsafe-eval'; object-src 'self'; style-src 'unsafe-inline'",
@@ -16,13 +16,20 @@
         }
     },
     {
-        "url": "https://example2.com",
+        "url": "https://example.net",
         "headers": {
-            "Cache-Control": "private, max-age=0",
             "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'",
             "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
             "X-Frame-Options": "DENY",
             "X-XSS-Protection": "0"
+        }
+    },
+    {
+        "url": "https://example.org",
+        "headers": {
+            "Cache-Control": "no-store, max-age=0",
+            "Strict-Transport-Security": "max-age=31536000",
+            "X-XSS-Protection": "1; mode-block"
         }
     }
 ]

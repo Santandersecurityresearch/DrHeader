@@ -26,59 +26,12 @@ $ python3 setup.py install --user
 This will install all the pre-requisites and you'll end up with a drHEADer executable.
 
 ## How Do I Use It?
-
 There are two ways you could use drHEADer, depending on what you want to achieve. The easiest way is using the CLI.
 
 ### CLI
-
-drHEADer can perform a single scan against a target and report back which headers are present, like so:
-
-``` console
-$ drheader scan single https://santander.co.uk
-```
-![singlescan](assets/img/drheaderscansingle.png)
-
-If you wish to scan multiple sites, you'll need the targets in a JSON format, or a txt file, like so:
-
-```json
-  [
-    {
-      "url": "https://example.com",
-      "params": {
-          "example_parameter_key": "example_parameter_value"
-      }
-    },
-    ...
-  ]
-```
-
-For txt files, use the following command:
-
-```sh
-$ drheader scan bulk -ff targets.txt
-```
-
-There are a number of parameters you can specify during bulk scans, these are:
-| Option            | Description                                            |
-| :---------------- | :----------------------------------------------------- |
-| --json            | Output report as json                                  |
-| --debug           | Show error messages                                    |
-| --rules FILENAME  | Use custom rule set                                    |
-| --rules-uri URL   | Use custom rule set, to download from a remote server  |
-| --merge           | Merge custom rule set on top of default set            |
-| --help            | Show this message and exit                             |
-| --junit           | Creates a junit report in `./reports/junit.xml` folder |
-
-To save scan results, you can use the --json parameter and pipe it to [jq](https://stedolan.github.io/jq/), which is a lightweight and flexible command-line JSON processor,like so:
-
-```sh
-$ drheader scan single https://santander.co.uk --json | jq '.'
-```
-
-![singlescan](assets/img/drheaderscansinglejson.png)
+For details on using the CLI, see [CLI.md](CLI.md)
 
 ### In a Project
-
 It is also possible to call drHEADer from within an existing project, and this is achieved like so:
 
 ```python
@@ -93,14 +46,14 @@ print(report)
 
 #### Customize HTTP method and headers
 
-By default, the tool uses **GET** method when making a request, but you can change that by supplying the `method` argument like this:
+By default, the tool uses **HEAD** method when making a request, but you can change that by supplying the `method` argument like this:
 
 ```python
 # create drheader instance
 drheader_instance = Drheader(url="http://test.com", method="POST")
 ```
 
-Remember you can use any method supported by `requests` such as POST, PUT, GET and DELETE. This feature is not currently available in the CLI. It will be added in an upcoming release
+Remember you can use any method supported by `requests` such as POST, PUT, GET and DELETE.
 
 At the same time, you can customize the headers sent by the request. For that, you just have to use the `request_headers` argument:
 
@@ -120,8 +73,6 @@ The _verify_ argument supported by `requests` can be included. The default value
 # create drheader instance
 drheader_instance = Drheader(url="http://test.com", verify=False)
 ```
-
-Other arguments may be included in the future such as _timeout_, *allow_redirects* or _proxies_.
 
 #### Cross-Origin Isolation
 The default rules in drHEADer support cross-origin isolation via the `Cross-Origin-Embedder-Policy` and

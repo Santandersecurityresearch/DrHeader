@@ -13,6 +13,7 @@ from drheader.validators.cookie_validator import CookieValidator
 from drheader.validators.directive_validator import DirectiveValidator
 from drheader.validators.header_validator import HeaderValidator
 
+_ALLOWED_HTTP_METHODS = ['delete', 'get', 'head', 'options', 'patch', 'post', 'put']
 _CROSS_ORIGIN_HEADERS = ['cross-origin-embedder-policy', 'cross-origin-opener-policy']
 
 with open(os.path.join(os.path.dirname(__file__), 'resources/delimiters.json')) as delimiters:
@@ -31,32 +32,27 @@ class Drheader:
     def __init__(self, headers=None, url=None, **kwargs):
         """Initialises a Drheader instance.
 
-        Either headers or url must be defined. If both are defined, the value passed in headers will take priority. If
-        only url is defined, the headers will be retrieved from the HTTP response from the provided URL.
+        At least one of <headers> and <url> must be defined. The value passed in <headers> is treated differently
+        depending on whether a URL is provided. If a URL is provided, the headers passed are treated as request headers
+        and are sent with the HTTP request to <url>. Otherwise, they are the raw headers that are analysed.
 
         Args:
-            headers (dict | str): (optional) The headers to analyse. Must be valid JSON if passed as a string.
-            url (str): (optional) The URL from which to retrieve the headers.
-
-        Keyword Args:
-            method (str): The HTTP verb to use when retrieving the headers. Default is 'get'.
-            params (dict): Any request parameters to send when retrieving the headers.
-            request_headers (dict): Any request headers to send when retrieving the headers.
-            verify (bool): A flag to verify the server's TLS certificate. Default is True.
+            headers (dict): Either headers to analyse or a dict of headers to send with the request to <url>.
+            url (str): URL from which to retrieve the headers to analyse.
 
         Raises:
             ValueError: If neither headers nor url is provided, or if url is not a valid URL.
         """
-        if not headers:
-            if not url:
+        if not url:
+            if not headers:
                 raise ValueError("Nothing provided for analysis. Either 'headers' or 'url' must be defined")
             else:
-                headers = _get_headers_from_url(url, **kwargs)
-        elif isinstance(headers, str):
-            headers = json.loads(headers)
+                headers_to_analyse = json.loads(headers) if isinstance(headers, str) else headers
+        else:
+            headers_to_analyse = _get_headers_from_url(url, headers=headers, **kwargs)
 
         self.cookies = CaseInsensitiveDict()
-        self.headers = CaseInsensitiveDict(headers)
+        self.headers = CaseInsensitiveDict(headers_to_analyse)
         self.reporter = Reporter()
 
         for cookie in self.headers.get('set-cookie', []):
@@ -146,7 +142,6 @@ class Drheader:
         elif 'value-one-of' in config:
             if report_item := validator.value_one_of(config, header, **kwargs):
                 self._add_to_report(report_item)
-
         if 'must-avoid' in config:
             if report_item := validator.must_avoid(config, header, **kwargs):
                 self._add_to_report(report_item)
@@ -166,15 +161,14 @@ class Drheader:
                 self.reporter.add_item(item)
 
 
-def _get_headers_from_url(url, method='get', params=None, request_headers=None, verify=True):
+def _get_headers_from_url(url, method='head', **kwargs):
     """Retrieves headers from a URL."""
-    if not url.startswith('http'):
-        raise ValueError('Ensure you have entered a full URL including the scheme (http/https)')
+    if method.strip().lower() not in _ALLOWED_HTTP_METHODS:
+        raise ValueError(f"Cannot retrieve headers: '{method}' is not a recognised HTTP method")
     if not validators.url(url):
-        raise ValueError(f'Cannot retrieve headers from "{url}". The URL is malformed')
+        raise ValueError(f"Cannot retrieve headers: '{url}' is not a valid URL")
 
-    request_object = getattr(requests, method.lower())
-    response = request_object(url, data=params, headers=request_headers, verify=verify)
+    response = requests.request(method, url, timeout=kwargs.pop('timeout', 5), **kwargs)
 
     response_headers = response.headers
     response_headers['set-cookie'] = response.raw.headers.getlist('Set-Cookie')

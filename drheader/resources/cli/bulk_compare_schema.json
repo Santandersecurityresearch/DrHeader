@@ -9,14 +9,12 @@
             },
             "headers": {
                 "type": "object"
-            },
-            "status_code": {
-                "type": "integer"
             }
         },
         "required": [
-            "headers",
-            "url"
-        ]
+            "url",
+            "headers"
+        ],
+        "additionalProperties": false
     }
 }
