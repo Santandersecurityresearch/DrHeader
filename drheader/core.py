@@ -4,7 +4,6 @@ import logging
 import os
 
 import requests
-import validators
 from requests.structures import CaseInsensitiveDict
 
 from drheader import utils
@@ -165,9 +164,7 @@ class Drheader:
 def _get_headers_from_url(url, method='head', **kwargs):
     """Retrieves headers from a URL."""
     if method.strip().lower() not in _ALLOWED_HTTP_METHODS:
-        raise ValueError(f"Cannot retrieve headers: '{method}' is not a recognised HTTP method")
-    if not validators.url(url):
-        raise ValueError(f"Cannot retrieve headers: '{url}' is not a valid URL")
+        raise ValueError(f"'{method}' is not an allowed HTTP method")
 
     response = requests.request(method, url, timeout=kwargs.pop('timeout', 5), **kwargs)
 

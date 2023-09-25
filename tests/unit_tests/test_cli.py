@@ -160,6 +160,22 @@ class TestCli(TestCase):
 
         assert json.loads(response.output)[0]['report'] == self.report
 
+    @mock.patch('drheader.cli.cli.Drheader')
+    def test_scan_bulk__should_not_fail_on_error(self, drheader_mock):
+        def raise_error(url):
+            if url == 'https://example.net':
+                raise ValueError('Error retrieving headers')
+            else:
+                return drheader_mock
+
+        drheader_mock.analyze.return_value = self.report
+        drheader_mock.side_effect = raise_error
+
+        file = os.path.join(_RESOURCES_DIR, 'bulk_scan.json')
+        response = CliRunner().invoke(cli.main, ['scan', 'bulk', '--output', 'json', file])
+
+        assert json.loads(response.output)[1]['error'] == 'Error retrieving headers'
+
 
 class TestUtils(TestCase, XmlTestMixin):
 

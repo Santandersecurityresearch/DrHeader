@@ -8,9 +8,7 @@ from json import JSONDecodeError
 
 import click
 import jsonschema
-import validators
-from click import Choice, ClickException, File, ParamType
-from jsonschema import FormatChecker
+from click import Choice, File, ParamType
 
 from drheader import Drheader, __version__
 from drheader.cli import utils
@@ -100,27 +98,36 @@ def bulk(file, cross_origin_isolated, debug, merge, output, rules_file, rules_ur
     data = json.loads(file.read())
     with open(os.path.join(os.path.dirname(__file__), '../resources/cli/bulk_compare_schema.json')) as schema:
         schema = json.load(schema)
-        jsonschema.validate(instance=data, schema=schema, format_checker=FormatChecker())
+        jsonschema.validate(instance=data, schema=schema)
 
     audit = []
     rules = utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
     for target in data:
-        scanner = Drheader(headers=target['headers'])
-        report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
-        audit.append({'url': target['url'], 'report': report})
+        try:
+            scanner = Drheader(headers=target['headers'])
+            report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
+            audit.append({'url': target['url'], 'report': report})
+        except Exception as e:
+            audit.append({'url': target['url'], 'report': [], 'error': str(e)})
 
     if output == 'json':
         click.echo(json.dumps(audit, indent=4))
     else:
         for target in audit:
             click.echo()
-            if not target['report']:
+            if target.get('error'):
+                click.echo(f"{target['url']}: {target['error']}")
+            elif not target['report']:
                 click.echo(f"{target['url']}: No issues found!")
             else:
                 click.echo(f"{target['url']}: {len(target['report'])} issues found")
                 click.echo(utils.tabulate_report(target['report']))
 
-    sys.exit(os.EX_SOFTWARE if any(target['report'] for target in audit) else os.EX_OK)
+    for target in audit:
+        if target.get('report') or target.get('error'):
+            sys.exit(os.EX_SOFTWARE)
+    else:
+        sys.exit(os.EX_OK)
 
 
 @scan.command(context_settings={
@@ -191,16 +198,12 @@ def bulk(file, cross_origin_isolated, debug, file_format, merge, output, rules_f
         logging.basicConfig(level=logging.DEBUG)
 
     if file_format == 'txt':
-        urls = []
-        for url in list(filter(None, file.read().splitlines())):
-            if not validators.url(url):
-                raise ClickException(message=f"'{url}' is not a valid URL")
-            urls.append({'url': url})
+        urls = [{'url': url} for url in list(filter(None, file.read().splitlines()))]
     else:
         urls = json.loads(file.read())
         with open(os.path.join(os.path.dirname(__file__), '../resources/cli/bulk_scan_schema.json')) as schema:
             schema = json.load(schema)
-            jsonschema.validate(instance=urls, schema=schema, format_checker=FormatChecker())
+            jsonschema.validate(instance=urls, schema=schema)
 
     audit = []
     rules = utils.get_rules(rules_file=rules_file, rules_uri=rules_uri, merge_default=merge)
@@ -211,23 +214,39 @@ def bulk(file, cross_origin_isolated, debug, file_format, merge, output, rules_f
             except (SyntaxError, ValueError):
                 target[key] = value
 
-        scanner = Drheader(**target)
-        report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
-        audit.append({'url': target['url'], 'report': report})
+        try:
+            scanner = Drheader(**target)
+            report = scanner.analyze(rules=rules, cross_origin_isolated=cross_origin_isolated)
+            audit.append({'url': target['url'], 'report': report})
+        except Exception as e:
+            audit.append({'url': target['url'], 'report': [], 'error': str(e)})
 
     if output == 'json':
         click.echo(json.dumps(audit, indent=4))
     else:
         for target in audit:
             click.echo()
-            if not target['report']:
+            if target.get('error'):
+                click.echo(f"{target['url']}: {target['error']}")
+            elif not target['report']:
                 click.echo(f"{target['url']}: No issues found!")
             else:
                 click.echo(f"{target['url']}: {len(target['report'])} issues found")
                 click.echo(utils.tabulate_report(target['report']))
 
-    sys.exit(os.EX_SOFTWARE if any(target['report'] for target in audit) else os.EX_OK)
+    for target in audit:
+        if target.get('report') or target.get('error'):
+            sys.exit(os.EX_SOFTWARE)
+    else:
+        sys.exit(os.EX_OK)
 
 
-if __name__ == "__main__":
-    sys.exit(main())
+def start():
+    try:
+        main()
+    except Exception as e:
+        click.secho(str(e), fg='red')
+
+
+if __name__ == '__main__':
+    start()

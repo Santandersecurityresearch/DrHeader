@@ -38,7 +38,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'drheader=drheader.cli.cli:main',
+            'drheader=drheader.cli.cli:start',
         ],
     },
     install_requires=requirements,
