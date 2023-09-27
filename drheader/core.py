@@ -166,8 +166,12 @@ def _get_headers_from_url(url, method='head', **kwargs):
     if method.strip().lower() not in _ALLOWED_HTTP_METHODS:
         raise ValueError(f"'{method}' is not an allowed HTTP method")
 
-    response = requests.request(method, url, timeout=kwargs.pop('timeout', 5), **kwargs)
+    if 'timeout' not in kwargs:
+        kwargs['timeout'] = 5
+    if 'allow_redirects' not in kwargs:
+        kwargs['allow_redirects'] = True
 
+    response = requests.request(method, url, **kwargs)
     response_headers = response.headers
     response_headers['set-cookie'] = response.raw.headers.getlist('Set-Cookie')
     return response_headers
