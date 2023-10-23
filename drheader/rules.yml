@@ -1,67 +1,66 @@
-Headers:
-    Cache-Control:
-        Required: True
-        Value:
-            - no-store
-            - max-age=0
-    Content-Security-Policy:
-        Required: True
-        Must-Avoid:
-            - unsafe-inline
-            - unsafe-eval
-        Directives:
-            default-src:
-                Required: True
-                Value-One-Of:
-                    - none
-                    - self
-    Cross-Origin-Embedder-Policy:
-        Required: True
-        Value: require-corp
-    Cross-Origin-Opener-Policy:
-        Required: True
-        Value: same-origin
-    Pragma:
-        Required: True
-        Value: no-cache
-    Referrer-Policy:
-        Required: True
-        Value-One-Of:
-            - strict-origin
-            - strict-origin-when-cross-origin
-            - no-referrer
-    Server:
-        Required: False
-    Set-Cookie:
-        Required: Optional
-        Must-Contain:
-            - HttpOnly
-            - Secure
-    Strict-Transport-Security:
-        Required: True
-        Value:
-            - max-age=31536000
-            - includeSubDomains
-    User-Agent:
-        Required: False
-    X-AspNet-Version:
-        Required: False
-    X-Client-IP:
-        Required: False
-    X-Content-Type-Options:
-        Required: True
-        Value: nosniff
-    X-Forwarded-For:
-        Required: False
-    X-Frame-Options:
-        Required: True
-        Value-One-Of:
-            - DENY
-            - SAMEORIGIN
-    X-Generator:
-        Required: False
-    X-Powered-By:
-        Required: False
-    X-XSS-Protection:
-        Required: True
-        Value: 0
+Cache-Control:
+    Required: True
+    Value:
+        - no-store
+        - max-age=0
+Content-Security-Policy:
+    Required: True
+    Must-Avoid:
+        - unsafe-inline
+        - unsafe-eval
+    Directives:
+        default-src:
+            Required: True
+            Value-One-Of:
+                - none
+                - self
+Cross-Origin-Embedder-Policy:
+    Required: True
+    Value: require-corp
+Cross-Origin-Opener-Policy:
+    Required: True
+    Value: same-origin
+Pragma:
+    Required: True
+    Value: no-cache
+Referrer-Policy:
+    Required: True
+    Value-One-Of:
+        - strict-origin
+        - strict-origin-when-cross-origin
+        - no-referrer
+Server:
+    Required: False
+Set-Cookie:
+    Required: Optional
+    Must-Contain:
+        - HttpOnly
+        - Secure
+Strict-Transport-Security:
+    Required: True
+    Value:
+        - max-age=31536000
+        - includeSubDomains
+User-Agent:
+    Required: False
+X-AspNet-Version:
+    Required: False
+X-Client-IP:
+    Required: False
+X-Content-Type-Options:
+    Required: True
+    Value: nosniff
+X-Forwarded-For:
+    Required: False
+X-Frame-Options:
+    Required: True
+    Value-One-Of:
+        - DENY
+        - SAMEORIGIN
+X-Generator:
+    Required: False
+X-Powered-By:
+    Required: False
+X-XSS-Protection:
+    Required: True
+    Value: 0

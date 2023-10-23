@@ -39,7 +39,7 @@ def file_junit_report(rules, report):
     """
     test_cases = []
 
-    for header in rules['Headers']:
+    for header in rules:
         test_case = None
         for validation_error in report:
             if (title := validation_error.get('rule')).startswith(header):

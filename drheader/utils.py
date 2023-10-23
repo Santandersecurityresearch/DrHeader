@@ -86,8 +86,8 @@ def get_rules_from_uri(uri):
 
 def _merge_with_default_rules(rules):
     merged_ruleset = default_rules()
-    for rule in rules['Headers']:
-        merged_ruleset['Headers'][rule] = rules['Headers'][rule]
+    for rule in rules:
+        merged_ruleset[rule] = rules[rule]
     return merged_ruleset
 
 

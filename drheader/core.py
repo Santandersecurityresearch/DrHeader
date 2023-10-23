@@ -87,7 +87,7 @@ class Drheader:
         directive_validator = DirectiveValidator(self.headers)
         cookie_validator = CookieValidator(self.cookies)
 
-        for header, rule_config in rules['Headers'].items():
+        for header, rule_config in rules.items():
             if header.lower() in _CROSS_ORIGIN_HEADERS and not cross_origin_isolated:
                 logging.info(f"Cross-origin isolation validations are not enabled. Skipping header '{header}'")
                 continue
