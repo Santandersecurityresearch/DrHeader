@@ -80,7 +80,7 @@ scanner.analyze(cross_origin_isolated=True)
 
 ## How Do I Customise drHEADer Rules?
 
-drHEADer relies on a yaml file that defines the policy it will use when auditing security headers. The file is located at `./drheader/rules.yml`, and you can customise it to fit your particular needs. Please follow this [link](RULES.md) if you want to know more.
+drHEADer relies on a yaml file that defines the policy it will use when auditing security headers. The file is located at `./drheader/resources/rules.yml`, and you can customise it to fit your particular needs. Please follow this [link](RULES.md) if you want to know more.
 
 ## Notes
 

@@ -16,7 +16,7 @@ class KeyValueDirective(NamedTuple):
 
 def default_rules():
     """Returns the drHEADer default ruleset."""
-    with open(os.path.join(os.path.dirname(__file__), 'rules.yml'), 'r') as rules:
+    with open(os.path.join(os.path.dirname(__file__), 'resources/rules.yml'), 'r') as rules:
         rules = yaml.safe_load(rules.read())
         return rules
 
