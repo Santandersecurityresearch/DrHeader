@@ -16,7 +16,7 @@ class KeyValueDirective(NamedTuple):
 
 def default_rules():
     """Returns the drHEADer default ruleset."""
-    with open(os.path.join(os.path.dirname(__file__), 'rules.yml'), 'r') as rules:
+    with open(os.path.join(os.path.dirname(__file__), 'resources/rules.yml'), 'r') as rules:
         rules = yaml.safe_load(rules.read())
         return rules
 
@@ -86,8 +86,8 @@ def get_rules_from_uri(uri):
 
 def _merge_with_default_rules(rules):
     merged_ruleset = default_rules()
-    for rule in rules['Headers']:
-        merged_ruleset['Headers'][rule] = rules['Headers'][rule]
+    for rule in rules:
+        merged_ruleset[rule] = rules[rule]
     return merged_ruleset
 
 

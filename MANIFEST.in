@@ -3,7 +3,6 @@ include HISTORY.md
 include LICENSE
 include README.md
 include RULES.md
-include drheader/*.yml
 
 recursive-include drheader/resources *
 recursive-include tests *

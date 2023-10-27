@@ -52,7 +52,7 @@ def build_error_message(report, expected=None, rule=None):
 
 
 def reset_default_rules():
-    with open(os.path.join(os.path.dirname(__file__), '../../drheader/rules.yml')) as rules, \
+    with open(os.path.join(os.path.dirname(__file__), '../../drheader/resources/rules.yml')) as rules, \
          open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'w') as default_rules:
         rules = yaml.safe_load(rules.read())
         yaml.dump(rules, default_rules, indent=2, sort_keys=False)

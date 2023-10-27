@@ -58,15 +58,19 @@ You can view the JSON schema for bulk scanning with `compare` [here](drheader/re
 ### Scan Options
 This table lists the scan options available when using the `compare` command:
 
-| Option                     | Description                                                 |
-|:---------------------------|:------------------------------------------------------------|
-| `--cross-origin-isolated`  | Enable cross-origin isolation validations                   |
-| `--debug`                  | Enable debug logging                                        |
-| `--junit`                  | Generate a JUnit report *(not available for bulk scanning)* |
-| `--merge`                  | Merge a custom ruleset with the default rules               |
-| `--output` [json \| table] | Report output format  [default: table]                      |
-| `--rules-file FILENAME`    | Use a custom ruleset, loaded from file                      |
-| `--rules-uri URI`          | Use a custom ruleset, downloaded from URI                   |
+| Option                     | Shorthand Option | Description                                                 |
+|:---------------------------|:-----------------|:------------------------------------------------------------|
+| `--cross-origin-isolated`  | `-co`            | Enable cross-origin isolation validations ¹                 |
+| `--debug`                  | `-d`             | Enable debug logging                                        |
+| `--junit`                  | `-j`             | Generate a JUnit report *(not available for bulk scanning)* |
+| `--merge`                  | `-m`             | Merge a custom ruleset with the default rules               |
+| `--output [json \| table]` | `-o`             | Report output format  [default: table]                      |
+| `--rules-file FILENAME`    | `-rf`            | Use a custom ruleset, loaded from file ²                    |
+| `--rules-uri URI`          | `-ru`            | Use a custom ruleset, downloaded from URI ²                 |
+
+¹ Cross-origin isolation validations are opt-in. See [Cross-Origin Isolation](README.md#cross-origin-isolation).
+
+² For information on defining a custom ruleset see [RULES](RULES.md).
 
 ## Scanning Remote Endpoints
 You can scan a remote endpoint using the `scan single` command:
@@ -155,7 +159,7 @@ https://example.org
 ```
 
 #### Configuring the HTTP Request
-For bulk scanning, [request args](#configuring-the-http-request) are configured on a per-target basis in the JSON file.
+For bulk scanning, [request args](#configuring-the-http-request) are configured on a per-target basis in the JSON file:
 ```json
 [
     {
@@ -188,16 +192,20 @@ list of options.
 ### Scan Options
 This table lists the scan options available when using the `scan` command:
 
-| Option                        | Description                                                 |
-|:------------------------------|:------------------------------------------------------------|
-| `--cross-origin-isolated`     | Enable cross-origin isolation validations                   |
-| `--debug`                     | Enable debug logging                                        |
-| `--file-format` [json \| txt] | FILE input format  [default: json] *(bulk scanning only)*   |
-| `--junit`                     | Generate a JUnit report *(not available for bulk scanning)* |
-| `--merge`                     | Merge a custom ruleset with the default rules               |
-| `--output` [json \| table]    | Report output format  [default: table]                      |
-| `--rules-file FILENAME`       | Use a custom ruleset, loaded from file                      |
-| `--rules-uri URI`             | Use a custom ruleset, downloaded from URI                   |
+| Option                        | Shorthand Option | Description                                                 |
+|:------------------------------|:-----------------|:------------------------------------------------------------|
+| `--cross-origin-isolated`     | `-co`            | Enable cross-origin isolation validations ¹                 |
+| `--debug`                     | `-d`             | Enable debug logging                                        |
+| `--file-format [json \| txt]` | `-ff`            | FILE input format  [default: json] *(bulk scanning only)*   |
+| `--junit`                     | `-j`             | Generate a JUnit report *(not available for bulk scanning)* |
+| `--merge`                     | `-m`             | Merge a custom ruleset with the default rules               |
+| `--output [json \| table]`    | `-o`             | Report output format  [default: table]                      |
+| `--rules-file FILENAME`       | `-rf`            | Use a custom ruleset, loaded from file ²                    |
+| `--rules-uri URI`             | `-ru`            | Use a custom ruleset, downloaded from URI ²                 |
+
+¹ Cross-origin isolation validations are opt-in. See [Cross-Origin Isolation](README.md#cross-origin-isolation).
+
+² For information on defining a custom ruleset see [RULES](RULES.md).
 
 ## Report Output
 By default, results will be output in a tabulated format:

@@ -5,6 +5,15 @@ Cache-Control:
         - max-age=0
 Content-Security-Policy:
     Required: True
+    Must-Avoid:
+        - unsafe-inline
+        - unsafe-eval
+    Directives:
+        default-src:
+            Required: True
+            Value-One-Of:
+                - none
+                - self
 Cross-Origin-Embedder-Policy:
     Required: True
     Value: require-corp
@@ -51,10 +60,7 @@ X-Frame-Options:
 X-Generator:
     Required: False
 X-Powered-By:
-    Required: True
+    Required: False
 X-XSS-Protection:
     Required: True
     Value: 0
-New-Invented-Header:
-    Required: True
-    Value: required-value

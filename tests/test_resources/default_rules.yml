@@ -1,67 +1,66 @@
-Headers:
-  Cache-Control:
-    Required: true
-    Value:
-    - no-store
-    - max-age=0
-  Content-Security-Policy:
-    Required: true
-    Must-Avoid:
-    - unsafe-inline
-    - unsafe-eval
-    Directives:
-      default-src:
-        Required: true
-        Value-One-Of:
-        - none
-        - self
-  Cross-Origin-Embedder-Policy:
-    Required: true
-    Value: require-corp
-  Cross-Origin-Opener-Policy:
-    Required: true
-    Value: same-origin
-  Pragma:
-    Required: true
-    Value: no-cache
-  Referrer-Policy:
-    Required: true
-    Value-One-Of:
-    - strict-origin
-    - strict-origin-when-cross-origin
-    - no-referrer
-  Server:
-    Required: false
-  Set-Cookie:
-    Required: Optional
-    Must-Contain:
-    - HttpOnly
-    - Secure
-  Strict-Transport-Security:
-    Required: true
-    Value:
-    - max-age=31536000
-    - includeSubDomains
-  User-Agent:
-    Required: false
-  X-AspNet-Version:
-    Required: false
-  X-Client-IP:
-    Required: false
-  X-Content-Type-Options:
-    Required: true
-    Value: nosniff
-  X-Forwarded-For:
-    Required: false
-  X-Frame-Options:
-    Required: true
-    Value-One-Of:
-    - DENY
-    - SAMEORIGIN
-  X-Generator:
-    Required: false
-  X-Powered-By:
-    Required: false
-  X-XSS-Protection:
-    Required: true
-    Value: 0
+Cache-Control:
+  Required: true
+  Value:
+  - no-store
+  - max-age=0
+Content-Security-Policy:
+  Required: true
+  Must-Avoid:
+  - unsafe-inline
+  - unsafe-eval
+  Directives:
+    default-src:
+      Required: true
+      Value-One-Of:
+      - none
+      - self
+Cross-Origin-Embedder-Policy:
+  Required: true
+  Value: require-corp
+Cross-Origin-Opener-Policy:
+  Required: true
+  Value: same-origin
+Pragma:
+  Required: true
+  Value: no-cache
+Referrer-Policy:
+  Required: true
+  Value-One-Of:
+  - strict-origin
+  - strict-origin-when-cross-origin
+  - no-referrer
+Server:
+  Required: false
+Set-Cookie:
+  Required: Optional
+  Must-Contain:
+  - HttpOnly
+  - Secure
+Strict-Transport-Security:
+  Required: true
+  Value:
+  - max-age=31536000
+  - includeSubDomains
+User-Agent:
+  Required: false
+X-AspNet-Version:
+  Required: false
+X-Client-IP:
+  Required: false
+X-Content-Type-Options:
+  Required: true
+  Value: nosniff
+X-Forwarded-For:
+  Required: false
+X-Frame-Options:
+  Required: true
+  Value-One-Of:
+  - DENY
+  - SAMEORIGIN
+X-Generator:
+  Required: false
+X-Powered-By:
+  Required: false
+X-XSS-Protection:
+  Required: true
+  Value: 0
