@@ -1,5 +1,7 @@
-name: Dr Header Pull Request handler
+name: Pull Request Handler
+
 on: pull_request
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -8,7 +10,7 @@ jobs:
       matrix:
           python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4.1.1
 
       - name: Set up Python
@@ -16,7 +18,7 @@ jobs:
         with:
            python-version: ${{ matrix.python-version }}
 
-      - name: Install PIP Dependencies
+      - name: Install dependencies
         run: |
           pip install -r requirements.txt
           pip install -r requirements_dev.txt
@@ -41,14 +43,22 @@ jobs:
       - name: Run SCA scan
         run: tox run -e sca
 
-      - name: Checkout origin branch if PR 'to-branch' is master
-        if: github.base_ref == 'master'
+  bump-version:
+    if: github.base_ref == 'master'
+    needs: build
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: |
+          pip install bump2version==1.0.1
+
+      - name: Checkout head branch
         uses: actions/checkout@v4.1.1
         with:
           ref: ${{ github.head_ref }}
 
-      - name: BumpVersion if PR 'to-branch' is master
-        if: github.base_ref == 'master'
+      - name: Bump version
         run: |
           grep -i 'current_version = ' setup.cfg | head -1 | tr -d 'current_version = '
           git config --local user.email "action@github.com"
@@ -56,8 +66,7 @@ jobs:
           bump2version minor
           grep -i 'current_version = ' setup.cfg | head -1 | tr -d 'current_version = '
 
-      - name: Push changes if PR 'to-branch' is master
-        if: github.base_ref == 'master'
+      - name: Push changes to origin
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
