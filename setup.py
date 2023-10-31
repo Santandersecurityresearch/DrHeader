@@ -27,15 +27,18 @@ with open('requirements.txt') as f:
 setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
         'Intended Audience :: Developers',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.7',
-        'Environment :: Console',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'Topic :: Security'
     ],
     entry_points={
         'console_scripts': [
-            'drheader=drheader.cli:main',
+            'drheader=drheader.cli.cli:start',
         ],
     },
     install_requires=requirements,
@@ -47,9 +50,9 @@ setup(
     keywords='drheader',
     author='Santander UK Security Engineering',
     name='drheader',
-    packages=['drheader', 'drheader/validators'],
+    packages=['drheader', 'drheader/cli', 'drheader/validators'],
     test_suite='tests',
     url='https://github.com/santandersecurityresearch/drheader',
-    version='1.7.0',
+    version='2.0.0',
     zip_safe=False,
 )

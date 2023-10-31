@@ -1,5 +1,6 @@
 """Validator module for headers."""
-from drheader import report, utils
+from drheader import utils
+from drheader.report import ErrorType, ReportItem
 from drheader.validators import base
 
 _DELIMITER_TYPE = 'item_delimiter'
@@ -18,41 +19,41 @@ class HeaderValidator(base.ValidatorBase):
         """Initialises a HeaderValidator instance with headers."""
         self.headers = headers
 
-    def validate_exists(self, config, header, directive=None, cookie=None):
+    def exists(self, config, header, **kwargs):
         """See base class."""
         if header not in self.headers:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.REQUIRED
+            error_type = ErrorType.REQUIRED
             if 'value' in config:
                 delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
                 expected = base.get_expected_values(config, 'value', delimiter)
-                return report.ReportItem(severity, error_type, header, expected=expected, delimiter=delimiter)
+                return ReportItem(severity, error_type, header, expected=expected, delimiter=delimiter)
             elif 'value-any-of' in config:
                 delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
                 expected = base.get_expected_values(config, 'value-any-of', delimiter)
-                return report.ReportItem(severity, error_type, header, expected=expected, delimiter=delimiter)
+                return ReportItem(severity, error_type, header, expected=expected, delimiter=delimiter)
             elif 'value-one-of' in config:
                 delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
                 expected = base.get_expected_values(config, 'value-one-of', delimiter)
-                return report.ReportItem(severity, error_type, header, expected=expected)
+                return ReportItem(severity, error_type, header, expected=expected)
             else:
-                return report.ReportItem(severity, error_type, header)
+                return ReportItem(severity, error_type, header)
 
-    def validate_not_exists(self, config, header, directive=None, cookie=None):
+    def not_exists(self, config, header, **kwargs):
         """See base class."""
         if header in self.headers:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.DISALLOWED
-            return report.ReportItem(severity, error_type, header)
+            error_type = ErrorType.DISALLOWED
+            return ReportItem(severity, error_type, header)
 
-    def validate_value(self, config, header, directive=None):
+    def value(self, config, header, **kwargs):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'value', delimiter)
 
         header_value = self.headers[header]
         strip_chars = base.get_delimiter(config, 'strip') if header.lower() in _STRIP_HEADERS else None
-        header_items = utils.parse_policy(header_value, item_delimiter=delimiter, strip=strip_chars)
+        header_items = utils.parse_policy(header_value, item_delimiter=delimiter, strip_chars=strip_chars)
 
         if config.get('preserve-order'):
             header_items = [item.lower() for item in header_items]
@@ -63,18 +64,17 @@ class HeaderValidator(base.ValidatorBase):
 
         if header_items != expected_lower:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.VALUE
-            return report.ReportItem(severity, error_type, header, value=header_value, expected=expected,
-                                     delimiter=delimiter)
+            error_type = ErrorType.VALUE
+            return ReportItem(severity, error_type, header, value=header_value, expected=expected, delimiter=delimiter)
 
-    def validate_value_any_of(self, config, header, directive=None):
+    def value_any_of(self, config, header, **kwargs):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         accepted = base.get_expected_values(config, 'value-any-of', delimiter)
 
         header_value = self.headers[header]
         strip_chars = base.get_delimiter(config, 'strip') if header.lower() in _STRIP_HEADERS else None
-        header_items = utils.parse_policy(header_value, item_delimiter=delimiter, strip=strip_chars)
+        header_items = utils.parse_policy(header_value, item_delimiter=delimiter, strip_chars=strip_chars)
 
         anomalies = []
         accepted_lower = [item.lower() for item in accepted]
@@ -84,11 +84,10 @@ class HeaderValidator(base.ValidatorBase):
 
         if anomalies:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.VALUE_ANY
-            return report.ReportItem(severity, error_type, header, value=header_value, expected=accepted,
-                                     anomalies=anomalies, delimiter=delimiter)
+            error_type = ErrorType.VALUE_ANY
+            return ReportItem(severity, error_type, header, value=header_value, expected=accepted, anomalies=anomalies, delimiter=delimiter)  # noqa:E501
 
-    def validate_value_one_of(self, config, header, directive=None):
+    def value_one_of(self, config, header, **kwargs):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         accepted = base.get_expected_values(config, 'value-one-of', delimiter)
@@ -98,10 +97,10 @@ class HeaderValidator(base.ValidatorBase):
 
         if header_value.strip(strip_chars).lower() not in {item.lower() for item in accepted}:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.VALUE_ONE
-            return report.ReportItem(severity, error_type, header, value=header_value, expected=accepted)
+            error_type = ErrorType.VALUE_ONE
+            return ReportItem(severity, error_type, header, value=header_value, expected=accepted)
 
-    def validate_must_avoid(self, config, header, directive=None, cookie=None):
+    def must_avoid(self, config, header, **kwargs):
         """See base class."""
         if header.lower() in _POLICY_HEADERS:
             return self._validate_must_avoid_for_policy_header(config, header)
@@ -109,7 +108,7 @@ class HeaderValidator(base.ValidatorBase):
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         disallowed = base.get_expected_values(config, 'must-avoid', delimiter)
 
-        header_value = self._get_cookie(cookie) if cookie else self.headers[header]
+        header_value = self.headers[header]
         header_items = utils.parse_policy(header_value, **config.get('delimiters', {}), keys_only=True)
         header_items = {str(item).lower() for item in header_items}
 
@@ -120,16 +119,15 @@ class HeaderValidator(base.ValidatorBase):
 
         if anomalies:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.AVOID
-            return report.ReportItem(severity, error_type, header, cookie=cookie, value=header_value, avoid=disallowed,
-                                     anomalies=anomalies)
+            error_type = ErrorType.AVOID
+            return ReportItem(severity, error_type, header, value=header_value, avoid=disallowed, anomalies=anomalies)
 
-    def validate_must_contain(self, config, header, directive=None, cookie=None):
+    def must_contain(self, config, header, **kwargs):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'must-contain', delimiter)
 
-        header_value = self._get_cookie(cookie) if cookie else self.headers[header]
+        header_value = self.headers[header]
         header_items = utils.parse_policy(header_value, **config.get('delimiters', {}), keys_only=True)
         header_items = {str(item).lower() for item in header_items}
 
@@ -140,23 +138,22 @@ class HeaderValidator(base.ValidatorBase):
 
         if anomalies:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.CONTAIN
-            return report.ReportItem(severity, error_type, header, cookie=cookie, value=header_value, expected=expected,
-                                     anomalies=anomalies, delimiter=delimiter)
+            error_type = ErrorType.CONTAIN
+            return ReportItem(severity, error_type, header, value=header_value, expected=expected, anomalies=anomalies, delimiter=delimiter)  # noqa:E501
 
-    def validate_must_contain_one(self, config, header, directive=None, cookie=None):
+    def must_contain_one(self, config, header, **kwargs):
         """See base class."""
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'must-contain-one', delimiter)
 
-        header_value = self._get_cookie(cookie) if cookie else self.headers[header]
+        header_value = self.headers[header]
         header_items = utils.parse_policy(header_value, **config.get('delimiters', {}), keys_only=True)
         header_items = {str(item).lower() for item in header_items}
 
         if not any(contain.lower() in header_items for contain in expected):
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.CONTAIN_ONE
-            return report.ReportItem(severity, error_type, header, cookie=cookie, value=header_value, expected=expected)
+            error_type = ErrorType.CONTAIN_ONE
+            return ReportItem(severity, error_type, header, value=header_value, expected=expected)
 
     def _validate_must_avoid_for_policy_header(self, config, header):
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
@@ -197,22 +194,14 @@ class HeaderValidator(base.ValidatorBase):
                         ncd_items[directive] = ncd_item
 
         severity = config.get('severity', 'high')
-        error_type = report.ErrorType.AVOID
+        error_type = ErrorType.AVOID
 
         if anomalies:
-            item = report.ReportItem(severity, error_type, header, value=header_value, avoid=disallowed,
-                                     anomalies=anomalies)
+            item = ReportItem(severity, error_type, header, value=header_value, avoid=disallowed, anomalies=anomalies)
             report_items.append(item)
         if ncd_items:
             for directive in ncd_items:
                 value, anomalies = ncd_items[directive]['value'], ncd_items[directive]['anomalies']
-                item = report.ReportItem(severity, error_type, header, directive=directive, value=value,
-                                         avoid=disallowed, anomalies=anomalies)
+                item = ReportItem(severity, error_type, header, directive=directive, value=value, avoid=disallowed, anomalies=anomalies)  # noqa:E501
                 report_items.append(item)
         return report_items
-
-    def _get_cookie(self, expected):
-        for cookie in self.headers['set-cookie']:
-            cookie_name = cookie.split('=', 1)[0]
-            if cookie_name == expected:
-                return cookie

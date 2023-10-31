@@ -1,5 +1,6 @@
 """Validator module for cookies."""
-from drheader import report, utils
+from drheader import utils
+from drheader.report import ErrorType, ReportItem
 from drheader.validators import base
 
 _DELIMITER_TYPE = 'item_delimiter'
@@ -16,21 +17,25 @@ class CookieValidator(base.ValidatorBase):
         """Initialises a CookieValidator instance with cookies."""
         self.cookies = cookies
 
-    def validate_exists(self, config, header, directive=None, cookie=None):
+    def exists(self, config, header, **kwargs):
         """See base class."""
+        cookie = kwargs['cookie']
+
         if cookie not in self.cookies:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.REQUIRED
-            return report.ReportItem(severity, error_type, header, cookie=cookie)
+            error_type = ErrorType.REQUIRED
+            return ReportItem(severity, error_type, header, cookie=cookie)
 
-    def validate_not_exists(self, config, header, directive=None, cookie=None):
+    def not_exists(self, config, header, **kwargs):
         """See base class."""
+        cookie = kwargs['cookie']
+
         if cookie in self.cookies:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.DISALLOWED
-            return report.ReportItem(severity, error_type, header, cookie=cookie)
+            error_type = ErrorType.DISALLOWED
+            return ReportItem(severity, error_type, header, cookie=cookie)
 
-    def validate_value(self, config, header, directive=None):
+    def value(self, config, header, **kwargs):
         """Method not supported.
 
         Raises:
@@ -38,7 +43,7 @@ class CookieValidator(base.ValidatorBase):
         """
         raise base.UnsupportedValidationError("'Value' validations are not supported for cookies")
 
-    def validate_value_any_of(self, config, header, directive=None):
+    def value_any_of(self, config, header, **kwargs):
         """Method not supported.
 
         Raises:
@@ -46,7 +51,7 @@ class CookieValidator(base.ValidatorBase):
         """
         raise base.UnsupportedValidationError("'Value-Any-Of' validations are not supported for cookies")
 
-    def validate_value_one_of(self, config, header, directive=None):
+    def value_one_of(self, config, header, **kwargs):
         """Method not supported.
 
         Raises:
@@ -54,8 +59,10 @@ class CookieValidator(base.ValidatorBase):
         """
         raise base.UnsupportedValidationError("'Value-One-Of' validations are not supported for cookies")
 
-    def validate_must_avoid(self, config, header, directive=None, cookie=None):
+    def must_avoid(self, config, header, **kwargs):
         """See base class."""
+        cookie = kwargs['cookie']
+
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         disallowed = base.get_expected_values(config, 'must-avoid', delimiter)
 
@@ -70,12 +77,13 @@ class CookieValidator(base.ValidatorBase):
 
         if anomalies:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.AVOID
-            return report.ReportItem(severity, error_type, header, cookie=cookie, value=cookie_value, avoid=disallowed,
-                                     anomalies=anomalies)
+            error_type = ErrorType.AVOID
+            return ReportItem(severity, error_type, header, cookie=cookie, value=cookie_value, avoid=disallowed, anomalies=anomalies)  # noqa:E501
 
-    def validate_must_contain(self, config, header, directive=None, cookie=None):
+    def must_contain(self, config, header, **kwargs):
         """See base class."""
+        cookie = kwargs['cookie']
+
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'must-contain', delimiter)
 
@@ -90,12 +98,13 @@ class CookieValidator(base.ValidatorBase):
 
         if anomalies:
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.CONTAIN
-            return report.ReportItem(severity, error_type, header, cookie=cookie, value=cookie_value, expected=expected,
-                                     anomalies=anomalies, delimiter=delimiter)
+            error_type = ErrorType.CONTAIN
+            return ReportItem(severity, error_type, header, cookie=cookie, value=cookie_value, expected=expected, anomalies=anomalies, delimiter=delimiter)  # noqa:E501
 
-    def validate_must_contain_one(self, config, header, directive=None, cookie=None):
+    def must_contain_one(self, config, header, **kwargs):
         """See base class."""
+        cookie = kwargs['cookie']
+
         delimiter = base.get_delimiter(config, _DELIMITER_TYPE)
         expected = base.get_expected_values(config, 'must-contain-one', delimiter)
 
@@ -105,5 +114,5 @@ class CookieValidator(base.ValidatorBase):
 
         if not any(contain.lower() in cookie_items for contain in expected):
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.CONTAIN_ONE
-            return report.ReportItem(severity, error_type, header, cookie=cookie, value=cookie_value, expected=expected)
+            error_type = ErrorType.CONTAIN_ONE
+            return ReportItem(severity, error_type, header, cookie=cookie, value=cookie_value, expected=expected)

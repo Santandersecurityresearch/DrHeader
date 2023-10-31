@@ -10,13 +10,13 @@ jobs:
     strategy:
         max-parallel: 4
         matrix:
-          python-version: [3.7]
+          python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4.1.1
 
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -25,17 +25,19 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements_dev.txt
 
-      - name: Test with pytest
-        run: python -m pytest --junitxml ${{ matrix.python-version }}.results.xml
+      - name: Run unit tests
+        env:
+            version: ${{ matrix.python-version }}
+        run: tox run -e py$version -- --junitxml $version.results.xml
 
-      - name: Flake8 styles
-        run: python -m flake8 drheader
+      - name: Run lint scan
+        run: tox run -e lint
 
-      - name: Bandit security scan
-        run: python -m bandit -r ./drheader
+      - name: Run SAST scan
+        run: tox run -e sast
 
-      - name: Safety dependency scan
-        run: python -m safety check
+      - name: Run SCA scan
+        run: tox run -e sca
 
       - name: Make Wheel
         run: |
@@ -51,7 +53,7 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1.0.1
+        uses: actions/create-release@v1.1.4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -62,7 +64,7 @@ jobs:
 
       - name: Upload Wheel
         id: upload_wheel
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -73,7 +75,7 @@ jobs:
 
       - name: Upload Changelog
         id: upload_changelog
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

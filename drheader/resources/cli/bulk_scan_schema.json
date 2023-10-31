@@ -1,0 +1,52 @@
+{
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "url": {
+                "type": "string",
+                "format": "uri"
+            },
+            "allow_redirects": {
+                "type": "boolean"
+            },
+            "auth": {
+                "type": "string"
+            },
+            "cert": {
+                "type": "string"
+            },
+            "cookies": {
+                "type": "object"
+            },
+            "data": {
+            },
+            "headers": {
+                "type": "object"
+            },
+            "json": {
+                "type": "object"
+            },
+            "method": {
+                "enum": [
+                    "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"
+                ]
+            },
+            "params": {
+            },
+            "proxies": {
+                "type": "object"
+            },
+            "timeout": {
+                "type": ["number", "string"]
+            },
+            "verify": {
+                "type": ["boolean", "string"]
+            }
+        },
+        "required": [
+            "url"
+        ],
+        "additionalProperties": false
+    }
+}

@@ -1,93 +1,112 @@
 """Base module for validators."""
-import abc
+from abc import ABC, abstractmethod
 
 
-class ValidatorBase:
+class ValidatorBase(ABC):
     """Base class for validators."""
 
-    @abc.abstractmethod
-    def validate_exists(self, config, header, directive=None, cookie=None):
+    @abstractmethod
+    def exists(self, config, header, **kwargs):
         """Validates that a header, directive or cookie exists in a set of headers.
 
         Args:
             config (CaseInsensitiveDict): The configuration of the exists rule.
             header (str): The header to validate.
-            directive (str): (optional) The directive to validate.
-            cookie (str): (optional) The cookie to validate.
+
+        Keyword Args:
+            cookie (str): A named cookie in {header} to validate (only applicable for 'set-cookie').
+            directive (str): A named directive in {header} to validate.
         """
 
-    @abc.abstractmethod
-    def validate_not_exists(self, config, header, directive=None, cookie=None):
+    @abstractmethod
+    def not_exists(self, config, header, **kwargs):
         """Validates that a header, directive or cookie does not exist in a set of headers.
 
         Args:
-            config (CaseInsensitiveDict): The configuration of the not-exists rule.
+            config (CaseInsensitiveDict): The configuration of the exists rule.
             header (str): The header to validate.
-            directive (str): (optional) The directive to validate.
-            cookie (str): (optional) The cookie to validate.
+
+        Keyword Args:
+            cookie (str): A named cookie in {header} to validate (only applicable for 'set-cookie').
+            directive (str): A named directive in {header} to validate.
         """
 
-    @abc.abstractmethod
-    def validate_value(self, config, header, directive=None):
+    @abstractmethod
+    def value(self, config, header, **kwargs):
         """Validates that a header or directive matches a single expected value.
 
         Args:
-            config (CaseInsensitiveDict): The configuration of the value rule.
+            config (CaseInsensitiveDict): The configuration of the exists rule.
             header (str): The header to validate.
-            directive (str): (optional) The directive to validate.
+
+        Keyword Args:
+            cookie (str): A named cookie in {header} to validate (only applicable for 'set-cookie').
+            directive (str): A named directive in {header} to validate.
         """
 
-    @abc.abstractmethod
-    def validate_value_any_of(self, config, header, directive=None):
+    @abstractmethod
+    def value_any_of(self, config, header, **kwargs):
         """Validates that a header or directive matches one or more of a list of expected values.
 
         Args:
-            config (CaseInsensitiveDict): The configuration of the value-any-of rule.
+            config (CaseInsensitiveDict): The configuration of the exists rule.
             header (str): The header to validate.
-            directive (str): (optional) The directive to validate.
+
+        Keyword Args:
+            cookie (str): A named cookie in {header} to validate (only applicable for 'set-cookie').
+            directive (str): A named directive in {header} to validate.
         """
 
-    @abc.abstractmethod
-    def validate_value_one_of(self, config, header, directive=None):
+    @abstractmethod
+    def value_one_of(self, config, header, **kwargs):
         """Validates that a header or directive matches one of a list of expected values.
 
         Args:
-            config (CaseInsensitiveDict): The configuration of the value-one-of rule.
+            config (CaseInsensitiveDict): The configuration of the exists rule.
             header (str): The header to validate.
-            directive (str): (optional) The directive to validate.
+
+        Keyword Args:
+            cookie (str): A named cookie in {header} to validate (only applicable for 'set-cookie').
+            directive (str): A named directive in {header} to validate.
         """
 
-    @abc.abstractmethod
-    def validate_must_avoid(self, config, header, directive=None, cookie=None):
+    @abstractmethod
+    def must_avoid(self, config, header, **kwargs):
         """Validates that a header, directive or cookie does not contain any of a list of disallowed values.
 
         Args:
-            config (CaseInsensitiveDict): The configuration of the must-avoid rule.
+            config (CaseInsensitiveDict): The configuration of the exists rule.
             header (str): The header to validate.
-            directive (str): (optional) The directive to validate.
-            cookie (str): (optional) The cookie to validate.
+
+        Keyword Args:
+            cookie (str): A named cookie in {header} to validate (only applicable for 'set-cookie').
+            directive (str): A named directive in {header} to validate.
         """
 
-    @abc.abstractmethod
-    def validate_must_contain(self, config, header, directive=None, cookie=None):
+    @abstractmethod
+    def must_contain(self, config, header, **kwargs):
         """Validates that a header, directive or cookie contains all of a list of expected values.
 
         Args:
-            config (CaseInsensitiveDict): The configuration of the must-contain rule.
+            config (CaseInsensitiveDict): The configuration of the exists rule.
             header (str): The header to validate.
-            directive (str): (optional) The directive to validate.
-            cookie (str): (optional) The cookie to validate.
+
+        Keyword Args:
+            cookie (str): A named cookie in {header} to validate (only applicable for 'set-cookie').
+            directive (str): A named directive in {header} to validate.
         """
 
-    @abc.abstractmethod
-    def validate_must_contain_one(self, config, header, directive=None, cookie=None):
+    @abstractmethod
+    def must_contain_one(self, config, header, **kwargs):
         """Validates that a header, directive or cookie contains one or more of a list of expected values.
 
         Args:
-            config (CaseInsensitiveDict): The configuration of the must-contain-one rule.
+            config (CaseInsensitiveDict): The configuration of the exists rule.
             header (str): The header to validate.
-            directive (str): (optional) The directive to validate.
-            cookie (str): (optional) The cookie to validate.
+
+        Keyword Args:
+            cookie (str): A named cookie in {header} to validate (only applicable for 'set-cookie').
+            directive (str): A named directive in {header} to validate.
         """
 
 
@@ -104,8 +123,8 @@ class UnsupportedValidationError(Exception):
 
 
 def get_delimiter(config, delimiter_type):
-    if 'delimiters' in config:
-        return config['delimiters'].get(delimiter_type)
+    if delimiters := config.get('delimiters'):
+        return delimiters.get(delimiter_type)
 
 
 def get_expected_values(config, key, delimiter):

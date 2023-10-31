@@ -1,9 +1,9 @@
-import unittest2
+import unittest
 
 from tests.integration_tests import utils
 
 
-class TestDefaultRules(unittest2.TestCase):
+class TestDefaultRules(unittest.TestCase):
 
     def tearDown(self):
         utils.reset_default_rules()
@@ -171,7 +171,7 @@ class TestDefaultRules(unittest2.TestCase):
             'rule': 'Set-Cookie - session_id',
             'message': 'Must-Contain directive missed',
             'severity': 'high',
-            'value': 'session_id=585733723; HttpOnly; SameSite=Strict',
+            'value': '585733723; HttpOnly; SameSite=Strict',
             'expected': ['HttpOnly', 'Secure'],
             'delimiter': ';',
             'anomalies': ['Secure']
@@ -186,7 +186,7 @@ class TestDefaultRules(unittest2.TestCase):
             'rule': 'Set-Cookie - session_id',
             'message': 'Must-Contain directive missed',
             'severity': 'high',
-            'value': 'session_id=585733723; Secure; SameSite=Strict',
+            'value': '585733723; Secure; SameSite=Strict',
             'expected': ['HttpOnly', 'Secure'],
             'delimiter': ';',
             'anomalies': ['HttpOnly']

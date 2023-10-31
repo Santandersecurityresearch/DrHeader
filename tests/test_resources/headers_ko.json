@@ -1,0 +1,13 @@
+{
+    "Cache-Control": "public, must-revalidate",
+    "Content-Security-Policy": "script-src 'self' 'unsafe-eval'; object-src 'self'; style-src 'unsafe-inline'",
+    "Pragma": "no-cache",
+    "Referrer-Policy": "origin",
+    "Server": "Apache/2.4.1 (Unix)",
+    "Set-Cookie": [
+        "session_id=2943020342; Max-Age=2592000; Domain=.example.com; Secure"
+    ],
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+    "X-XSS-Protection": "1; mode=block"
+}

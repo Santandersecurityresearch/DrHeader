@@ -1,13 +1,14 @@
 from unittest import mock
 
-import unittest2
+import unittest
 from requests import structures
 
 from drheader import report, utils
-from drheader.validators import header_validator
+from drheader.validators.cookie_validator import CookieValidator
+from drheader.validators.header_validator import HeaderValidator
 
 
-class TestBase(unittest2.TestCase):
+class TestBase(unittest.TestCase):
 
     def assert_report_items_equal(self, expected_report_item, observed_report_item, msg=None):
         does_validate = True
@@ -22,10 +23,59 @@ class TestBase(unittest2.TestCase):
             raise self.failureException(msg)
 
 
+class TestCookieValidator(TestBase):
+
+    def setUp(self):
+        self.validator = CookieValidator(cookies=structures.CaseInsensitiveDict())
+        self.addTypeEqualityFunc(report.ReportItem, super().assert_report_items_equal)
+
+    @mock.patch('drheader.utils.parse_policy')
+    def test_validate_must_avoid__should_validate_named_cookie(self, parse_policy_mock):
+        config = structures.CaseInsensitiveDict({
+            'required': True,
+            'must-avoid': ['samesite=lax'],
+            'delimiters': {'item_delimiter': ';', 'key_value_delimiter': '='}
+        })
+        self.validator.cookies['session'] = '657488329; samesite=lax'
+        parse_policy_mock.return_value = ['657488329', 'samesite=lax', 'samesite']
+
+        response = self.validator.must_avoid(config, 'set-cookie', cookie='session')
+        expected = report.ReportItem('high', report.ErrorType.AVOID, 'set-cookie', cookie='session', value='657488329; samesite=lax', avoid=['samesite=lax'], anomalies=['samesite=lax'])
+        self.assertEqual(expected, response, msg='The report items are not equal:\n')
+
+    @mock.patch('drheader.utils.parse_policy')
+    def test_validate_must_contain__should_validate_named_cookie(self, parse_policy_mock):
+        config = structures.CaseInsensitiveDict({
+            'required': True,
+            'must-contain': ['httponly', 'secure'],
+            'delimiters': {'item_delimiter': ';', 'key_value_delimiter': '='}
+        })
+        self.validator.cookies['session'] = '657488329; httponly; samesite=strict'
+        parse_policy_mock.return_value = ['657488329', 'httponly', 'samesite=strict', 'samesite']
+
+        response = self.validator.must_contain(config, 'set-cookie', cookie='session')
+        expected = report.ReportItem('high', report.ErrorType.CONTAIN, 'set-cookie', cookie='session', value='657488329; httponly; samesite=strict', expected=['httponly', 'secure'], delimiter=';', anomalies=['secure'])
+        self.assertEqual(expected, response, msg='The report items are not equal:\n')
+
+    @mock.patch('drheader.utils.parse_policy')
+    def test_validate_must_contain_one__should_validate_named_cookie(self, parse_policy_mock):
+        config = structures.CaseInsensitiveDict({
+            'required': True,
+            'must-contain-one': ['expires', 'max-age'],
+            'delimiters': {'item_delimiter': ';', 'key_value_delimiter': '='}
+        })
+        self.validator.cookies['session'] = '657488329; httponly; samesite=strict'
+        parse_policy_mock.return_value = ['657488329', 'samesite=strict', 'samesite']
+
+        response = self.validator.must_contain_one(config, 'set-cookie', cookie='session')
+        expected = report.ReportItem('high', report.ErrorType.CONTAIN_ONE, 'set-cookie', cookie='session', value='657488329; httponly; samesite=strict', expected=['expires', 'max-age'])
+        self.assertEqual(expected, response, msg='The report items are not equal:\n')
+
+
 class TestHeaderValidator(TestBase):
 
     def setUp(self):
-        self.validator = header_validator.HeaderValidator(headers=structures.CaseInsensitiveDict())
+        self.validator = HeaderValidator(headers=structures.CaseInsensitiveDict())
         self.addTypeEqualityFunc(report.ReportItem, super().assert_report_items_equal)
 
     @mock.patch('drheader.utils.parse_policy')
@@ -39,50 +89,8 @@ class TestHeaderValidator(TestBase):
         self.validator.headers['referrer-policy'] = 'strict-origin-when-cross-origin, no-referrer'
         parse_policy_mock.return_value = ['strict-origin-when-cross-origin', 'no-referrer']
 
-        response = self.validator.validate_value(config, 'referrer-policy')
+        response = self.validator.value(config, 'referrer-policy')
         expected = report.ReportItem('high', report.ErrorType.VALUE, 'referrer-policy', value='strict-origin-when-cross-origin, no-referrer', expected=['no-referrer', 'strict-origin-when-cross-origin'], delimiter=',')
-        self.assertEqual(expected, response, msg='The report items are not equal:\n')
-
-    @mock.patch('drheader.utils.parse_policy')
-    def test_validate_must_avoid__should_validate_named_cookie(self, parse_policy_mock):
-        config = structures.CaseInsensitiveDict({
-            'required': True,
-            'must-avoid': ['samesite=lax'],
-            'delimiters': {'item_delimiter': ';', 'key_delimiter': '='}
-        })
-        self.validator.headers['set-cookie'] = ['session=657488329; samesite=lax', 'tracker=849338398; samesite=lax']
-        parse_policy_mock.return_value = ['session=657488329', 'session', 'samesite=lax', 'samesite']
-
-        response = self.validator.validate_must_avoid(config, 'set-cookie', cookie='session')
-        expected = report.ReportItem('high', report.ErrorType.AVOID, 'set-cookie', cookie='session', value='session=657488329; samesite=lax', avoid=['samesite=lax'], anomalies=['samesite=lax'])
-        self.assertEqual(expected, response, msg='The report items are not equal:\n')
-
-    @mock.patch('drheader.utils.parse_policy')
-    def test_validate_must_contain__should_validate_named_cookie(self, parse_policy_mock):
-        config = structures.CaseInsensitiveDict({
-            'required': True,
-            'must-contain': ['httponly', 'secure'],
-            'delimiters': {'item_delimiter': ';', 'key_delimiter': '='}
-        })
-        self.validator.headers['set-cookie'] = ['session=657488329; httponly', 'tracker=849338398; httponly']
-        parse_policy_mock.return_value = ['session=657488329', 'session', 'httponly']
-
-        response = self.validator.validate_must_contain(config, 'set-cookie', cookie='session')
-        expected = report.ReportItem('high', report.ErrorType.CONTAIN, 'set-cookie', cookie='session', value='session=657488329; httponly', expected=['httponly', 'secure'], delimiter=';', anomalies=['secure'])
-        self.assertEqual(expected, response, msg='The report items are not equal:\n')
-
-    @mock.patch('drheader.utils.parse_policy')
-    def test_validate_must_contain_one__should_validate_named_cookie(self, parse_policy_mock):
-        config = structures.CaseInsensitiveDict({
-            'required': True,
-            'must-contain-one': ['expires', 'max-age'],
-            'delimiters': {'item_delimiter': ';', 'key_delimiter': '='}
-        })
-        self.validator.headers['set-cookie'] = ['session=657488329', 'tracker=849338398']
-        parse_policy_mock.return_value = ['session=657488329', 'session']
-
-        response = self.validator.validate_must_contain_one(config, 'set-cookie', cookie='session')
-        expected = report.ReportItem('high', report.ErrorType.CONTAIN_ONE, 'set-cookie', cookie='session', value='session=657488329', expected=['expires', 'max-age'])
         self.assertEqual(expected, response, msg='The report items are not equal:\n')
 
     @mock.patch('drheader.utils.parse_policy')
@@ -90,7 +98,7 @@ class TestHeaderValidator(TestBase):
         config = structures.CaseInsensitiveDict({
             'required': True,
             'must-avoid': ['block-all-mixed-content'],
-            'delimiters': {'item_delimiter': ';', 'key_delimiter': ' ', 'value_delimiter': ' ', 'strip': '\' '}
+            'delimiters': {'item_delimiter': ';', 'key_value_delimiter': ' ', 'value_delimiter': ' ', 'strip': '\' '}
         })
         self.validator.headers['content-security-policy'] = "default-src 'none'; block-all-mixed-content"
 
@@ -100,7 +108,7 @@ class TestHeaderValidator(TestBase):
             'block-all-mixed-content'
         ]
 
-        response = self.validator.validate_must_avoid(config, 'content-security-policy')
+        response = self.validator.must_avoid(config, 'content-security-policy')
         expected = report.ReportItem('high', report.ErrorType.AVOID, 'content-security-policy', value="default-src 'none'; block-all-mixed-content", avoid=['block-all-mixed-content'], anomalies=['block-all-mixed-content'])
         self.assertEqual(expected, response[0], msg='The report items are not equal:\n')
 
@@ -109,7 +117,7 @@ class TestHeaderValidator(TestBase):
         config = structures.CaseInsensitiveDict({
             'required': True,
             'must-avoid': ['script-src'],
-            'delimiters': {'item_delimiter': ';', 'key_delimiter': ' ', 'value_delimiter': ' ', 'strip': '\' '}
+            'delimiters': {'item_delimiter': ';', 'key_value_delimiter': ' ', 'value_delimiter': ' ', 'strip': '\' '}
         })
         self.validator.headers['content-security-policy'] = "default-src 'none'; script-src https://example.com"
 
@@ -120,7 +128,7 @@ class TestHeaderValidator(TestBase):
             utils.KeyValueDirective(key='script-src', value=['https://example.com'], raw_value='https://example.com')
         ]
 
-        response = self.validator.validate_must_avoid(config, 'content-security-policy')
+        response = self.validator.must_avoid(config, 'content-security-policy')
         expected = report.ReportItem('high', report.ErrorType.AVOID, 'content-security-policy', value="default-src 'none'; script-src https://example.com", avoid=['script-src'], anomalies=['script-src'])
         self.assertEqual(expected, response[0], msg='The report items are not equal:\n')
 
@@ -129,7 +137,7 @@ class TestHeaderValidator(TestBase):
         config = structures.CaseInsensitiveDict({
             'required': True,
             'must-avoid': ['unsafe-inline'],
-            'delimiters': {'item_delimiter': ';', 'key_delimiter': ' ', 'value_delimiter': ' ', 'strip': '\' '}
+            'delimiters': {'item_delimiter': ';', 'key_value_delimiter': ' ', 'value_delimiter': ' ', 'strip': '\' '}
         })
         self.validator.headers['content-security-policy'] = "default-src 'none'; script-src 'unsafe-inline'"
 
@@ -140,7 +148,7 @@ class TestHeaderValidator(TestBase):
             utils.KeyValueDirective(key='script-src', value=['unsafe-inline'], raw_value="'unsafe-inline'")
         ]
 
-        response = self.validator.validate_must_avoid(config, 'content-security-policy')
+        response = self.validator.must_avoid(config, 'content-security-policy')
         expected = report.ReportItem('high', report.ErrorType.AVOID, 'content-security-policy', directive='script-src', value="'unsafe-inline'", avoid=['unsafe-inline'], anomalies=['unsafe-inline'])
         self.assertEqual(expected, response[0], msg='The report items are not equal:\n')
 
@@ -149,7 +157,7 @@ class TestHeaderValidator(TestBase):
         config = structures.CaseInsensitiveDict({
             'required': True,
             'must-avoid': ['unsafe-inline'],
-            'delimiters': {'item_delimiter': ';', 'key_delimiter': ' ', 'value_delimiter': ' ', 'strip': '\' '}
+            'delimiters': {'item_delimiter': ';', 'key_value_delimiter': ' ', 'value_delimiter': ' ', 'strip': '\' '}
         })
         self.validator.headers['content-security-policy'] = "script-src 'unsafe-inline'; object-src 'unsafe-inline'"
 
@@ -160,6 +168,6 @@ class TestHeaderValidator(TestBase):
             utils.KeyValueDirective(key='object-src', value=['unsafe-inline'], raw_value="'unsafe-inline'")
         ]
 
-        response = self.validator.validate_must_avoid(config, 'content-security-policy')
+        response = self.validator.must_avoid(config, 'content-security-policy')
         self.assertEqual('script-src', response[0].directive)
         self.assertEqual('object-src', response[1].directive)

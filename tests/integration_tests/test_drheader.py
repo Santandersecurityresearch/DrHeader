@@ -1,12 +1,12 @@
 import os
 
-import unittest2
+import unittest
 import yaml
 
 from tests.integration_tests import utils
 
 
-class TestDrHeader(unittest2.TestCase):
+class TestDrHeader(unittest.TestCase):
 
     def tearDown(self):
         utils.reset_default_rules()
@@ -330,5 +330,5 @@ class TestDrHeader(unittest2.TestCase):
 
 def modify_rule(rule_name, rule_value):
     with open(os.path.join(os.path.dirname(__file__), '../test_resources/default_rules.yml'), 'w') as rules:
-        modified_rule = {'Headers': {rule_name: rule_value}}
+        modified_rule = {rule_name: rule_value}
         yaml.dump(modified_rule, rules, sort_keys=False)

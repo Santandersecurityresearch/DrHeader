@@ -1,0 +1,35 @@
+[
+    {
+        "url": "https://example.com",
+        "headers": {
+            "Cache-Control": "public, must-revalidate",
+            "Content-Security-Policy": "script-src 'self' 'unsafe-eval'; object-src 'self'; style-src 'unsafe-inline'",
+            "Pragma": "no-cache",
+            "Referrer-Policy": "origin",
+            "Server": "Apache/2.4.1 (Unix)",
+            "Set-Cookie": [
+                "session_id=2943020342; Max-Age=2592000; Domain=.example.com; Secure"
+            ],
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block"
+        }
+    },
+    {
+        "url": "https://example.net",
+        "headers": {
+            "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'",
+            "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+            "X-Frame-Options": "DENY",
+            "X-XSS-Protection": "0"
+        }
+    },
+    {
+        "url": "https://example.org",
+        "headers": {
+            "Cache-Control": "no-store, max-age=0",
+            "Strict-Transport-Security": "max-age=31536000",
+            "X-XSS-Protection": "1; mode-block"
+        }
+    }
+]

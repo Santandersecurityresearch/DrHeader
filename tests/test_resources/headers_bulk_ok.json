@@ -1,0 +1,44 @@
+[
+    {
+        "url": "https://example.com",
+        "headers": {
+            "Cache-Control": "no-store, max-age=0",
+            "Content-Security-Policy": "default-src 'self'",
+            "Pragma": "no-cache",
+            "Referrer-Policy": "no-referrer",
+            "Set-Cookie": [
+                "session_id=2943020342; Max-Age=2592000; Domain=.example.com; HttpOnly; Secure"
+            ],
+            "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "X-XSS-Protection": "0"
+        }
+    },
+    {
+        "url": "https://example.net",
+        "headers": {
+            "Cache-Control": "no-store, max-age=0",
+            "Content-Security-Policy": "default-src 'none'; script-src 'self'",
+            "Pragma": "no-cache",
+            "Referrer-Policy": "strict-origin",
+            "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "X-XSS-Protection": "0"
+        }
+    },
+    {
+        "url": "https://example.org",
+        "headers": {
+            "Cache-Control": "no-store, max-age=0",
+            "Content-Security-Policy": "default-src 'none'",
+            "Pragma": "no-cache",
+            "Referrer-Policy": "no-referrer",
+            "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "X-XSS-Protection": "0"
+        }
+    }
+]
