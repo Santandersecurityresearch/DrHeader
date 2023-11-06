@@ -8,4 +8,4 @@ setuptools>=39.0.1
 validators>=0.14.0
 xmlunittest==0.5.0
 junit-xml==1.9
-responses==0.23.3
+responses==0.24.0
