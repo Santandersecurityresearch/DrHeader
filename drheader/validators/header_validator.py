@@ -53,19 +53,35 @@ class HeaderValidator(base.ValidatorBase):
 
         header_value = self.headers[header]
         strip_chars = base.get_delimiter(config, 'strip') if header.lower() in _STRIP_HEADERS else None
-        header_items = utils.parse_policy(header_value, item_delimiter=delimiter, strip=strip_chars)
+        header_items = utils.parse_policy(header_value, item_delimiter=delimiter, strip_chars=strip_chars)
         if config.get('preserve-order'):
             header_items = [item.lower() for item in header_items]
             expected_lower = [item.lower() for item in expected]
         else:
             header_items = {item.lower() for item in header_items}
             expected_lower = {item.lower() for item in expected}
-
-        if header_items != expected_lower:
+        if header == "Strict-Transport-Security" and any("greaterequal-age" in item for item in expected_lower):
             severity = config.get('severity', 'high')
-            error_type = report.ErrorType.VALUE
-            return report.ReportItem(severity, error_type, header, value=header_value, expected=expected,
-                                     delimiter=delimiter)
+            error_type = ErrorType.VALUE
+            expected_header_items_without_gea = []
+            for item in expected_lower:
+                if "greaterequal-age" in item:
+                    greaterequalage = item.strip("greaterequal-age=")
+                else:
+                    expected_header_items_without_gea.append(item.lower())
+            maxage=0
+            header_items_without_gea = []
+            for item in header_items:
+                if "max-age" in item:
+                    maxage = item.strip("max-age=")
+                else:
+                    header_items_without_gea.append(item.lower())
+            if int(greaterequalage) > int(maxage) or header_items_without_gea != expected_header_items_without_gea:
+                return ReportItem(severity, error_type, header, value=header_value, expected=expected, delimiter=delimiter)
+        elif header_items != expected_lower:
+            severity = config.get('severity', 'high')
+            error_type = ErrorType.VALUE
+            return ReportItem(severity, error_type, header, value=header_value, expected=expected, delimiter=delimiter)
 
     def value_any_of(self, config, header, **kwargs):
         """See base class."""
