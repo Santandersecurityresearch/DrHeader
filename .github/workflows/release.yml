@@ -1,92 +1,57 @@
-name: Dr Header Release Task
+name: Create release
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
-    strategy:
-        max-parallel: 4
-        matrix:
-          python-version: ["3.8", "3.9", "3.10", "3.11"]
+
+    permissions:
+      contents: write
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4.1.1
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ vars.PYTHON_VERSION }}
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r requirements_dev.txt
-
-      - name: Run unit tests
-        env:
-            version: ${{ matrix.python-version }}
-        run: tox run -e py$version -- --junitxml $version.results.xml
-
-      - name: Run lint scan
-        run: tox run -e lint
-
-      - name: Run SAST scan
-        run: tox run -e sast
-
-      - name: Run SCA scan
-        run: tox run -e sca
-
-      - name: Make Wheel
-        run: |
-          python3 setup.py sdist bdist_wheel
-
-      - name: Dump build info for release
-        run: |
-           git log --pretty=oneline > changelog
-           python3 setup.py --version > version
-
-      - name: Get bumpversion
-        run: echo "VERSION"=$(grep -i 'current_version = ' setup.cfg | head -1 | tr -d 'current_version = ') >> $GITHUB_ENV
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1.1.4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Load cached Poetry installation
+        id: cached-poetry-installation
+        uses: actions/cache@v4
         with:
-          tag_name: v${{ env.VERSION}}
-          release_name: Release v${{ env.VERSION }}
-          draft: false
-          prerelease: false
+          path: |
+            ~/.local
+            ~/.config/pypoetry
+          key: poetry-${{ vars.POETRY_VERSION }}
 
-      - name: Upload Wheel
-        id: upload_wheel
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Poetry if not cached installation
+        if: steps.cached-poetry-installation.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/drheader-${{ env.VERSION }}-py2.py3-none-any.whl
-          asset_name: DrHeader Wheel
-          asset_content_type: application/x-python-wheel
+          version: ${{ vars.POETRY_VERSION }}
+          virtualenvs-create: true
 
-      - name: Upload Changelog
-        id: upload_changelog
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build release artifacts
+        run: poetry build
+
+      - name: Get release version
+        run: echo "VERSION"=$(grep -i 'version = ' pyproject.toml | head -1 | tr -d 'version = "') >> $GITHUB_ENV
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: changelog
-          asset_name: DrHeader changelog
-          asset_content_type: text/plain
+          artifacts: dist/*
+          tag: v${{ env.VERSION }}
+          generateReleaseNotes: true
 
-      - name: Publish
+      - name: Publish to PyPI
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          twine upload dist/*
+          POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: poetry publish

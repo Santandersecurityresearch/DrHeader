@@ -1,0 +1,44 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "drheader"
+description = "Audit your HTTP response headers for misconfigurations and enforce custom security rules!"
+version = "2.0.0"
+license = "MIT"
+
+authors = [
+    "Santander UK Security Engineering"
+]
+readme = ["README.md", "CLI.md", "RULES.md"]
+
+[tool.poetry.scripts]
+drheader = "drheader.cli.cli:start"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+click = "^8.0.1"
+jsonschema = "^4.19.2"
+junit-xml = "^1.9"
+pyyaml = "^6.0.1"
+requests = "^2.22.0"
+tabulate = "^0.9.0"
+
+lxml = { version = "^4.6.3", optional = true }
+m2r2 = { version = "^0.3.3.post2", optional = true }
+pytest = { version = "^8.0.0", optional = true }
+pytest-cov = { version = "^4.1.0", optional = true }
+responses = { version = "^0.23.3", optional = true }
+ruff = { version = "^0.2.2", optional = true }
+sphinx = { version = "^7.1.2", optional = true }
+xmlunittest = { version = "^0.5.0", optional = true }
+
+[tool.poetry.group.dev.dependencies]
+tox = "^4.11.3"
+
+[tool.poetry.extras]
+docs = ["m2r2", "sphinx"]
+pipelines = ["ruff"]
+tests = ["lxml", "pytest", "pytest-cov", "responses", "xmlunittest"]

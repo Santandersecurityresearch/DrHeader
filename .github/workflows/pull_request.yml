@@ -1,73 +1,81 @@
-name: Pull Request Handler
+name: Scan pull request
 
-on: pull_request
+on:
+  pull_request:
+    branches:
+      - dev
+      - master
 
 jobs:
-  build:
+  scan:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
       matrix:
-          python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version:
+          - '3.8'
+          - '3.9'
+          - '3.10'
+          - '3.11'
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-           python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r requirements_dev.txt
+      - name: Load cached Poetry installation
+        id: cached-poetry-installation
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local
+            ~/.config/pypoetry
+          key: poetry-${{ vars.POETRY_VERSION }}
+
+      - name: Install Poetry if not cached installation
+        if: steps.cached-poetry-installation.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          version: ${{ vars.POETRY_VERSION }}
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Verify lock file
+        run: poetry check --no-interaction
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies if not cached venv
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Load cached tox
+        uses: actions/cache@v4
+        with:
+          path: .tox
+          key: tox-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Run unit tests
         env:
-            version: ${{ matrix.python-version }}
-        run: tox run -e py$version -- --junitxml $version.results.xml
+          version: ${{ matrix.python-version }}
+        run: poetry run tox run -e py$version -- -- --junitxml $version.results.xml
 
       - name: Upload test results
         uses: actions/upload-artifact@master
         with:
-           name: Results - ${{ matrix.python-version }}
-           path: ${{ matrix.python-version }}.results.xml
+          name: Results - ${{ matrix.python-version }}
+          path: ${{ matrix.python-version }}.results.xml
 
       - name: Run lint scan
-        run: tox run -e lint
+        run: poetry run tox run -e lint
 
       - name: Run SAST scan
-        run: tox run -e sast
-
-      - name: Run SCA scan
-        run: tox run -e sca
-
-  bump-version:
-    if: github.base_ref == 'master'
-    needs: build
-
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install dependencies
-        run: |
-          pip install bump2version==1.0.1
-
-      - name: Checkout head branch
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-
-      - name: Bump version
-        run: |
-          grep -i 'current_version = ' setup.cfg | head -1 | tr -d 'current_version = '
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          bump2version minor
-          grep -i 'current_version = ' setup.cfg | head -1 | tr -d 'current_version = '
-
-      - name: Push changes to origin
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
+        run: poetry run tox run -e sast

@@ -10,7 +10,7 @@ import click
 import jsonschema
 from click import Choice, File, ParamType
 
-from drheader import Drheader, __version__
+from drheader import Drheader
 from drheader.cli import utils
 
 _OUTPUT_TYPES = ['json', 'table']
@@ -28,7 +28,7 @@ class URLParamType(ParamType):
 
 
 @click.group(context_settings={'show_default': True})
-@click.version_option(__version__, '--version', '-v')
+@click.version_option()
 def main():
     """Console script for drheader."""
 
