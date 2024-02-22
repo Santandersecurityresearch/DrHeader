@@ -13,15 +13,12 @@ drHEADer helps with the audit of security headers received in response to a sing
 
 When combined with the OWASP [Application Security Verification Standard](https://github.com/OWASP/ASVS/blob/master/4.0/en/0x22-V14-Config.md) (ASVS) 4.0, it is a useful tool to include as part of an automated CI/CD pipeline which checks for missing HTTP headers.
 
-## How Do I Install It?
-drHEADer requires at least Python 3.8 to run. The easiest way to install drHEADer is to clone this repository and via a
-terminal window, run the following command:
+## Installation
+To run drheader, you must have Python 3.8+ installed. The easiest way to install drheader is using pip:
 
 ```sh
-$ python3 setup.py install --user
+$ pip install drheader
 ```
-
-This will install all the pre-requisites and you'll end up with a drHEADer executable.
 
 ## How Do I Use It?
 There are two ways you could use drHEADer, depending on what you want to achieve. The easiest way is using the CLI.

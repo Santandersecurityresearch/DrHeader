@@ -1,100 +1,129 @@
+![drHEADer](assets/img/hero.png)
+
 # Contributing
 
-Contributions are welcome, and they are greatly appreciated\! Every
-little bit helps, and credit will always be given.
+Contributions are welcome and greatly appreciated! Every little bit helps and credit will always be given. You can
+contribute in many ways:
 
-You can contribute in many ways:
+### Report a bug
 
-## Types of Contributions
+Report a bug on the [issue tracker](https://github.com/santandersecurityresearch/drheader/issues).
 
-### Report Bugs
+Please include in the report:
 
-Report bugs at <https://github.com/santandersecurityresearch/drheader/issues>.
+- Your operating system name and version
+- Any details about your local setup that might be helpful in troubleshooting
+- Detailed steps to reproduce the bug
 
-If you are reporting a bug, please include:
+### Fix a bug
 
-  - Your operating system name and version.
-  - Any details about your local setup that might be helpful in
-    troubleshooting.
-  - Detailed steps to reproduce the bug.
+Look through the [bug tracker](https://github.com/santandersecurityresearch/drheader/labels/bug) for open issues.
+Anything tagged with `bug` and `help wanted` is open to whoever wants to fix it.
 
-### Fix Bugs
+### Implement a new feature
 
-Look through the GitHub issues for bugs. Anything tagged with "bug" and
-"help wanted" is open to whoever wants to implement it.
+Look through the [issue tracker](https://github.com/santandersecurityresearch/drheader/labels/enhancement) for open
+feature requests. Anything tagged with `enhancement` and `help wanted` is open to whoever wants to implement it.
 
-### Implementing Features
+### Write documentation
 
-Look through the GitHub issues for features. Anything tagged with
-"enhancement" and "help wanted" is open to whoever wants to implement
-it.
+drheader documentation can always be enhanced, whether as part of the official drheader docs, in docstrings, or even on
+the web such as in blog posts and articles.
 
-### Write Documentation
+### Submit feedback
 
-drHEADer core could always use more documentation, whether as part of
-the official drHEADer core docs, in docstrings, or even on the web in
-blog posts, articles, and such.
-
-### Submit Feedback
-
-The best way to send feedback is to file an issue at
-<https://github.com/santandersecurityresearch/drheader/issues>.
+The best way to send feedback is to open an issue on the
+[issue tracker](https://github.com/santandersecurityresearch/drheader/issues).
 
 If you are proposing a feature:
 
-  - Explain in detail how it would work.
-  - Keep the scope as narrow as possible, to make it easier to
-    implement.
-  - Remember that this is a volunteer-driven project, and that
-    contributions are welcome :)
+- Explain in detail how it would work
+- Keep the scope as narrow as possible to make it easier to implement
+- Remember that this is a volunteer-driven project, and that contributions are welcome
 
-## Get Started\!
+## Get Started!
 
-Ready to contribute? Here's how to set up
-<span class="title-ref">drheader</span> for local development.
+Ready to contribute? This section walks through how to set up drheader for local development and prepare a pull request.
+Any steps that display an input symbols icon ( :symbols: ) require you to insert some user-specific information into the
+command before running it.
 
-1.  Fork the <span class="title-ref">drheader</span> repo on GitHub.
+#### Pre-requisites
 
-2.  Clone your fork locally:
+drheader is built using Python 3.8 and Poetry. If you already have these installed, skip ahead to step 3.
 
-        $ git clone git@github.com:your_name_here/drheader.git
+1. Install [Python 3.8+](https://www.python.org/downloads)
 
-3.  Install your local copy into a virtualenv. Assuming you have
-    virtualenvwrapper installed, this is how you set up your fork for
-    local development:
+2. Install [Poetry](https://python-poetry.org/docs/#installation)
 
-        $ mkvirtualenv drheader
-        $ cd drheader/
-        $ python setup.py develop
+3. Fork drheader into your GitHub account
 
-4.  Create a branch for local development:
+4. Clone your fork locally :symbols:
+   ```shell
+   $ git clone git@github.com:<your-github-username>/drheader.git`
+   ```
 
-        $ git checkout -b name-of-your-bugfix-or-feature
+5. Set up a virtual environment in your local repo
+   ```shell
+   $ python -m venv venv
+   ```
 
-    Now you can make your changes locally.
+6. Activate the virtual environment using the appropriate activation command from
+   [here](https://docs.python.org/3/library/venv.html#how-venvs-work) :symbols:
+   ```shell
+   $ source venv/bin/activate
+   ```
 
-5.  When you're done making changes, check that your changes pass flake8
-    and the tests, including testing other Python versions with tox:
+7. Install the project dependencies into your local environment
+   ```shell
+   $ poetry install --all-extras --no-root
+   ```
 
-        $ tox
+8. Create a branch for local development :symbols:
+   ```shell
+   $ git checkout -b <name-of-your-bug-fix-or-feature>
+   ```
 
-    To get tox, just pip install it into your virtualenv.
+9. After making your changes, verify that the tests and required checks are passing (see [running tox](#running-tox))
+   ```shell
+   $ tox
+   ```
 
-6.  Commit your changes and push your branch to GitHub:
+10. Commit your changes and push your branch :symbols:
+    ```shell
+    $ git add .
+    $ git commit -m '<description of your changes>'
+    $ git push origin <name-of-your-bug-fix-or-feature>
+    ```
 
-        $ git add .
-        $ git commit -m "Your detailed description of your changes."
-        $ git push origin name-of-your-bugfix-or-feature
-
-7.  Submit a pull request through the GitHub website.
+11. Submit a pull request at <https://github.com/santandersecurityresearch/drheader/pulls>
 
 ## Pull Request Guidelines
 
 When submitting a pull request, please ensure that:
 
-1.  You submit it to 'develop' branch and there's no conflicts.
-2.  You check all tests are passing and have created new ones if change not covered in current test suite.
-3.  You update `README.md` if functionality has been added or modified. If you are creating new classes or methods, please use docstring to document the code.
-4.  You update `RULES.md` when extending or modifying the way rules can be used, adding documentation and examples for the new/modified feature.
-5.  Code works for Python >= 3.8
-6.  Once PR is submitted, workflow steps are successful (e.g.: Flake8, Bandit, Safety, etc.)
+1. The existing tests are passing, and new functionality is adequately covered with new tests
+2. The relevant documentation e.g. `README.md`, `RULES.md`, `CLI.md` is updated to reflect new or changed functionality
+3. The code works for Python >= 3.8
+4. The pull request is submitted against the `develop` branch with no merge conflicts
+5. The pull request pipeline has succeeded
+
+#### Running tox
+
+You can use tox to replicate the workflow environment on your local machine prior to submitting a pull request. This
+allows you run exactly the same steps that will run in the pipeline, and ensure that the pull request is ready to be
+merged.
+
+```shell
+$ tox
+```
+
+This will do the following:
+
+- Run the tests against all supported Python versions ** and verify that test coverage is at least 80%
+- Run a static security scan
+- Run all required linters
+- Verify that `poetry.lock` is up-to-date
+
+** When testing against a specific Python version, tox expects an interpreter that satisfies the version requirement to
+be installed already and visible to tox. If it cannot find a suitable interpreter, the environment will be skipped. To
+efficiently manage multiple Python versions, you can use [pyenv](https://github.com/pyenv/pyenv).
