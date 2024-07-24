@@ -30,7 +30,7 @@ lxml = { version = "^4.6.3", optional = true }
 m2r2 = { version = "^0.3.3.post2", optional = true }
 pytest = { version = "^8.0.0", optional = true }
 pytest-cov = { version = "^4.1.0", optional = true }
-responses = { version = "^0.23.3", optional = true }
+responses = { version = "^0.25.3", optional = true }
 ruff = { version = "^0.2.2", optional = true }
 sphinx = { version = "^7.1.2", optional = true }
 xmlunittest = { version = "^0.5.0", optional = true }
