@@ -36,7 +36,7 @@ sphinx = { version = "^7.1.2", optional = true }
 xmlunittest = { version = "^0.5.0", optional = true }
 
 [tool.poetry.group.dev.dependencies]
-tox = "^4.11.3"
+tox = "^4.20.0"
 
 [tool.poetry.extras]
 docs = ["m2r2", "sphinx"]
